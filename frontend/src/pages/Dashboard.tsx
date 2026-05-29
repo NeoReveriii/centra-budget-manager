@@ -1,7 +1,4 @@
-import React, { useState } from 'react';
-
 const Dashboard = () => {
-  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   return (
     <div className="space-y-lg animate-fade-in">
       {/* ROW 1: Welcome & Actions */}

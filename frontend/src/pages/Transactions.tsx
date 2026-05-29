@@ -1,5 +1,3 @@
-import React, { useState } from 'react';
-
 const Transactions = () => {
   // Sample data for testing
   const allTransactions = [

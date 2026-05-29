@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 const Wallets = () => {
   const [hoveredAsset, setHoveredAsset] = useState<string | null>(null);

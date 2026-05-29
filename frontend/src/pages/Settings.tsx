@@ -1,5 +1,3 @@
-import React from 'react';
-
 const Settings = () => {
   return (
     <div className="max-w-[800px] w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
