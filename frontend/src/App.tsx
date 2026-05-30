@@ -8,6 +8,7 @@ import Wallets from './pages/Wallets';
 import SavingsGoals from './pages/SavingsGoals';
 import KwartaAI from './pages/KwartaAI';
 import LoginPage from './pages/LoginPage';
+import LandingPage from './pages/LandingPage';
 
 // Wrapper that redirects to /login if not authenticated
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -45,10 +46,14 @@ function AppRoutes() {
 
   return (
     <Routes>
-      {/* Public route */}
+      {/* Public routes */}
+      <Route
+        path="/"
+        element={token ? <Navigate to="/dashboard" replace /> : <LandingPage />}
+      />
       <Route
         path="/login"
-        element={token ? <Navigate to="/" replace /> : <LoginPage />}
+        element={token ? <Navigate to="/dashboard" replace /> : <LoginPage />}
       />
 
       {/* Protected routes */}
@@ -58,7 +63,7 @@ function AppRoutes() {
           <ProtectedRoute>
             <Layout>
               <Routes>
-                <Route path="/" element={<Dashboard />} />
+                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/transactions" element={<Transactions />} />
                 <Route path="/wallets" element={<Wallets />} />

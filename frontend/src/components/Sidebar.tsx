@@ -13,7 +13,7 @@ const Sidebar = () => {
       
       <nav className="flex-1 py-6 px-4 space-y-2">
         <NavLink 
-          to="/" 
+          to="/dashboard" 
           className={({ isActive }) => 
             `flex items-center gap-3 px-4 py-3 font-bold rounded-lg transition-colors ${
               isActive 
