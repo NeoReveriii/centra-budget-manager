@@ -64,10 +64,17 @@ export interface LoginResponse {
 }
 
 export async function loginUser(email: string, password: string): Promise<LoginResponse> {
-  return request<LoginResponse>('/accounts?action=login', {
+  const res = await fetch(`${API_BASE}/accounts?action=login`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   });
+
+  const body = await res.json().catch(() => ({ error: res.statusText }));
+  if (!res.ok) {
+    throw new Error(body.error || `API Error ${res.status}`);
+  }
+  return body;
 }
 
 // ──────────────────────────────────────────────
