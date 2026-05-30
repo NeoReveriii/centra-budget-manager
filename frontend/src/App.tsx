@@ -5,6 +5,7 @@ import Settings from './pages/Settings';
 import Transactions from './pages/Transactions';
 import Wallets from './pages/Wallets';
 import SavingsGoals from './pages/SavingsGoals';
+import KwartaAI from './pages/KwartaAI';
 
 // Placeholder components for other routes
 const Placeholder = ({ title }: { title: string }) => (
@@ -26,7 +27,7 @@ function App() {
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/wallets" element={<Wallets />} />
           <Route path="/goals" element={<SavingsGoals />} />
-          <Route path="/kwarta-ai" element={<Placeholder title="Kwarta AI" />} />
+          <Route path="/kwarta-ai" element={<KwartaAI />} />
         </Routes>
       </Layout>
     </Router>
