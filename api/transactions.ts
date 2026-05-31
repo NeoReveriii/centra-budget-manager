@@ -1,12 +1,45 @@
 import { neon } from '@neondatabase/serverless';
 import crypto from 'crypto';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const sql = neon(process.env.DATABASE_URL);
+interface TokenPayload {
+  acc_id?: number;
+  email?: string;
+}
+
+interface AccountContext {
+  acc_id: number;
+}
+
+interface AccountRow {
+  acc_id: number;
+  email: string;
+}
+
+interface ColumnRow {
+  column_name: string;
+}
+
+interface RegClassRow {
+  reg: string | null;
+}
+
+interface WalletRow {
+  wallet_id: number;
+  name: string;
+  status: string | null;
+}
+
+interface BalanceRow {
+  current_balance: string | number;
+}
+
+const sql = neon(process.env.DATABASE_URL!);
 const AUTH_SECRET = process.env.AUTH_SECRET;
 const SCHEMA_CACHE_TTL_MS = 5 * 60 * 1000;
 
 let txSchemaValidatedAt = 0;
-let txSchemaValidationPromise = null;
+let txSchemaValidationPromise: Promise<void> | null = null;
 
 const EXPECTED_TRANSACTION_COLUMNS = [
   'trans_id',
@@ -21,18 +54,17 @@ const EXPECTED_TRANSACTION_COLUMNS = [
   'dateoftrans'
 ];
 
-function getBearerToken(req) {
+function getBearerToken(req: VercelRequest): string | null {
   const header = req.headers?.authorization || req.headers?.Authorization;
   if (!header || typeof header !== 'string') return null;
   const m = header.match(/^Bearer\s+(.+)$/i);
   return m ? m[1].trim() : null;
 }
 
-function verifyToken(token) {
+function verifyToken(token: string | null): TokenPayload | null {
   if (!token) return null;
 
   try {
-    // Signed token format: <base64body>.<hexsig>
     if (token.includes('.')) {
       const [body, sig] = token.split('.');
       if (!body || !sig) return null;
@@ -44,18 +76,16 @@ function verifyToken(token) {
       if (a.length !== b.length) return null;
       if (!crypto.timingSafeEqual(a, b)) return null;
 
-      return JSON.parse(Buffer.from(body, 'base64').toString('utf8'));
+      return JSON.parse(Buffer.from(body, 'base64').toString('utf8')) as TokenPayload;
     }
 
-    // Legacy unsigned token (dev only)
-    const parsed = JSON.parse(Buffer.from(token, 'base64').toString('utf8'));
-    return parsed;
+    return JSON.parse(Buffer.from(token, 'base64').toString('utf8')) as TokenPayload;
   } catch {
     return null;
   }
 }
 
-async function requireAccount(req, res) {
+async function requireAccount(req: VercelRequest, res: VercelResponse): Promise<AccountContext | null> {
   const token = getBearerToken(req);
   const payload = verifyToken(token);
   const accId = payload?.acc_id;
@@ -71,7 +101,7 @@ async function requireAccount(req, res) {
     FROM accounts
     WHERE acc_id = ${accId} AND email = ${email}
     LIMIT 1
-  `;
+  ` as AccountRow[];
 
   if (rows.length === 0) {
     res.status(401).json({ error: 'Unauthorized' });
@@ -81,18 +111,17 @@ async function requireAccount(req, res) {
   return { acc_id: rows[0].acc_id };
 }
 
-async function getTransactionColumns() {
+async function getTransactionColumns(): Promise<Set<string>> {
   const cols = await sql`
     SELECT column_name
     FROM information_schema.columns
     WHERE table_schema = 'public' AND table_name = 'transactions'
-  `;
+  ` as ColumnRow[];
   return new Set(cols.map(c => String(c.column_name).toLowerCase()));
 }
 
-async function ensureTransactionsSchema() {
-  // 1) Create table if missing (authoritative schema)
-  const reg = await sql`SELECT to_regclass('public.transactions') AS reg`;
+async function ensureTransactionsSchema(): Promise<void> {
+  const reg = await sql`SELECT to_regclass('public.transactions') AS reg` as RegClassRow[];
   const exists = Boolean(reg?.[0]?.reg);
 
   if (!exists) {
@@ -113,9 +142,8 @@ async function ensureTransactionsSchema() {
     return;
   }
 
-  // 2) Best-effort migrations from legacy column names
   const cols = await getTransactionColumns();
-  const tryExec = async (q) => {
+  const tryExec = async (q: Promise<unknown>): Promise<boolean> => {
     try {
       await q;
       return true;
@@ -137,7 +165,6 @@ async function ensureTransactionsSchema() {
     await tryExec(sql`ALTER TABLE transactions RENAME COLUMN date TO dateoftrans`);
   }
 
-  // 3) Add missing columns (without dropping extras)
   const cols2 = await getTransactionColumns();
   if (!cols2.has('description')) {
     await tryExec(sql`ALTER TABLE transactions ADD COLUMN description TEXT`);
@@ -159,8 +186,7 @@ async function ensureTransactionsSchema() {
   }
   if (!cols2.has('wallet_id')) {
     await tryExec(sql`ALTER TABLE transactions ADD COLUMN wallet_id INTEGER REFERENCES wallets(wallet_id)`);
-    
-    // Migration: Populate wallet_id based on wallet_type (name)
+
     await tryExec(sql`
       UPDATE transactions t
       SET wallet_id = w.wallet_id
@@ -175,25 +201,18 @@ async function ensureTransactionsSchema() {
     await tryExec(sql`ALTER TABLE transactions ADD COLUMN transfer_to_wallet_id INTEGER REFERENCES wallets(wallet_id)`);
   }
 
-  // 4) Ensure primary key exists on trans_id (if possible)
   await tryExec(sql`ALTER TABLE transactions ADD PRIMARY KEY (trans_id)`);
-
-  // 5) Ensure sensible types where safe
   await tryExec(sql`ALTER TABLE transactions ALTER COLUMN amount TYPE NUMERIC(12,2) USING amount::numeric`);
   await tryExec(sql`ALTER TABLE transactions ALTER COLUMN account_id TYPE INTEGER USING account_id::integer`);
   await tryExec(sql`ALTER TABLE transactions ALTER COLUMN dateoftrans TYPE TIMESTAMPTZ USING dateoftrans::timestamptz`);
-
-  // 6) Ensure auto-increment behavior when possible
   await tryExec(sql`ALTER TABLE transactions ALTER COLUMN trans_id ADD GENERATED BY DEFAULT AS IDENTITY`);
-
-  // 7) Performance Indexes
   await tryExec(sql`CREATE INDEX IF NOT EXISTS idx_transactions_account_id ON transactions(account_id)`);
   await tryExec(sql`CREATE INDEX IF NOT EXISTS idx_transactions_wallet_id ON transactions(wallet_id)`);
   await tryExec(sql`CREATE INDEX IF NOT EXISTS idx_transactions_transfer_from_wallet_id ON transactions(transfer_from_wallet_id)`);
   await tryExec(sql`CREATE INDEX IF NOT EXISTS idx_transactions_transfer_to_wallet_id ON transactions(transfer_to_wallet_id)`);
 }
 
-function normalizeType(value) {
+function normalizeType(value: unknown): string {
   const t = String(value || '').trim();
   if (!t) return '';
   const lower = t.toLowerCase();
@@ -201,7 +220,7 @@ function normalizeType(value) {
   return t;
 }
 
-async function ensureTransactionsSchemaCached() {
+async function ensureTransactionsSchemaCached(): Promise<void> {
   const now = Date.now();
   if (now - txSchemaValidatedAt < SCHEMA_CACHE_TTL_MS) return;
 
@@ -224,7 +243,7 @@ async function ensureTransactionsSchemaCached() {
   }
 }
 
-export default async function handler(req, res) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { method } = req;
 
   try {
@@ -247,9 +266,15 @@ export default async function handler(req, res) {
       const action = String(req.query?.action || '').toLowerCase();
 
       if (action === 'transfer') {
-        const fromWalletId = req.body?.from_wallet_id ? parseInt(req.body.from_wallet_id, 10) : null;
-        const toWalletId = req.body?.to_wallet_id ? parseInt(req.body.to_wallet_id, 10) : null;
-        const amountNum = Number(req.body?.amount);
+        const body = req.body as {
+          from_wallet_id?: number | string;
+          to_wallet_id?: number | string;
+          amount?: number | string;
+        };
+
+        const fromWalletId = body?.from_wallet_id ? parseInt(String(body.from_wallet_id), 10) : null;
+        const toWalletId = body?.to_wallet_id ? parseInt(String(body.to_wallet_id), 10) : null;
+        const amountNum = Number(body?.amount);
 
         if (!fromWalletId || !toWalletId) {
           return res.status(400).json({ error: 'from_wallet_id and to_wallet_id are required' });
@@ -266,7 +291,7 @@ export default async function handler(req, res) {
           FROM wallets
           WHERE account_id = ${account.acc_id}
             AND wallet_id IN (${fromWalletId}, ${toWalletId})
-        `;
+        ` as WalletRow[];
 
         if (walletRows.length !== 2) {
           return res.status(404).json({ error: 'One or both wallets not found' });
@@ -282,10 +307,10 @@ export default async function handler(req, res) {
         const fromStatus = String(fromWallet.status || '').toUpperCase();
         const toStatus = String(toWallet.status || '').toUpperCase();
         if (fromStatus && fromStatus !== 'ACTIVE') {
-          return res.status(400).json({ error: `Source wallet \"${fromWallet.name}\" is not ACTIVE` });
+          return res.status(400).json({ error: `Source wallet "${fromWallet.name}" is not ACTIVE` });
         }
         if (toStatus && toStatus !== 'ACTIVE') {
-          return res.status(400).json({ error: `Destination wallet \"${toWallet.name}\" is not ACTIVE` });
+          return res.status(400).json({ error: `Destination wallet "${toWallet.name}" is not ACTIVE` });
         }
 
         const balanceRows = await sql`
@@ -317,7 +342,7 @@ export default async function handler(req, res) {
           WHERE w.account_id = ${account.acc_id}
             AND w.wallet_id = ${fromWalletId}
           GROUP BY w.wallet_id
-        `;
+        ` as BalanceRow[];
 
         const currentBalance = Number(balanceRows?.[0]?.current_balance ?? 0);
         if (currentBalance < amountNum) {
@@ -360,11 +385,21 @@ export default async function handler(req, res) {
         });
       }
 
-      const description = String(req.body?.description ?? req.body?.title ?? '').trim();
-      const type = normalizeType(req.body?.type);
-      const walletType = String(req.body?.wallet_type ?? req.body?.wallet ?? '').trim();
-      const walletId = req.body?.wallet_id ? parseInt(req.body.wallet_id) : null;
-      const amountNum = Number(req.body?.amount);
+      const postBody = req.body as {
+        description?: string;
+        title?: string;
+        type?: string;
+        wallet_type?: string;
+        wallet?: string;
+        wallet_id?: number | string;
+        amount?: number | string;
+      };
+
+      const description = String(postBody?.description ?? postBody?.title ?? '').trim();
+      const type = normalizeType(postBody?.type);
+      const walletType = String(postBody?.wallet_type ?? postBody?.wallet ?? '').trim();
+      const walletId = postBody?.wallet_id ? parseInt(String(postBody.wallet_id), 10) : null;
+      const amountNum = Number(postBody?.amount);
 
       if (!description || !type || !walletType) {
         return res.status(400).json({ error: 'All fields are required' });
@@ -383,15 +418,26 @@ export default async function handler(req, res) {
       return res.status(201).json(inserted[0]);
 
     } else if (method === 'PUT') {
-      const id = req.body?.trans_id ?? req.body?.id;
+      const putBody = req.body as {
+        trans_id?: number;
+        id?: number;
+        description?: string;
+        title?: string;
+        type?: string;
+        wallet_type?: string;
+        wallet?: string;
+        wallet_id?: number | string;
+        amount?: number | string;
+      };
+
+      const id = putBody?.trans_id ?? putBody?.id;
       if (!id) return res.status(400).json({ error: 'Transaction ID required' });
 
-      // Minimal secure update: only allow updating own rows when account_id exists
-      const patchDescription = req.body?.description ?? req.body?.title ?? null;
-      const patchType = req.body?.type ?? null;
-      const patchWallet = req.body?.wallet_type ?? req.body?.wallet ?? null;
-      const patchWalletId = req.body?.wallet_id ? parseInt(req.body.wallet_id) : null;
-      const patchAmount = req.body?.amount ?? null;
+      const patchDescription = putBody?.description ?? putBody?.title ?? null;
+      const patchType = putBody?.type ?? null;
+      const patchWallet = putBody?.wallet_type ?? putBody?.wallet ?? null;
+      const patchWalletId = putBody?.wallet_id ? parseInt(String(putBody.wallet_id), 10) : null;
+      const patchAmount = putBody?.amount ?? null;
 
       const updated = await sql`
         UPDATE transactions
@@ -406,7 +452,8 @@ export default async function handler(req, res) {
       return res.status(200).json(updated[0] || null);
 
     } else if (method === 'DELETE') {
-      const id = req.body?.trans_id ?? req.body?.id;
+      const deleteBody = req.body as { trans_id?: number; id?: number };
+      const id = deleteBody?.trans_id ?? deleteBody?.id;
       if (!id) return res.status(400).json({ error: 'Transaction ID required' });
 
       const deleted = await sql`
@@ -420,12 +467,13 @@ export default async function handler(req, res) {
       res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
       res.status(405).end(`Method ${method} Not Allowed`);
     }
-  } catch (err) {
+  } catch (err: unknown) {
     console.error('Transactions API error:', {
       method,
-      message: err?.message,
-      stack: err?.stack
+      message: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined
     });
-    res.status(500).json({ error: 'Database error', details: err?.message || String(err) });
+    const details = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ error: 'Database error', details });
   }
 }

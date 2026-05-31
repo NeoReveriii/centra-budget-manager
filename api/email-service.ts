@@ -1,15 +1,18 @@
 import nodemailer from 'nodemailer';
 
-// Initialize Gmail transporter
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD // Use Gmail App Password, not your real password
+    pass: process.env.GMAIL_APP_PASSWORD
   }
 });
 
-export async function sendPasswordResetEmail(email, resetToken, username) {
+export async function sendPasswordResetEmail(
+  email: string,
+  resetToken: string,
+  username: string
+): Promise<{ success: true }> {
   const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
 
   const mailOptions = {
@@ -65,7 +68,7 @@ export async function sendPasswordResetEmail(email, resetToken, username) {
   }
 }
 
-export async function verifyEmailConnection() {
+export async function verifyEmailConnection(): Promise<boolean> {
   try {
     await transporter.verify();
     console.log('Email service ready');

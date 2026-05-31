@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-function pickEnv(...keys) {
+function pickEnv(...keys: string[]): string {
   for (const key of keys) {
     const value = process.env[key];
     if (typeof value === 'string' && value.trim()) {
@@ -36,7 +36,7 @@ function getTransportConfig() {
 
 const transporter = nodemailer.createTransport(getTransportConfig());
 
-function getFrontendUrl() {
+function getFrontendUrl(): string | null {
   const configured = process.env.FRONTEND_URL || process.env.BASE_URL;
   if (configured) return configured.replace(/\/$/, '');
 
@@ -46,11 +46,19 @@ function getFrontendUrl() {
   return null;
 }
 
-export async function sendPasswordResetEmail(email, resetToken, username, requestOrigin = null) {
+export interface PasswordResetDelivery {
+  messageId: string | null;
+  accepted: string[];
+}
+
+export async function sendPasswordResetEmail(
+  email: string,
+  resetToken: string,
+  username: string,
+  requestOrigin: string | null = null
+): Promise<PasswordResetDelivery> {
   let frontendUrl = getFrontendUrl();
-  
-  // If moving from another Vercel project, env variables might have old URLs.
-  // We prioritize the origin from the actual HTTP request to be 100% accurate to the domain the user is visiting.
+
   if (requestOrigin) {
     frontendUrl = requestOrigin.replace(/\/$/, '');
   }
@@ -73,7 +81,6 @@ export async function sendPasswordResetEmail(email, resetToken, username, reques
   }
 
   const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`;
-
   const sender = senderUser;
 
   const info = await transporter.sendMail({
@@ -110,11 +117,11 @@ export async function sendPasswordResetEmail(email, resetToken, username, reques
 
   return {
     messageId: info?.messageId || null,
-    accepted: info?.accepted || []
+    accepted: (info?.accepted || []).map(String)
   };
 }
 
-export async function verifyEmailConnection() {
+export async function verifyEmailConnection(): Promise<boolean> {
   try {
     await transporter.verify();
     return true;

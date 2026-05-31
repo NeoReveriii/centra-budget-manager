@@ -1,17 +1,40 @@
 import { neon } from '@neondatabase/serverless';
 import crypto from 'crypto';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const sql = neon(process.env.DATABASE_URL);
+interface TokenPayload {
+  acc_id?: number;
+  email?: string;
+}
+
+interface AccountContext {
+  acc_id: number;
+}
+
+interface AccountRow {
+  acc_id: number;
+  email: string;
+}
+
+interface ColumnRow {
+  column_name: string;
+}
+
+interface RegClassRow {
+  reg: string | null;
+}
+
+const sql = neon(process.env.DATABASE_URL!);
 const AUTH_SECRET = process.env.AUTH_SECRET;
 
-function getBearerToken(req) {
+function getBearerToken(req: VercelRequest): string | null {
   const header = req.headers?.authorization || req.headers?.Authorization;
   if (!header || typeof header !== 'string') return null;
   const m = header.match(/^Bearer\s+(.+)$/i);
   return m ? m[1].trim() : null;
 }
 
-function verifyToken(token) {
+function verifyToken(token: string | null): TokenPayload | null {
   if (!token) return null;
 
   try {
@@ -26,17 +49,16 @@ function verifyToken(token) {
       if (a.length !== b.length) return null;
       if (!crypto.timingSafeEqual(a, b)) return null;
 
-      return JSON.parse(Buffer.from(body, 'base64').toString('utf8'));
+      return JSON.parse(Buffer.from(body, 'base64').toString('utf8')) as TokenPayload;
     }
 
-    const parsed = JSON.parse(Buffer.from(token, 'base64').toString('utf8'));
-    return parsed;
+    return JSON.parse(Buffer.from(token, 'base64').toString('utf8')) as TokenPayload;
   } catch {
     return null;
   }
 }
 
-async function requireAccount(req, res) {
+async function requireAccount(req: VercelRequest, res: VercelResponse): Promise<AccountContext | null> {
   const token = getBearerToken(req);
   const payload = verifyToken(token);
   const accId = payload?.acc_id;
@@ -52,7 +74,7 @@ async function requireAccount(req, res) {
     FROM accounts
     WHERE acc_id = ${accId} AND email = ${email}
     LIMIT 1
-  `;
+  ` as AccountRow[];
 
   if (rows.length === 0) {
     res.status(401).json({ error: 'Unauthorized' });
@@ -62,8 +84,8 @@ async function requireAccount(req, res) {
   return { acc_id: rows[0].acc_id };
 }
 
-async function ensureGoalsSchema() {
-  const reg = await sql`SELECT to_regclass('public.goals') AS reg`;
+async function ensureGoalsSchema(): Promise<void> {
+  const reg = await sql`SELECT to_regclass('public.goals') AS reg` as RegClassRow[];
   const exists = Boolean(reg?.[0]?.reg);
 
   if (!exists) {
@@ -82,14 +104,13 @@ async function ensureGoalsSchema() {
       )
     `;
   } else {
-    // Migration for existing table
     const cols = await sql`
-      SELECT column_name 
-      FROM information_schema.columns 
+      SELECT column_name
+      FROM information_schema.columns
       WHERE table_name = 'goals'
-    `;
+    ` as ColumnRow[];
     const colNames = cols.map(c => c.column_name);
-    
+
     if (!colNames.includes('category')) {
       await sql`ALTER TABLE goals ADD COLUMN category TEXT`;
     }
@@ -104,7 +125,6 @@ async function ensureGoalsSchema() {
     }
   }
 
-  // Ensure history table exists
   await sql`
     CREATE TABLE IF NOT EXISTS goal_contributions (
       contribution_id SERIAL PRIMARY KEY,
@@ -116,7 +136,7 @@ async function ensureGoalsSchema() {
   `;
 }
 
-export default async function handler(req, res) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const account = await requireAccount(req, res);
     if (!account) return;
@@ -125,24 +145,24 @@ export default async function handler(req, res) {
 
     if (req.method === 'GET') {
       const rows = await sql`
-        SELECT 
-          g.goal_id, 
-          g.title, 
+        SELECT
+          g.goal_id,
+          g.title,
           g.category,
           g.priority,
-          g.target_amount, 
-          g.current_amount, 
+          g.target_amount,
+          g.current_amount,
           g.deadline,
           g.status,
           g.allow_expense,
           g.created_at,
           (
-            SELECT json_agg(h) 
+            SELECT json_agg(h)
             FROM (
-              SELECT amount, note, created_at 
-              FROM goal_contributions 
-              WHERE goal_id = g.goal_id 
-              ORDER BY created_at DESC 
+              SELECT amount, note, created_at
+              FROM goal_contributions
+              WHERE goal_id = g.goal_id
+              ORDER BY created_at DESC
               LIMIT 10
             ) h
           ) as history
@@ -154,17 +174,24 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      const { title, target_amount, deadline, category, priority, allow_expense } = req.body;
+      const { title, target_amount, deadline, category, priority, allow_expense } = req.body as {
+        title?: string;
+        target_amount?: number | string;
+        deadline?: string;
+        category?: string;
+        priority?: number;
+        allow_expense?: boolean | string;
+      };
+
       if (!title || !target_amount) {
         return res.status(400).json({ error: 'Missing title or target amount.' });
       }
 
-      // Validate deadline is not in the past
       if (deadline) {
         const selectedDate = new Date(deadline);
         const today = new Date();
-        today.setHours(0, 0, 0, 0); 
-        
+        today.setHours(0, 0, 0, 0);
+
         if (selectedDate < today) {
           return res.status(400).json({ error: 'Please select a valid future date.' });
         }
@@ -181,13 +208,16 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PUT') {
-      const { goal_id, add_amount, note } = req.body;
-      // allow negative add_amount (expense withdrawals from goal)
+      const { goal_id, add_amount, note } = req.body as {
+        goal_id?: number;
+        add_amount?: number | string;
+        note?: string;
+      };
+
       if (!goal_id || add_amount == null || !Number.isFinite(Number(add_amount))) {
         return res.status(400).json({ error: 'Missing goal_id or valid amount.' });
       }
 
-      // 1. Update Goal Amount
       const rows = await sql`
         UPDATE goals
         SET current_amount = current_amount + ${add_amount}
@@ -199,7 +229,6 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: 'Goal not found or access denied.' });
       }
 
-      // 2. Record Contribution History
       await sql`
         INSERT INTO goal_contributions (goal_id, amount, note)
         VALUES (${goal_id}, ${add_amount}, ${note || 'Manual add'})
@@ -209,7 +238,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'DELETE') {
-      const { goal_id } = req.body;
+      const { goal_id } = req.body as { goal_id?: number };
       if (!goal_id) {
         return res.status(400).json({ error: 'Missing goal_id' });
       }
@@ -228,7 +257,6 @@ export default async function handler(req, res) {
     }
 
     return res.status(405).json({ error: 'Method not allowed' });
-
   } catch (err) {
     console.error('Goals API Error:', err);
     return res.status(500).json({ error: 'Internal server error' });

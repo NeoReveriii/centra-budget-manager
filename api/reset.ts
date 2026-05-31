@@ -1,6 +1,29 @@
 import { neon } from '@neondatabase/serverless';
 import crypto from 'crypto';
 import { sendPasswordResetEmail } from './mailer.js';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+
+interface AccountRow {
+  acc_id: number;
+  username: string;
+  email: string;
+}
+
+interface ResetTokenRow {
+  id: number;
+  userId: number;
+  email: string;
+  username: string;
+}
+
+interface VerifyTokenRow {
+  email: string;
+  username: string;
+}
+
+interface ColumnMetaRow {
+  data_type: string;
+}
 
 function getSql() {
   const dbUrl = process.env.DATABASE_URL;
@@ -10,7 +33,8 @@ function getSql() {
   return neon(dbUrl);
 }
 
-async function ensurePasswordResetTokensSchema(sql) {
+async function ensurePasswordResetTokensSchema(): Promise<void> {
+  const sql = getSql();
   await sql`
     CREATE TABLE IF NOT EXISTS "PasswordResetTokens" (
       id SERIAL PRIMARY KEY,
@@ -31,9 +55,8 @@ async function ensurePasswordResetTokensSchema(sql) {
       AND table_name = 'PasswordResetTokens'
       AND column_name = 'expiresAt'
     LIMIT 1
-  `;
+  ` as ColumnMetaRow[];
 
-  // If legacy schema used DATE, convert to TIMESTAMPTZ to preserve hourly expiration logic.
   if (expiresAtMeta[0]?.data_type === 'date') {
     await sql`
       ALTER TABLE "PasswordResetTokens"
@@ -44,20 +67,20 @@ async function ensurePasswordResetTokensSchema(sql) {
   }
 }
 
-async function parseRequestBody(req) {
+async function parseRequestBody(req: VercelRequest): Promise<Record<string, unknown>> {
   if (req.body && typeof req.body === 'object') {
-    return req.body;
+    return req.body as Record<string, unknown>;
   }
 
   if (typeof req.body === 'string' && req.body.trim()) {
     try {
-      return JSON.parse(req.body);
+      return JSON.parse(req.body) as Record<string, unknown>;
     } catch {
       return {};
     }
   }
 
-  const chunks = [];
+  const chunks: Buffer[] = [];
   for await (const chunk of req) {
     chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
   }
@@ -66,55 +89,55 @@ async function parseRequestBody(req) {
   if (!raw) return {};
 
   try {
-    return JSON.parse(raw);
+    return JSON.parse(raw) as Record<string, unknown>;
   } catch {
     return {};
   }
 }
 
-function generateResetToken() {
+function generateResetToken(): string {
   return crypto.randomBytes(32).toString('hex');
 }
 
-function hashToken(token) {
+function hashToken(token: string): string {
   return crypto.createHash('sha256').update(token).digest('hex');
 }
 
-function hashPassword(password) {
+function hashPassword(password: string): string {
   return crypto.createHash('sha256').update(password).digest('hex');
 }
 
-async function handleForgotPassword(req, res) {
+async function handleForgotPassword(req: VercelRequest, res: VercelResponse): Promise<void> {
   const body = await parseRequestBody(req);
   const email = String(body?.email || '').trim();
 
   if (!email) {
-    return res.status(400).json({ error: 'Email is required' });
+    res.status(400).json({ error: 'Email is required' });
+    return;
   }
 
   try {
     const sql = getSql();
-    await ensurePasswordResetTokensSchema(sql);
+    await ensurePasswordResetTokensSchema();
 
     const accounts = await sql`
       SELECT acc_id, username, email
       FROM accounts
       WHERE LOWER(email) = LOWER(${email})
-    `;
+    ` as AccountRow[];
 
-    // Security: don't reveal whether the email exists
     if (accounts.length === 0) {
-      return res.status(200).json({
+      res.status(200).json({
         message: 'If an account exists, a password reset link has been sent to your email'
       });
+      return;
     }
 
     const user = accounts[0];
     const resetToken = generateResetToken();
     const tokenHash = hashToken(resetToken);
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
-    // Remove any existing tokens for this user, then insert new one
     await sql`DELETE FROM "PasswordResetTokens" WHERE "userId" = ${user.acc_id}`;
     await sql`
       INSERT INTO "PasswordResetTokens" ("userId", "tokenHash", "expiresAt")
@@ -124,44 +147,47 @@ async function handleForgotPassword(req, res) {
     const requestOrigin = req.headers.origin || (req.headers.host ? `https://${req.headers.host}` : null);
     const delivery = await sendPasswordResetEmail(user.email, resetToken, user.username, requestOrigin);
 
-    return res.status(200).json({
+    res.status(200).json({
       message: 'If an account exists, a password reset link has been sent to your email',
       delivery: {
         acceptedCount: Array.isArray(delivery?.accepted) ? delivery.accepted.length : 0,
         messageId: delivery?.messageId || null
       }
     });
-
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Forgot password error:', error);
-    return res.status(500).json({
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({
       error: 'Forgot password request failed',
-      details: error?.message || 'Unknown error'
+      details: message
     });
   }
 }
 
-async function handleResetPassword(req, res) {
+async function handleResetPassword(req: VercelRequest, res: VercelResponse): Promise<void> {
   const body = await parseRequestBody(req);
   const token = String(body?.token || '').trim();
   const newPassword = String(body?.newPassword || '');
   const confirmPassword = String(body?.confirmPassword || '');
 
   if (!token || !newPassword || !confirmPassword) {
-    return res.status(400).json({ error: 'Token and passwords are required' });
+    res.status(400).json({ error: 'Token and passwords are required' });
+    return;
   }
 
   if (newPassword !== confirmPassword) {
-    return res.status(400).json({ error: 'Passwords do not match' });
+    res.status(400).json({ error: 'Passwords do not match' });
+    return;
   }
 
   if (newPassword.length < 6) {
-    return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    res.status(400).json({ error: 'Password must be at least 6 characters' });
+    return;
   }
 
   try {
     const sql = getSql();
-    await ensurePasswordResetTokensSchema(sql);
+    await ensurePasswordResetTokensSchema();
 
     const tokenHash = hashToken(token);
 
@@ -172,12 +198,13 @@ async function handleResetPassword(req, res) {
       WHERE t."tokenHash" = ${tokenHash}
         AND t."expiresAt" > NOW()
       LIMIT 1
-    `;
+    ` as ResetTokenRow[];
 
     if (records.length === 0) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Invalid or expired reset link. Please request a new one.'
       });
+      return;
     }
 
     const { id: resetId, userId: accountId } = records[0];
@@ -191,35 +218,37 @@ async function handleResetPassword(req, res) {
     `;
 
     if (updated.length === 0) {
-      return res.status(500).json({ error: 'Password update failed: account not found' });
+      res.status(500).json({ error: 'Password update failed: account not found' });
+      return;
     }
 
     await sql`DELETE FROM "PasswordResetTokens" WHERE id = ${resetId}`;
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       message: 'Password reset successfully. You can now log in with your new password.'
     });
-
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Reset password error:', error);
-    return res.status(500).json({
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({
       error: 'Reset password request failed',
-      details: error?.message || 'Unknown error'
+      details: message
     });
   }
 }
 
-async function handleVerifyToken(req, res) {
-  const { token } = req.query;
+async function handleVerifyToken(req: VercelRequest, res: VercelResponse): Promise<void> {
+  const token = req.query.token;
 
-  if (!token) {
-    return res.status(400).json({ error: 'Token is required' });
+  if (!token || typeof token !== 'string') {
+    res.status(400).json({ error: 'Token is required' });
+    return;
   }
 
   try {
     const sql = getSql();
-    await ensurePasswordResetTokensSchema(sql);
+    await ensurePasswordResetTokensSchema();
 
     const tokenHash = hashToken(token);
 
@@ -230,28 +259,29 @@ async function handleVerifyToken(req, res) {
       WHERE t."tokenHash" = ${tokenHash}
         AND t."expiresAt" > NOW()
       LIMIT 1
-    `;
+    ` as VerifyTokenRow[];
 
     if (records.length === 0) {
-      return res.status(400).json({ valid: false });
+      res.status(400).json({ valid: false });
+      return;
     }
 
-    return res.status(200).json({
+    res.status(200).json({
       valid: true,
       email: records[0].email,
       username: records[0].username
     });
-
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Token verification error:', error);
-    return res.status(500).json({
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({
       error: 'Token verification failed',
-      details: error?.message || 'Unknown error'
+      details: message
     });
   }
 }
 
-export default async function handler(req, res) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { method, query } = req;
 
   try {
@@ -268,7 +298,7 @@ export default async function handler(req, res) {
     }
 
     return res.status(405).json({ error: 'Method not allowed' });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Reset API unhandled error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }

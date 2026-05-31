@@ -1,31 +1,75 @@
 import { neon } from '@neondatabase/serverless';
 import crypto from 'crypto';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const sql = neon(process.env.DATABASE_URL);
+interface TokenPayload {
+  acc_id?: number;
+  id?: number;
+}
+
+interface ChatHistoryRow {
+  role: string;
+  content: string;
+  created_at: string;
+}
+
+interface TransactionContextRow {
+  type: string;
+  amount: number | string;
+  description: string;
+  wallet_type: string;
+  dateoftrans: string;
+}
+
+interface WalletContextRow {
+  name: string;
+  type: string;
+  initial_balance: number | string;
+  current_balance: number | string;
+  status: string | null;
+}
+
+interface GoalContextRow {
+  title: string;
+  target_amount: number | string;
+  current_amount: number | string;
+  deadline: string | null;
+  category: string | null;
+  priority: number | null;
+}
+
+interface StreamDelta {
+  choices?: Array<{
+    delta?: {
+      content?: string;
+    };
+  }>;
+}
+
+const sql = neon(process.env.DATABASE_URL!);
 const AUTH_SECRET = process.env.AUTH_SECRET;
 
-// Helper to decode/verify JWT token
-function verifyToken(token) {
+function verifyToken(token: string): TokenPayload | null {
   try {
     if (!AUTH_SECRET) {
       const parts = token.split('.');
       if (parts.length === 1) {
-        return JSON.parse(Buffer.from(token, 'base64').toString('utf-8'));
+        return JSON.parse(Buffer.from(token, 'base64').toString('utf-8')) as TokenPayload;
       }
     }
     const [body, sig] = token.split('.');
     if (!body || !sig) return null;
-    const expectedSig = crypto.createHmac('sha256', AUTH_SECRET).update(body).digest('hex');
+    const expectedSig = crypto.createHmac('sha256', AUTH_SECRET!).update(body).digest('hex');
     if (sig !== expectedSig) return null;
-    return JSON.parse(Buffer.from(body, 'base64').toString('utf-8'));
-  } catch (err) {
+    return JSON.parse(Buffer.from(body, 'base64').toString('utf-8')) as TokenPayload;
+  } catch {
     return null;
   }
 }
 
-export default async function handler(req, res) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { method } = req;
-  
+
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -35,7 +79,7 @@ export default async function handler(req, res) {
   if (!user || (!user.acc_id && !user.id)) {
     return res.status(401).json({ error: 'Invalid token' });
   }
-  const acc_id = user.acc_id || user.id;
+  const acc_id = user.acc_id || user.id!;
 
   try {
     if (method === 'GET') {
@@ -44,15 +88,15 @@ export default async function handler(req, res) {
         FROM ai_chats
         WHERE acc_id = ${acc_id}
         ORDER BY chat_id ASC
-      `;
+      ` as ChatHistoryRow[];
       return res.status(200).json({ success: true, data: history });
-      
+
     } else if (method === 'DELETE') {
       await sql`DELETE FROM ai_chats WHERE acc_id = ${acc_id}`;
       return res.status(200).json({ success: true, message: 'Chat cleared' });
 
     } else if (method === 'POST') {
-      const { message } = req.body;
+      const { message } = req.body as { message?: string };
       if (!message || message.trim() === '') {
         return res.status(400).json({ error: 'Message is required' });
       }
@@ -62,17 +106,16 @@ export default async function handler(req, res) {
         VALUES (${acc_id}, 'user', ${message})
       `;
 
-      // Fetch user's recent transactions for better context
-      let transactionsText = "No recent transactions found.";
+      let transactionsText = 'No recent transactions found.';
       try {
         console.log('Chat API: Fetching transactions for account_id:', acc_id);
         const trans = await sql`
-          SELECT type, amount, description, wallet_type, dateoftrans 
-          FROM transactions 
-          WHERE account_id = ${acc_id} 
-          ORDER BY dateoftrans DESC 
+          SELECT type, amount, description, wallet_type, dateoftrans
+          FROM transactions
+          WHERE account_id = ${acc_id}
+          ORDER BY dateoftrans DESC
           LIMIT 30
-        `;
+        ` as TransactionContextRow[];
         console.log('Chat API: Found', trans.length, 'transactions');
         if (trans.length > 0) {
           transactionsText = JSON.stringify(trans.map(t => ({
@@ -84,32 +127,32 @@ export default async function handler(req, res) {
           })));
           console.log('Chat API: Transaction context:', transactionsText.substring(0, 200));
         }
-      } catch(e) {
-        console.error('Chat API: ERROR fetching transactions:', e.message);
+      } catch (e: unknown) {
+        const errMsg = e instanceof Error ? e.message : String(e);
+        console.error('Chat API: ERROR fetching transactions:', errMsg);
       }
 
-      // Fetch user's wallets with calculated balances for accurate context
-      let walletsText = "No wallets found.";
+      let walletsText = 'No wallets found.';
       try {
         const wallets = await sql`
-          SELECT 
-            w.name, 
-            w.type, 
-            w.initial_balance, 
+          SELECT
+            w.name,
+            w.type,
+            w.initial_balance,
             w.status,
             (
-              w.initial_balance + 
-              COALESCE(SUM(CASE 
-                WHEN t.type = 'Income' AND t.wallet_id = w.wallet_id THEN t.amount 
+              w.initial_balance +
+              COALESCE(SUM(CASE
+                WHEN t.type = 'Income' AND t.wallet_id = w.wallet_id THEN t.amount
                 WHEN t.type = 'Transfer' AND t.transfer_to_wallet_id = w.wallet_id THEN t.amount
                 WHEN t.type = 'Transfer'
                   AND t.transfer_to_wallet_id IS NULL
                   AND t.wallet_id = w.wallet_id
                   AND (t.description ILIKE 'Transfer from%' OR t.description ILIKE 'Transfer In from%')
                 THEN t.amount
-                ELSE 0 END), 0) - 
-              COALESCE(SUM(CASE 
-                WHEN t.type = 'Expense' AND t.wallet_id = w.wallet_id THEN t.amount 
+                ELSE 0 END), 0) -
+              COALESCE(SUM(CASE
+                WHEN t.type = 'Expense' AND t.wallet_id = w.wallet_id THEN t.amount
                 WHEN t.type = 'Transfer' AND t.transfer_from_wallet_id = w.wallet_id THEN t.amount
                 WHEN t.type = 'Transfer'
                   AND t.transfer_from_wallet_id IS NULL
@@ -119,12 +162,12 @@ export default async function handler(req, res) {
                 ELSE 0 END), 0)
             ) as current_balance
           FROM wallets w
-          LEFT JOIN transactions t 
+          LEFT JOIN transactions t
             ON t.account_id = w.account_id
           WHERE w.account_id = ${acc_id}
           GROUP BY w.wallet_id
           ORDER BY w.created_at ASC
-        `;
+        ` as WalletContextRow[];
         console.log('Chat API: Found', wallets.length, 'wallets');
         if (wallets.length > 0) {
           walletsText = JSON.stringify(wallets.map(w => ({
@@ -135,38 +178,38 @@ export default async function handler(req, res) {
             status: w.status
           })));
         }
-      } catch(e) {
-        console.error('Chat API: ERROR fetching wallets:', e.message);
+      } catch (e: unknown) {
+        const errMsg = e instanceof Error ? e.message : String(e);
+        console.error('Chat API: ERROR fetching wallets:', errMsg);
       }
 
-      // Fetch user's savings goals for context
-      let goalsText = "No savings goals found.";
+      let goalsText = 'No savings goals found.';
       try {
         const goals = await sql`
           SELECT title, target_amount, current_amount, deadline, category, priority
           FROM goals
           WHERE account_id = ${acc_id}
           ORDER BY created_at DESC
-        `;
+        ` as GoalContextRow[];
         console.log('Chat API: Found', goals.length, 'goals');
         if (goals.length > 0) {
           goalsText = JSON.stringify(goals.map(g => ({
             title: g.title,
             target: g.target_amount,
             saved: g.current_amount,
-            progress: g.target_amount > 0 ? ((g.current_amount / g.target_amount) * 100).toFixed(1) + '%' : '0%',
+            progress: Number(g.target_amount) > 0 ? ((Number(g.current_amount) / Number(g.target_amount)) * 100).toFixed(1) + '%' : '0%',
             deadline: g.deadline,
             category: g.category,
             priority: g.priority
           })));
         }
-      } catch(e) {
-        console.error('Chat API: ERROR fetching goals:', e.message);
+      } catch (e: unknown) {
+        const errMsg = e instanceof Error ? e.message : String(e);
+        console.error('Chat API: ERROR fetching goals:', errMsg);
       }
 
-      // System Prompt
       const systemPrompt = {
-        role: 'system',
+        role: 'system' as const,
         content: `You are Kwarta AI, a strict financial assistant bot. You must ONLY answer questions related to finance, budgeting, money management, investments, economics, or the user's transaction data. If the user asks about anything else, politely decline and steer the conversation back to finance. Be helpful, concise, and friendly. You MUST use Markdown for formatting (lists, bolding, etc.).
 
 Here is the user's REAL-TIME wallet data (this is the AUTHORITATIVE source for balances):
@@ -177,8 +220,8 @@ IMPORTANT: Each wallet has an "initial_balance" (the starting amount when create
 Here is the user's REAL-TIME transaction data (recent activity):
 ${transactionsText}
 
-CRITICAL DATA OVERRIDE: 
-Users frequently edit, delete, or wipe their transactions. ALWAYS base your calculations strictly on the JSON data provided above. 
+CRITICAL DATA OVERRIDE:
+Users frequently edit, delete, or wipe their transactions. ALWAYS base your calculations strictly on the JSON data provided above.
 If the data above says "No recent transactions found.", it means the user has DELETED everything. You MUST proudly state that they have ZERO transactions and ZERO expenses/income. You are FORBIDDEN from quoting, repeating, or remembering any numbers, totals, or data from previous chat history messages. The chat history is a lie if it conflicts with the JSON data above.
 
 IMPORTANT INSTRUCTION FOR UI VISUALS:
@@ -203,13 +246,8 @@ QUERY TYPE ROUTING — follow these rules strictly:
       const apiKey = process.env.DEEPSEEK_API_KEY ? process.env.DEEPSEEK_API_KEY.replace(/^"|"$/g, '') : null;
       if (!apiKey) return res.status(500).json({ error: 'API key missing' });
 
-      // Send ONLY the system prompt + current message to the AI.
-      // History is intentionally excluded because:
-      // 1. The system prompt already contains all real-time financial data
-      // 2. Including previous user messages caused the AI to respond to old queries
-      const apiMessages = [{ role: 'user', content: message }];
+      const apiMessages = [{ role: 'user' as const, content: message }];
 
-      // Call API with STREAMING enabled
       const fetchRes = await fetch('https://api.deepseek.com/chat/completions', {
         method: 'POST',
         headers: {
@@ -228,41 +266,45 @@ QUERY TYPE ROUTING — follow these rules strictly:
         return res.status(502).json({ error: 'AI provider error' });
       }
 
-      // Stream the response back via SSE
+      const body = fetchRes.body;
+      if (!body) {
+        return res.status(502).json({ error: 'AI provider error' });
+      }
+
       res.writeHead(200, {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache, no-transform',
         'Connection': 'keep-alive'
       });
 
-      const reader = fetchRes.body.getReader();
-      const decoder = new TextDecoder("utf-8");
-      let fullResponse = "";
+      const reader = body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let fullResponse = '';
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         const chunkStr = decoder.decode(value, { stream: true });
         res.write(chunkStr);
 
-        // Parse chunks to save to DB
         const lines = chunkStr.split('\n');
         for (const line of lines) {
           if (line.startsWith('data: ') && line !== 'data: [DONE]') {
             try {
-              const parsed = JSON.parse(line.slice(6));
-              if (parsed.choices[0].delta.content) {
+              const parsed = JSON.parse(line.slice(6)) as StreamDelta;
+              if (parsed.choices?.[0]?.delta?.content) {
                 fullResponse += parsed.choices[0].delta.content;
               }
-            } catch(e) {}
+            } catch {
+              // ignore malformed stream chunks
+            }
           }
         }
       }
       res.write('data: [DONE]\n\n');
       res.end();
 
-      // Save complete AI message to database
       if (fullResponse) {
         await sql`
           INSERT INTO ai_chats (acc_id, role, content)
@@ -272,10 +314,11 @@ QUERY TYPE ROUTING — follow these rules strictly:
     } else {
       res.status(405).json({ error: 'Method not allowed' });
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Chat error:', error);
     if (!res.headersSent) {
-      res.status(500).json({ error: error.message || 'Internal server error' });
+      const message = error instanceof Error ? error.message : 'Internal server error';
+      res.status(500).json({ error: message });
     }
   }
 }
