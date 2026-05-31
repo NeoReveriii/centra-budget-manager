@@ -5,7 +5,7 @@ import { fetchWallets, fetchChatHistory, clearChatHistory } from '../lib/api';
 
 // Helper to get auth token for direct fetch calls
 function getToken() {
-  return localStorage.getItem('bacaro_token');
+  return localStorage.getItem('centra_token');
 }
 
 interface ChatMessage {
@@ -403,3 +403,4 @@ const KwartaAI = () => {
 };
 
 export default KwartaAI;
+

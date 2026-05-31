@@ -1,6 +1,6 @@
-# Bacaro Budget Manager
+# Centra Budget Manager
 
-Bacaro Budget Manager is a comprehensive, AI-driven financial management application designed to provide users with deep insights into their spending habits and financial health. By leveraging modern web technologies and artificial intelligence, Bacaro transforms traditional expense tracking into a proactive financial planning experience.
+Centra Budget Manager is a comprehensive, AI-driven financial management application designed to provide users with deep insights into their spending habits and financial health. By leveraging modern web technologies and artificial intelligence, Centra transforms traditional expense tracking into a proactive financial planning experience.
 
 ## Core Features
 
@@ -41,8 +41,8 @@ Bacaro Budget Manager is a comprehensive, AI-driven financial management applica
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/yourusername/bacaro-budget.git
-   cd bacaro-budget
+   git clone https://github.com/yourusername/centra-budget.git
+   cd centra-budget
    ```
 
 2. **Dependency Installation**:

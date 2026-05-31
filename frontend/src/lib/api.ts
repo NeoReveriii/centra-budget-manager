@@ -5,7 +5,7 @@
 const API_BASE = '/api';
 
 function getToken(): string | null {
-  return localStorage.getItem('bacaro_token');
+  return localStorage.getItem('centra_token');
 }
 
 async function request<T>(
@@ -29,8 +29,8 @@ async function request<T>(
 
   if (res.status === 401) {
     // Token expired or invalid — clear and redirect to login
-    localStorage.removeItem('bacaro_token');
-    localStorage.removeItem('bacaro_user');
+    localStorage.removeItem('centra_token');
+    localStorage.removeItem('centra_user');
     window.location.href = '/';
     throw new Error('Unauthorized');
   }
@@ -76,6 +76,38 @@ export async function loginUser(email: string, password: string): Promise<LoginR
   }
   return body;
 }
+
+export interface RegisterResponse {
+  success: boolean;
+  message: string;
+  data: {
+    acc_id: number;
+    username: string;
+    email: string;
+    pnumber: string | null;
+    createdat: string;
+  };
+}
+
+export async function registerUser(
+  username: string,
+  email: string,
+  password: string,
+  pnumber?: string
+): Promise<RegisterResponse> {
+  const res = await fetch(`${API_BASE}/accounts`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, email, password, pnumber }),
+  });
+
+  const body = await res.json().catch(() => ({ error: res.statusText }));
+  if (!res.ok) {
+    throw new Error(body.error || `API Error ${res.status}`);
+  }
+  return body;
+}
+
 
 // ──────────────────────────────────────────────
 // Transactions
@@ -222,3 +254,4 @@ export async function clearChatHistory(): Promise<{ success: boolean; message: s
     method: 'DELETE',
   });
 }
+

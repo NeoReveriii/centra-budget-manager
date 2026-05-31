@@ -1,6 +1,6 @@
-# Implementation Plan: Bacaro Budget Manager Modernization
+# Implementation Plan: Centra Budget Manager Modernization
 
-This document outlines the roadmap for migrating **Bacaro Budget Manager** from its current Vanilla JS/CSS architecture to a modern, professional, and "resume-ready" Full-Stack React application.
+This document outlines the roadmap for migrating **Centra Budget Manager** from its current Vanilla JS/CSS architecture to a modern, professional, and "resume-ready" Full-Stack React application.
 
 ## 1. Project Vision
 *   **Goal**: Transform the app into a premium financial dashboard.
@@ -36,3 +36,14 @@ This document outlines the roadmap for migrating **Bacaro Budget Manager** from 
 2.  **Tailwind Configuration**: Set up Design Tokens (colors, fonts, spacing).
 3.  **Shadcn/UI Installation**: Initialize core UI components (Buttons, Inputs, Cards).
 
+### Phase 2: Frontend Modernization (In Progress)
+1.  **Auth Modals**: Refactor Login and Create Account modals to a premium "Google Stitch" design. (Complete)
+2.  **Dashboard Redesign**: Update dashboard layouts and UI components to match the new design system.
+3.  **Pages Redesign**: Modernize transactions, wallets, and goals pages.
+
+### Phase 3: Backend TypeScript Migration (Planned)
+1.  **Setup**: Configure `tsconfig.json` for the backend API inside the Vercel Serverless environment.
+2.  **Conversion**: Convert all existing Vercel Serverless functions (e.g., `accounts.js`, `transactions.js`, `wallets.js`) from `.js` to `.ts`.
+3.  **Typing**: Add precise TypeScript interfaces for all database schema entities, request payloads, and API responses to achieve end-to-end type safety.
+4.  **Validation**: Ensure types match between frontend `api.ts` definitions and backend implementations.
+5.  **Neon Auth (Better Auth) Integration**: Replace the custom HMAC authentication system with Neon Auth to enable database-native authentication, native branching support, and Google/Apple social logins.

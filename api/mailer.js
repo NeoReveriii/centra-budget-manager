@@ -77,9 +77,9 @@ export async function sendPasswordResetEmail(email, resetToken, username, reques
   const sender = senderUser;
 
   const info = await transporter.sendMail({
-    from: `"Bacaro Budget" <${sender}>`,
+    from: `"Centra Budget" <${sender}>`,
     to: email,
-    subject: 'Password Reset Request - Bacaro Budget',
+    subject: 'Password Reset Request - Centra Budget',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">Password Reset Request</h2>
@@ -97,7 +97,7 @@ export async function sendPasswordResetEmail(email, resetToken, username, reques
           If you didn't request this, please ignore this email. Your account remains secure.
         </p>
         <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
-        <p style="color: #999; font-size: 12px;">© Bacaro Budget. All rights reserved.</p>
+        <p style="color: #999; font-size: 12px;">© Centra Budget. All rights reserved.</p>
       </div>
     `,
     text: `Hi ${username},\n\nReset your password here:\n${resetLink}\n\nThis link expires in 1 hour.\n\nIf you didn't request this, ignore this email.`

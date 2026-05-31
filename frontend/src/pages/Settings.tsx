@@ -131,10 +131,11 @@ const Settings = () => {
 
       {/* Branding Footer */}
       <footer className="mt-xl pt-lg border-t border-outline-variant/30 text-center">
-        <p className="font-label-caps text-outline uppercase tracking-tighter opacity-50">Bacaro Institutional Suite v4.2.0</p>
+        <p className="font-label-caps text-outline uppercase tracking-tighter opacity-50">Centra Institutional Suite v4.2.0</p>
       </footer>
     </div>
   );
 };
 
 export default Settings;
+

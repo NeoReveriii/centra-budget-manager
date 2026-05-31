@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { loginUser, type LoginResponse } from '../lib/api';
+import { loginUser, registerUser, type LoginResponse } from '../lib/api';
 
 interface User {
   acc_id: number;
@@ -16,6 +16,7 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<LoginResponse>;
+  register: (username: string, email: string, password: string) => Promise<LoginResponse>;
   logout: () => void;
 }
 
@@ -34,15 +35,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Restore session from localStorage on mount
   useEffect(() => {
-    const savedToken = localStorage.getItem('bacaro_token');
-    const savedUser = localStorage.getItem('bacaro_user');
+    const savedToken = localStorage.getItem('centra_token');
+    const savedUser = localStorage.getItem('centra_user');
     if (savedToken && savedUser) {
       try {
         setToken(savedToken);
         setUser(JSON.parse(savedUser));
       } catch {
-        localStorage.removeItem('bacaro_token');
-        localStorage.removeItem('bacaro_user');
+        localStorage.removeItem('centra_token');
+        localStorage.removeItem('centra_user');
       }
     }
     setIsLoading(false);
@@ -51,8 +52,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function login(email: string, password: string) {
     const res = await loginUser(email, password);
     if (res.success && res.token) {
-      localStorage.setItem('bacaro_token', res.token);
-      localStorage.setItem('bacaro_user', JSON.stringify(res.data));
+      localStorage.setItem('centra_token', res.token);
+      localStorage.setItem('centra_user', JSON.stringify(res.data));
+      setToken(res.token);
+      setUser(res.data as User);
+    }
+    return res;
+  }
+
+  async function register(username: string, email: string, password: string) {
+    // Register the account first
+    await registerUser(username, email, password);
+    // Then auto-login so the user is immediately authenticated
+    const res = await loginUser(email, password);
+    if (res.success && res.token) {
+      localStorage.setItem('centra_token', res.token);
+      localStorage.setItem('centra_user', JSON.stringify(res.data));
       setToken(res.token);
       setUser(res.data as User);
     }
@@ -60,15 +75,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   function logout() {
-    localStorage.removeItem('bacaro_token');
-    localStorage.removeItem('bacaro_user');
+    localStorage.removeItem('centra_token');
+    localStorage.removeItem('centra_user');
     setToken(null);
     setUser(null);
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
 }
+

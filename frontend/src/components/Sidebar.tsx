@@ -4,9 +4,9 @@ const Sidebar = () => {
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-slate-200 flex flex-col z-50">
       <div className="p-8 flex items-center gap-3 border-b border-slate-100">
-        <img src="/assets/images/bb_logo_db.png" alt="Bacaro Logo" className="w-12 h-12 object-contain rounded-lg shrink-0" />
+        <img src="/assets/images/bb_logo_db.png" alt="Centra Logo" className="w-12 h-12 object-contain rounded-lg shrink-0" />
         <div className="flex flex-col justify-center">
-          <h1 className="text-xl font-bold text-primary tracking-tight leading-none mb-1">Bacaro</h1>
+          <h1 className="text-xl font-bold text-primary tracking-tight leading-none mb-1">Centra</h1>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Budget Manager</p>
         </div>
       </div>
@@ -87,8 +87,8 @@ const Sidebar = () => {
         <div className="flex items-center gap-1 shrink-0">
           <button 
             onClick={() => {
-              localStorage.removeItem('bacaro_token');
-              localStorage.removeItem('bacaro_user');
+              localStorage.removeItem('centra_token');
+              localStorage.removeItem('centra_user');
               window.location.href = '/';
             }}
             title="Sign Out"
@@ -112,3 +112,4 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+

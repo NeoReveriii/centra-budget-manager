@@ -1,8 +1,8 @@
-# Bacaro Budget Manager — Site Vision & Roadmap
+# Centra Budget Manager — Site Vision & Roadmap
 **Stitch Project ID:** 5004376411867209368
 
 ## 1. Vision
-Bacaro Budget Manager is a premium personal finance dashboard application. It helps users track income, expenses, transfers, wallets, and savings goals. The app features an AI assistant called "Kwarta AI" for financial insights. The target audience is young professionals in the Philippines who want a modern, trustworthy financial tool.
+Centra Budget Manager is a premium personal finance dashboard application. It helps users track income, expenses, transfers, wallets, and savings goals. The app features an AI assistant called "Kwarta AI" for financial insights. The target audience is young professionals in the Philippines who want a modern, trustworthy financial tool.
 
 ## 2. App Pages (Screens Needed)
 - **Landing Page** — Public marketing page to attract sign-ups.
@@ -44,3 +44,4 @@ Bacaro Budget Manager is a premium personal finance dashboard application. It he
 - Explore animated gradient backgrounds for premium feel.
 - Consider a "Financial Health Score" widget on the dashboard.
 - Explore micro-animations on stat card hover.
+

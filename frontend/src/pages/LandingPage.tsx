@@ -1,21 +1,24 @@
 import { useState } from 'react';
 import LoginModal from '../components/LoginModal';
+import CreateAccountModal from '../components/CreateAccountModal';
+import centraLogo from '../assets/centraLogo.png';
 
 const LandingPage = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showCreateAccountModal, setShowCreateAccountModal] = useState(false);
 
   return (
-    <div className="bg-background min-h-screen text-on-surface font-body-md animate-fade-in">
+    <div className="bg-background min-h-screen text-on-surface font-body-md">
       {/* TopNavBar */}
       <nav className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-emerald-100 shadow-sm shadow-emerald-900/5">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="text-2xl font-bold tracking-tighter text-emerald-900">Bacaro</div>
-          
+          <img src={centraLogo} alt="Centra" className="h-16 w-auto object-contain scale-[1.8] origin-left translate-y-1" />
+
           <div className="flex items-center space-x-4">
             <button onClick={() => setShowLoginModal(true)} className="px-4 py-2 text-emerald-900 font-semibold text-sm hover:bg-emerald-50/50 transition-colors rounded-lg cursor-pointer">
               Sign In
             </button>
-            <button onClick={() => setShowLoginModal(true)} className="px-5 py-2 bg-primary text-white font-semibold text-sm rounded-lg hover:opacity-90 active:scale-95 duration-150 ease-in-out cursor-pointer">
+            <button onClick={() => setShowCreateAccountModal(true)} className="px-5 py-2 bg-primary text-white font-semibold text-sm rounded-lg hover:opacity-90 active:scale-95 duration-150 ease-in-out cursor-pointer">
               Open Account
             </button>
           </div>
@@ -46,7 +49,7 @@ const LandingPage = () => {
           </div>
 
           {/* Hero UI Mockup */}
-          <div className="relative animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          <div className="relative">
             <div className="bg-white rounded-xl shadow-2xl border border-outline-variant overflow-hidden">
               <div className="bg-primary p-4 flex items-center justify-between">
                 <div className="flex gap-2">
@@ -54,7 +57,7 @@ const LandingPage = () => {
                   <div className="w-3 h-3 rounded-full bg-secondary-container"></div>
                   <div className="w-3 h-3 rounded-full bg-on-primary-container"></div>
                 </div>
-                <div className="text-[10px] text-primary-fixed uppercase tracking-widest font-bold">Bacaro Terminal</div>
+                <div className="text-[10px] text-primary-fixed uppercase tracking-widest font-bold">Centra Terminal</div>
               </div>
               <div className="p-6 bg-surface-container-low grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="sm:col-span-2 space-y-4">
@@ -119,13 +122,13 @@ const LandingPage = () => {
             <div className="relative z-10">
               <h2 className="text-[48px] font-extrabold text-white mb-4 leading-tight">Elevate Your Strategy.</h2>
               <p className="text-[18px] text-primary-fixed max-w-2xl mx-auto mb-10 leading-relaxed">
-                Join over 50,000 high-net-worth individuals and institutions who trust Bacaro for their financial orchestration.
+                Join over 50,000 high-net-worth individuals and institutions who trust Centra for their financial orchestration.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <button onClick={() => setShowLoginModal(true)} className="px-10 py-4 bg-white text-primary rounded-lg font-bold hover:bg-emerald-50 transition-all cursor-pointer">
+                <button onClick={() => setShowCreateAccountModal(true)} className="px-10 py-4 bg-white text-primary rounded-lg font-bold hover:bg-emerald-50 transition-all cursor-pointer">
                   Start Free Trial
                 </button>
-                <button onClick={() => setShowLoginModal(true)} className="px-10 py-4 border border-primary-fixed text-primary-fixed rounded-lg font-bold hover:bg-white/10 transition-all cursor-pointer">
+                <button onClick={() => setShowCreateAccountModal(true)} className="px-10 py-4 border border-primary-fixed text-primary-fixed rounded-lg font-bold hover:bg-white/10 transition-all cursor-pointer">
                   Create Account
                 </button>
               </div>
@@ -138,12 +141,12 @@ const LandingPage = () => {
       <footer className="w-full py-12 border-t border-emerald-200 bg-emerald-50 mt-auto">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           <div className="space-y-4">
-            <div className="font-bold text-emerald-900 text-[18px]">Bacaro Financial Systems</div>
+            <div className="font-bold text-emerald-900 text-[18px]">Centra Financial Systems</div>
             <p className="text-[12px] font-medium tracking-wide text-emerald-700/60 leading-relaxed max-w-sm">
               Providing institutional-grade financial infrastructure for the modern era. Secure, intelligent, and private.
             </p>
             <div className="text-[12px] font-medium tracking-wide text-emerald-700/60 mt-4">
-              © 2026 Bacaro Financial Systems. All rights reserved.
+              © 2026 Centra Financial Systems. All rights reserved.
             </div>
           </div>
           <div className="flex flex-wrap md:justify-end gap-x-8 gap-y-4 text-[12px] font-medium tracking-wide">
@@ -155,12 +158,29 @@ const LandingPage = () => {
         </div>
       </footer>
 
-      {/* Login Modal Overlay */}
+      {/* Modals */}
       {showLoginModal && (
-        <LoginModal onClose={() => setShowLoginModal(false)} />
+        <LoginModal 
+          onClose={() => setShowLoginModal(false)} 
+          onSwitchToCreateAccount={() => {
+            setShowLoginModal(false);
+            setShowCreateAccountModal(true);
+          }}
+        />
+      )}
+      
+      {showCreateAccountModal && (
+        <CreateAccountModal 
+          onClose={() => setShowCreateAccountModal(false)} 
+          onSwitchToLogin={() => {
+            setShowCreateAccountModal(false);
+            setShowLoginModal(true);
+          }}
+        />
       )}
     </div>
   );
 };
 
 export default LandingPage;
+

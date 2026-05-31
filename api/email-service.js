@@ -13,9 +13,9 @@ export async function sendPasswordResetEmail(email, resetToken, username) {
   const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
 
   const mailOptions = {
-    from: `"Bacaro Budget Manager" <${process.env.GMAIL_USER}>`,
+    from: `"Centra Budget Manager" <${process.env.GMAIL_USER}>`,
     to: email,
-    subject: 'Password Reset Request - Bacaro Budget Manager',
+    subject: 'Password Reset Request - Centra Budget Manager',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">Password Reset Request</h2>
@@ -40,7 +40,7 @@ export async function sendPasswordResetEmail(email, resetToken, username) {
 
         <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
         <p style="color: #999; font-size: 12px;">
-          © Bacaro Budget Manager. All rights reserved.
+          © Centra Budget Manager. All rights reserved.
         </p>
       </div>
     `,

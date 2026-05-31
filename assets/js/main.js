@@ -324,7 +324,7 @@
 				'goals': 'Savings Goals'
             };
             if (titles[viewId]) {
-                document.title = `${titles[viewId]} | Bacaro Budget Manager`;
+                document.title = `${titles[viewId]} | Centra Budget Manager`;
             }
 
 			// 5. Update URL Hash
@@ -1149,7 +1149,7 @@
 			const url = URL.createObjectURL(blob);
 			const link = document.createElement('a');
 			link.setAttribute('href', url);
-			link.setAttribute('download', 'bacaro_budget_export.csv');
+			link.setAttribute('download', 'centra_budget_export.csv');
 			link.style.visibility = 'hidden';
 			document.body.appendChild(link);
 			link.click();

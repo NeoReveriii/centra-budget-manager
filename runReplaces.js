@@ -6,7 +6,7 @@ const data = [
     file: 'views/guest.html', 
     replacements: [
       ['Take Control of Your<br>\n                        <span class="hero-highlight">Financial Future</span>', 'Take Control of Your<br>\n                        <span class="hero-highlight" data-i18n="guest_hero_title">Financial Future</span>'],
-      ['Track income, expenses, and savings goals with Bacaro Budget Manager — your all-in-one AI-powered finance companion.', '<span data-i18n="guest_hero_sub">Track income, expenses, and savings goals with Bacaro Budget Manager — your all-in-one AI-powered finance companion.</span>'],
+      ['Track income, expenses, and savings goals with Centra Budget Manager — your all-in-one AI-powered finance companion.', '<span data-i18n="guest_hero_sub">Track income, expenses, and savings goals with Centra Budget Manager — your all-in-one AI-powered finance companion.</span>'],
       ['Total Balance', '<span data-i18n="guest_total_balance">Total Balance</span>'],
       ['Everything you need to manage money', '<span data-i18n="guest_features_title">Everything you need to manage money</span>'],
       ['<h3>Real-time Dashboard</h3>', '<h3><span data-i18n="guest_feat_1_title">Real-time Dashboard</span></h3>'],
@@ -76,7 +76,7 @@ const data = [
       ['<p>No transactions found for this wallet.</p>', '<p data-i18n="wallet_no_tx">No transactions found for this wallet.</p>'],
       ['<span class="icon"><i data-lucide="plus-circle"></i></span> Add New Goal', '<span class="icon"><i data-lucide="plus-circle"></i></span> <span data-i18n="btn_add_goal">Add New Goal</span>'],
       ['<h2 class="settings-title">Preferences</h2>', '<h2 class="settings-title" data-i18n="settings_preferences">Preferences</h2>'],
-      ['<p class="settings-subtitle">Personalize how Bacaro Budget Manager looks and\n										behaves.</p>', '<p class="settings-subtitle" data-i18n="settings_subtitle">Personalize how Bacaro Budget Manager looks and behaves.</p>'],
+      ['<p class="settings-subtitle">Personalize how Centra Budget Manager looks and\n										behaves.</p>', '<p class="settings-subtitle" data-i18n="settings_subtitle">Personalize how Centra Budget Manager looks and behaves.</p>'],
       ['<h4 class="settings-section-title">APPEARANCE</h4>', '<h4 class="settings-section-title" data-i18n="settings_appearance">APPEARANCE</h4>'],
       ['<span class="settings-row-title">Dark Mode</span>', '<span class="settings-row-title" data-i18n="settings_darkmode">Dark Mode</span>'],
       ['<span class="settings-row-title">Contrast Adjustment</span>', '<span class="settings-row-title" data-i18n="settings_contrast">Contrast Adjustment</span>'],
@@ -109,3 +109,4 @@ for (const d of data) {
   fs.writeFileSync(d.file, content);
   console.log('Processed', d.file);
 }
+

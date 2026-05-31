@@ -10,10 +10,11 @@ export default defineConfig({
     proxy: {
       // Proxy /api requests to the deployed Vercel backend for local dev
       '/api': {
-        target: 'https://bacaro-budget.vercel.app',
+        target: 'https://centra-budget.vercel.app',
         changeOrigin: true,
         secure: true,
       },
     },
   },
 })
+

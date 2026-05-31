@@ -39,7 +39,7 @@ const preciseMap = {
     "Show or hide the Pesos symbol (₱) in amounts.": "Ipakita o itago ang simbolo ng Piso (₱) sa mga halaga.",
     "Download a CSV file containing all your transaction records.": "Mag-download ng CSV file na naglalaman ng lahat ng iyong mga rekord ng transaksyon.",
     "Read how we handle and protect your budget data.": "Basahin kung paano namin pinangangalagaan at pinoprotektahan ang iyong datos sa badyet.",
-    "Review the rules and guidelines for using Bacaro.": "Suriin ang mga patakaran at gabay sa paggamit ng Bacaro.",
+    "Review the rules and guidelines for using Centra.": "Suriin ang mga patakaran at gabay sa paggamit ng Centra.",
     "Permanently remove your account and all associated budget data.": "Permanenteng tanggalin ang iyong account at lahat ng nauugnay na datos ng badyet.",
     "New Transaction": "Bagong Transaksyon",
     "Preferences": "Mga Kagustuhan",
@@ -199,3 +199,4 @@ window.applyTranslations = function() {
 
 fs.writeFileSync('assets/js/i18n.js', output);
 console.log("i18n.js successfully rewritten with exhaustive localized keys!");
+

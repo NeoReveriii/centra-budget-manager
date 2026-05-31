@@ -1,4 +1,4 @@
-# Design System: Bacaro Budget Manager
+# Design System: Centra Budget Manager
 **Project ID:** 5004376411867209368
 
 ## 1. Visual Theme & Atmosphere
@@ -67,7 +67,7 @@ Depth is communicated through **tonal layering** rather than floating shadows:
 
 ## 6. Design System Notes for Stitch Generation
 
-When generating new screens for Bacaro Budget Manager, use the following design direction:
+When generating new screens for Centra Budget Manager, use the following design direction:
 
 **Style:** Corporate Modern Fintech. Clean, precise, data-first. No decorative illustrations or playful elements. The aesthetic is "Swiss private bank meets Silicon Valley dashboard."
 
@@ -80,3 +80,4 @@ When generating new screens for Bacaro Budget Manager, use the following design 
 **Layout:** 12-column grid. Generous whitespace. 24px gaps between cards. Comfortable density — never cramped, never sparse.
 
 **Components:** Left sidebar navigation (240px). Top header with user greeting. Stat cards with accent color bars. Clean data tables with horizontal dividers only. Doughnut and line charts for data visualization.
+
