@@ -52,12 +52,13 @@ const CreateAccountModal = ({ onClose, onSwitchToLogin }: CreateAccountModalProp
     setIsLoading(true);
     try {
       const res = await loginWithSocial(provider);
-      if (!res.success && res.error) {
-        setError(res.error);
+      if (!res.success) {
+        if (res.error) setError(res.error);
+        setIsLoading(false);
       }
+      // On success, do not stop loading. Let the browser navigate to the OAuth provider.
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Social sign-in failed');
-    } finally {
       setIsLoading(false);
     }
   }
