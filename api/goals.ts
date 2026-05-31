@@ -1,20 +1,6 @@
 import { neon } from '@neondatabase/serverless';
-import crypto from 'crypto';
+import { requireAccount } from './auth-helper.js';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-interface TokenPayload {
-  acc_id?: number;
-  email?: string;
-}
-
-interface AccountContext {
-  acc_id: number;
-}
-
-interface AccountRow {
-  acc_id: number;
-  email: string;
-}
 
 interface ColumnRow {
   column_name: string;
@@ -25,64 +11,6 @@ interface RegClassRow {
 }
 
 const sql = neon(process.env.DATABASE_URL!);
-const AUTH_SECRET = process.env.AUTH_SECRET;
-
-function getBearerToken(req: VercelRequest): string | null {
-  const header = req.headers?.authorization || req.headers?.Authorization;
-  if (!header || typeof header !== 'string') return null;
-  const m = header.match(/^Bearer\s+(.+)$/i);
-  return m ? m[1].trim() : null;
-}
-
-function verifyToken(token: string | null): TokenPayload | null {
-  if (!token) return null;
-
-  try {
-    if (token.includes('.')) {
-      const [body, sig] = token.split('.');
-      if (!body || !sig) return null;
-      if (!AUTH_SECRET) return null;
-
-      const expected = crypto.createHmac('sha256', AUTH_SECRET).update(body).digest('hex');
-      const a = Buffer.from(sig, 'utf8');
-      const b = Buffer.from(expected, 'utf8');
-      if (a.length !== b.length) return null;
-      if (!crypto.timingSafeEqual(a, b)) return null;
-
-      return JSON.parse(Buffer.from(body, 'base64').toString('utf8')) as TokenPayload;
-    }
-
-    return JSON.parse(Buffer.from(token, 'base64').toString('utf8')) as TokenPayload;
-  } catch {
-    return null;
-  }
-}
-
-async function requireAccount(req: VercelRequest, res: VercelResponse): Promise<AccountContext | null> {
-  const token = getBearerToken(req);
-  const payload = verifyToken(token);
-  const accId = payload?.acc_id;
-  const email = payload?.email;
-
-  if (!accId || !email) {
-    res.status(401).json({ error: 'Unauthorized' });
-    return null;
-  }
-
-  const rows = await sql`
-    SELECT acc_id, email
-    FROM accounts
-    WHERE acc_id = ${accId} AND email = ${email}
-    LIMIT 1
-  ` as AccountRow[];
-
-  if (rows.length === 0) {
-    res.status(401).json({ error: 'Unauthorized' });
-    return null;
-  }
-
-  return { acc_id: rows[0].acc_id };
-}
 
 async function ensureGoalsSchema(): Promise<void> {
   const reg = await sql`SELECT to_regclass('public.goals') AS reg` as RegClassRow[];

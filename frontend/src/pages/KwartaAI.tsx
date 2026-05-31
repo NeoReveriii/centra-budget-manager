@@ -2,11 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { fetchWallets, fetchChatHistory, clearChatHistory } from '../lib/api';
-
-// Helper to get auth token for direct fetch calls
-function getToken() {
-  return localStorage.getItem('centra_token');
-}
+import { getAccessToken } from '../lib/auth-client';
 
 interface ChatMessage {
   id: string;
@@ -129,7 +125,8 @@ const KwartaAI = () => {
     setIsTyping(true);
 
     try {
-      const token = getToken();
+      const token = await getAccessToken();
+      if (!token) throw new Error('Unauthorized');
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: {

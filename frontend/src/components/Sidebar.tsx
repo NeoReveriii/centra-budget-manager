@@ -1,6 +1,9 @@
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Sidebar = () => {
+  const { logout } = useAuth();
+
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-slate-200 flex flex-col z-50">
       <div className="p-8 flex items-center gap-3 border-b border-slate-100">
@@ -86,9 +89,8 @@ const Sidebar = () => {
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <button 
-            onClick={() => {
-              localStorage.removeItem('centra_token');
-              localStorage.removeItem('centra_user');
+            onClick={async () => {
+              await logout();
               window.location.href = '/';
             }}
             title="Sign Out"

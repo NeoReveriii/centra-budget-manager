@@ -1,18 +1,19 @@
 // ── API Service Layer ──
-// Thin fetch wrapper that attaches the auth token to every request.
-// All endpoints are relative (/api/*) so they work on both Vite proxy and Vercel.
+// Thin fetch wrapper that attaches the Neon Auth JWT to every request.
+
+import { getAccessToken, clearPersistedSession } from './auth-client';
 
 const API_BASE = '/api';
 
-function getToken(): string | null {
-  return localStorage.getItem('centra_token');
+async function resolveToken(): Promise<string | null> {
+  return (await getAccessToken()) ?? localStorage.getItem('centra_token');
 }
 
 async function request<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const token = getToken();
+  const token = await resolveToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string> || {}),
@@ -28,9 +29,7 @@ async function request<T>(
   });
 
   if (res.status === 401) {
-    // Token expired or invalid — clear and redirect to login
-    localStorage.removeItem('centra_token');
-    localStorage.removeItem('centra_user');
+    clearPersistedSession();
     window.location.href = '/';
     throw new Error('Unauthorized');
   }
@@ -44,68 +43,22 @@ async function request<T>(
 }
 
 // ──────────────────────────────────────────────
-// Auth
+// Auth / Profile
 // ──────────────────────────────────────────────
 
-export interface LoginResponse {
-  success: boolean;
-  message: string;
-  token: string;
-  data: {
-    acc_id: number;
-    username: string;
-    email: string;
-    pnumber: string | null;
-    bio: string | null;
-    avatar_seed: string | null;
-    avatar_url: string | null;
-    createdat: string;
-  };
+export interface UserProfile {
+  acc_id: number;
+  username: string;
+  email: string;
+  pnumber: string | null;
+  bio: string | null;
+  avatar_seed: string | null;
+  avatar_url: string | null;
+  createdat: string;
 }
 
-export async function loginUser(email: string, password: string): Promise<LoginResponse> {
-  const res = await fetch(`${API_BASE}/accounts?action=login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  });
-
-  const body = await res.json().catch(() => ({ error: res.statusText }));
-  if (!res.ok) {
-    throw new Error(body.error || `API Error ${res.status}`);
-  }
-  return body;
-}
-
-export interface RegisterResponse {
-  success: boolean;
-  message: string;
-  data: {
-    acc_id: number;
-    username: string;
-    email: string;
-    pnumber: string | null;
-    createdat: string;
-  };
-}
-
-export async function registerUser(
-  username: string,
-  email: string,
-  password: string,
-  pnumber?: string
-): Promise<RegisterResponse> {
-  const res = await fetch(`${API_BASE}/accounts`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, email, password, pnumber }),
-  });
-
-  const body = await res.json().catch(() => ({ error: res.statusText }));
-  if (!res.ok) {
-    throw new Error(body.error || `API Error ${res.status}`);
-  }
-  return body;
+export async function fetchCurrentUser(): Promise<UserProfile> {
+  return request<UserProfile>('/accounts');
 }
 
 

@@ -1,11 +1,6 @@
 import { neon } from '@neondatabase/serverless';
-import crypto from 'crypto';
+import { requireAccount } from './auth-helper.js';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-interface TokenPayload {
-  acc_id?: number;
-  id?: number;
-}
 
 interface ChatHistoryRow {
   role: string;
@@ -47,39 +42,13 @@ interface StreamDelta {
 }
 
 const sql = neon(process.env.DATABASE_URL!);
-const AUTH_SECRET = process.env.AUTH_SECRET;
-
-function verifyToken(token: string): TokenPayload | null {
-  try {
-    if (!AUTH_SECRET) {
-      const parts = token.split('.');
-      if (parts.length === 1) {
-        return JSON.parse(Buffer.from(token, 'base64').toString('utf-8')) as TokenPayload;
-      }
-    }
-    const [body, sig] = token.split('.');
-    if (!body || !sig) return null;
-    const expectedSig = crypto.createHmac('sha256', AUTH_SECRET!).update(body).digest('hex');
-    if (sig !== expectedSig) return null;
-    return JSON.parse(Buffer.from(body, 'base64').toString('utf-8')) as TokenPayload;
-  } catch {
-    return null;
-  }
-}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { method } = req;
 
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-  const token = authHeader.split(' ')[1];
-  const user = verifyToken(token);
-  if (!user || (!user.acc_id && !user.id)) {
-    return res.status(401).json({ error: 'Invalid token' });
-  }
-  const acc_id = user.acc_id || user.id!;
+  const account = await requireAccount(req, res);
+  if (!account) return;
+  const acc_id = account.acc_id;
 
   try {
     if (method === 'GET') {

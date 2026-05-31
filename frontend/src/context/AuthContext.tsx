@@ -1,23 +1,26 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { loginUser, registerUser, type LoginResponse } from '../lib/api';
+import {
+  authClient,
+  persistSessionToken,
+  clearPersistedSession,
+  requestPasswordReset as sendPasswordResetEmail,
+} from '../lib/auth-client';
+import { fetchCurrentUser, type UserProfile } from '../lib/api';
 
-interface User {
-  acc_id: number;
-  username: string;
-  email: string;
-  pnumber: string | null;
-  bio: string | null;
-  avatar_seed: string | null;
-  avatar_url: string | null;
+export interface AuthResult {
+  success: boolean;
+  error?: string;
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: UserProfile | null;
   token: string | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<LoginResponse>;
-  register: (username: string, email: string, password: string) => Promise<LoginResponse>;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<AuthResult>;
+  register: (username: string, email: string, password: string) => Promise<AuthResult>;
+  loginWithSocial: (provider: 'google' | 'apple') => Promise<AuthResult>;
+  requestPasswordReset: (email: string) => Promise<AuthResult>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -28,63 +31,123 @@ export function useAuth() {
   return ctx;
 }
 
+async function syncLocalProfile(): Promise<{ user: UserProfile; token: string } | null> {
+  const token = await persistSessionToken();
+  if (!token) return null;
+
+  const user = await fetchCurrentUser();
+  localStorage.setItem('centra_user', JSON.stringify(user));
+  return { user, token };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Restore session from localStorage on mount
   useEffect(() => {
-    const savedToken = localStorage.getItem('centra_token');
-    const savedUser = localStorage.getItem('centra_user');
-    if (savedToken && savedUser) {
+    async function restoreSession() {
       try {
-        setToken(savedToken);
-        setUser(JSON.parse(savedUser));
+        const savedUser = localStorage.getItem('centra_user');
+        const synced = await syncLocalProfile();
+        if (synced) {
+          setToken(synced.token);
+          setUser(synced.user);
+          return;
+        }
+
+        if (savedUser) {
+          clearPersistedSession();
+        }
       } catch {
-        localStorage.removeItem('centra_token');
-        localStorage.removeItem('centra_user');
+        clearPersistedSession();
+        await authClient.signOut().catch(() => undefined);
+      } finally {
+        setIsLoading(false);
       }
     }
-    setIsLoading(false);
+
+    restoreSession();
   }, []);
 
-  async function login(email: string, password: string) {
-    const res = await loginUser(email, password);
-    if (res.success && res.token) {
-      localStorage.setItem('centra_token', res.token);
-      localStorage.setItem('centra_user', JSON.stringify(res.data));
-      setToken(res.token);
-      setUser(res.data as User);
+  async function login(email: string, password: string): Promise<AuthResult> {
+    const { error } = await authClient.signIn.email({ email, password });
+    if (error) {
+      return { success: false, error: error.message || 'Login failed' };
     }
-    return res;
+
+    try {
+      const synced = await syncLocalProfile();
+      if (!synced) {
+        return { success: false, error: 'Unable to establish session' };
+      }
+      setToken(synced.token);
+      setUser(synced.user);
+      return { success: true };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Login failed';
+      return { success: false, error: message };
+    }
   }
 
-  async function register(username: string, email: string, password: string) {
-    // Register the account first
-    await registerUser(username, email, password);
-    // Then auto-login so the user is immediately authenticated
-    const res = await loginUser(email, password);
-    if (res.success && res.token) {
-      localStorage.setItem('centra_token', res.token);
-      localStorage.setItem('centra_user', JSON.stringify(res.data));
-      setToken(res.token);
-      setUser(res.data as User);
+  async function register(username: string, email: string, password: string): Promise<AuthResult> {
+    const { error } = await authClient.signUp.email({
+      email,
+      password,
+      name: username,
+    });
+    if (error) {
+      return { success: false, error: error.message || 'Registration failed' };
     }
-    return res;
+
+    const signInResult = await authClient.signIn.email({ email, password });
+    if (signInResult.error) {
+      return { success: false, error: signInResult.error.message || 'Registration succeeded but sign-in failed' };
+    }
+
+    try {
+      const synced = await syncLocalProfile();
+      if (!synced) {
+        return { success: false, error: 'Unable to establish session' };
+      }
+      setToken(synced.token);
+      setUser(synced.user);
+      return { success: true };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Registration failed';
+      return { success: false, error: message };
+    }
   }
 
-  function logout() {
-    localStorage.removeItem('centra_token');
-    localStorage.removeItem('centra_user');
+  async function loginWithSocial(provider: 'google' | 'apple'): Promise<AuthResult> {
+    const { error } = await authClient.signIn.social({
+      provider,
+      callbackURL: `${window.location.origin}/dashboard`,
+    });
+    if (error) {
+      return { success: false, error: error.message || 'Social sign-in failed' };
+    }
+    return { success: true };
+  }
+
+  async function requestPasswordReset(email: string): Promise<AuthResult> {
+    const result = await sendPasswordResetEmail(email);
+    if (!result.success) {
+      return { success: false, error: result.error || 'Failed to send reset email' };
+    }
+    return { success: true };
+  }
+
+  async function logout() {
+    clearPersistedSession();
     setToken(null);
     setUser(null);
+    await authClient.signOut().catch(() => undefined);
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, register, loginWithSocial, requestPasswordReset, logout }}>
       {children}
     </AuthContext.Provider>
   );
 }
-

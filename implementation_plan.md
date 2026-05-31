@@ -65,4 +65,73 @@ This document outlines the roadmap for migrating **Centra Budget Manager** from 
     *   `chat.js` -> `chat.ts` (Planned)
 3.  **Typing**: Add precise TypeScript interfaces for all database schema entities, request payloads, and API responses to achieve end-to-end type safety. (In Progress)
 4.  **Validation**: Ensure types match between frontend `api.ts` definitions and backend implementations. (In Progress)
-5.  **Neon Auth (Better Auth) Integration**: Replace the custom HMAC authentication system with Neon Auth to enable database-native authentication, native branching support, and Google/Apple social logins. (Planned)
+
+### Phase 4: Authentication Migration (Neon Auth) [NEW PLAN]
+
+We will migrate the custom HMAC authentication to **Neon Auth** (built on Better Auth) using the credentials provided:
+*   **Auth URL**: `https://ep-bold-wind-aoxjmshy.neonauth.c-2.ap-southeast-1.aws.neon.tech/neondb/auth`
+*   **JWKS URL**: `https://ep-bold-wind-aoxjmshy.neonauth.c-2.ap-southeast-1.aws.neon.tech/neondb/auth/.well-known/jwks.json`
+
+#### Proposed Changes
+
+##### 1. Dependencies
+*   **Root Backend**: Install `jose` for remote JWKS token verification.
+*   **Frontend**: Install `@neondatabase/auth` for client-side authentication.
+
+##### 2. Configuration (`.env`)
+Add the following keys to `.env` at root:
+```env
+VITE_NEON_AUTH_URL=https://ep-bold-wind-aoxjmshy.neonauth.c-2.ap-southeast-1.aws.neon.tech/neondb/auth
+NEON_JWKS_URL=https://ep-bold-wind-aoxjmshy.neonauth.c-2.ap-southeast-1.aws.neon.tech/neondb/auth/.well-known/jwks.json
+NEON_AUTH_ISSUER=https://ep-bold-wind-aoxjmshy.neonauth.c-2.ap-southeast-1.aws.neon.tech/neondb/auth
+```
+
+##### 3. Database Schema
+#### [MODIFY] [schema.ts](file:///e:/GitHub/bacaro-budget/api/schema.ts)
+*   Add column `neon_auth_id TEXT UNIQUE` to the `accounts` table in `ensureAccountsSchema()`.
+
+##### 4. Backend Verification Helper
+#### [NEW] [auth-helper.ts](file:///e:/GitHub/bacaro-budget/api/auth-helper.ts)
+*   Implement `requireAccount(req, res)` using `jose` and the JWKS URL.
+*   Lookup or create the local `accounts` row based on the JWT `sub` (or fallback to `email` for existing users).
+
+##### 5. Backend Routes Update
+*   Modify `api/transactions.ts`, `api/wallets.ts`, `api/goals.ts`, and `api/chat.ts` to import `requireAccount` from `api/auth-helper.js` and remove duplicate token verification code.
+*   Remove the duplicate authentication handlers from `api/accounts.ts` (e.g. login, register actions, `createToken`, `hashPassword`, etc.), since these are handled directly on the client side via Neon Auth. We will keep PUT/DELETE handlers for user settings.
+
+##### 6. Frontend Client & Context
+#### [NEW] [auth-client.ts](file:///e:/GitHub/bacaro-budget/frontend/src/lib/auth-client.ts)
+*   Initialize the auth client using `@neondatabase/auth`.
+```typescript
+import { createAuthClient } from '@neondatabase/auth';
+export const authClient = createAuthClient(import.meta.env.VITE_NEON_AUTH_URL);
+```
+#### [MODIFY] [AuthContext.tsx](file:///e:/GitHub/bacaro-budget/frontend/src/context/AuthContext.tsx)
+*   Migrate `useAuth()`/`AuthProvider` to use `authClient` operations:
+    *   `login(email, password)` calls `authClient.signIn.email({ email, password })`.
+    *   `register(username, email, password)` calls `authClient.signUp.email({ email, password, name: username })`.
+    *   `logout()` calls `authClient.signOut()`.
+    *   Retrieve the JWT access token and store user details in the context.
+#### [MODIFY] [api.ts](file:///e:/GitHub/bacaro-budget/frontend/src/lib/api.ts)
+*   Retrieve the access token from `authClient` or local storage dynamically and attach it to the `Authorization` header.
+
+##### 7. UI Modals
+#### [MODIFY] [LoginModal.tsx](file:///e:/GitHub/bacaro-budget/frontend/src/components/LoginModal.tsx)
+*   Update to use updated context `login` handler.
+*   Optional: Wire up Google/Apple buttons using `authClient.signIn.social({ provider: 'google'/'apple' })`.
+#### [MODIFY] [CreateAccountModal.tsx](file:///e:/GitHub/bacaro-budget/frontend/src/components/CreateAccountModal.tsx)
+*   Update to use updated context `register` handler.
+*   Optional: Wire up Google/Apple buttons.
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- Run `npm run build` and ensure TypeScript compiles with zero errors on both frontend and backend.
+
+### Manual Verification
+- Test registration using the custom UI modal and verify the user is saved to the Neon database (`neon_auth.user` and our `accounts` table).
+- Test login using the custom UI modal.
+- Test dashboard data load (transactions, wallets, goals) to verify JWT backend validation.
+- Test sign-out.
