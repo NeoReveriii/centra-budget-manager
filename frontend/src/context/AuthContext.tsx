@@ -3,6 +3,7 @@ import {
   authClient,
   persistSessionToken,
   clearPersistedSession,
+  resetAuthSession,
   requestPasswordReset as sendPasswordResetEmail,
 } from '../lib/auth-client';
 import { fetchCurrentUser, type UserProfile } from '../lib/api';
@@ -15,6 +16,7 @@ export interface AuthResult {
 interface AuthContextType {
   user: UserProfile | null;
   token: string | null;
+  isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<AuthResult>;
   register: (username: string, email: string, password: string) => Promise<AuthResult>;
@@ -63,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         clearPersistedSession();
         setToken(null);
         setUser(null);
-        await authClient.signOut().catch(() => undefined);
+        await resetAuthSession();
       } finally {
         setIsLoading(false);
       }
@@ -73,6 +75,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function login(email: string, password: string): Promise<AuthResult> {
+    await resetAuthSession();
+
     const { error } = await authClient.signIn.email({ email, password });
     if (error) {
       return { success: false, error: error.message || 'Login failed' };
@@ -93,6 +97,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function register(username: string, email: string, password: string): Promise<AuthResult> {
+    await resetAuthSession();
+
     const { error } = await authClient.signUp.email({
       email,
       password,
@@ -112,6 +118,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!synced) {
         return { success: false, error: 'Unable to establish session' };
       }
+      if (synced.user.email.toLowerCase() !== email.toLowerCase()) {
+        await resetAuthSession();
+        return { success: false, error: 'Registration succeeded but session could not be verified. Please sign in.' };
+      }
       setToken(synced.token);
       setUser(synced.user);
       return { success: true };
@@ -122,6 +132,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function loginWithSocial(provider: 'google' | 'apple'): Promise<AuthResult> {
+    // Clear any existing Neon session so OAuth always runs instead of silently reusing it.
+    await resetAuthSession();
+    setToken(null);
+    setUser(null);
+
     // Callback to / so Vercel always serves the SPA; AppRoutes redirects to /dashboard once session is ready.
     const { error } = await authClient.signIn.social({
       provider,
@@ -143,14 +158,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function logout() {
-    clearPersistedSession();
     setToken(null);
     setUser(null);
-    await authClient.signOut().catch(() => undefined);
+    await resetAuthSession();
   }
 
+  const isAuthenticated = Boolean(token && user);
+
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, loginWithSocial, requestPasswordReset, logout }}>
+    <AuthContext.Provider value={{ user, token, isAuthenticated, isLoading, login, register, loginWithSocial, requestPasswordReset, logout }}>
       {children}
     </AuthContext.Provider>
   );

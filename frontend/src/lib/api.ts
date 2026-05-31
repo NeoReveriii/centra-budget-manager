@@ -6,7 +6,7 @@ import { getAccessToken, clearPersistedSession } from './auth-client';
 const API_BASE = '/api';
 
 async function resolveToken(): Promise<string | null> {
-  return (await getAccessToken()) ?? localStorage.getItem('centra_token');
+  return getAccessToken();
 }
 
 async function request<T>(

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 
 interface LoginModalProps {
   onClose: () => void;
@@ -9,7 +8,6 @@ interface LoginModalProps {
 
 const LoginModal = ({ onClose, onSwitchToCreateAccount }: LoginModalProps) => {
   const { login, loginWithSocial, requestPasswordReset } = useAuth();
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -36,7 +34,6 @@ const LoginModal = ({ onClose, onSwitchToCreateAccount }: LoginModalProps) => {
       const res = await login(email, password);
       if (res.success) {
         onClose();
-        navigate('/dashboard');
       } else if (res.error) {
         setError(res.error);
       }

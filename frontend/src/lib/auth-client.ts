@@ -8,6 +8,11 @@ if (!authUrl) {
 
 export const authClient = createAuthClient(authUrl || 'http://localhost');
 
+export async function resetAuthSession(): Promise<void> {
+  clearPersistedSession();
+  await authClient.signOut().catch(() => undefined);
+}
+
 export async function getAccessToken(): Promise<string | null> {
   try {
     // getSession exchanges OAuth verifiers, sets cookies, and injects the JWT via set-auth-jwt.
@@ -24,11 +29,13 @@ export async function getAccessToken(): Promise<string | null> {
       localStorage.setItem('centra_token', token);
       return token;
     }
+
+    localStorage.removeItem('centra_token');
   } catch {
-    // Session may not exist yet
+    localStorage.removeItem('centra_token');
   }
 
-  return localStorage.getItem('centra_token');
+  return null;
 }
 
 export async function persistSessionToken(): Promise<string | null> {

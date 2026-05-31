@@ -11,7 +11,7 @@ import LandingPage from './pages/LandingPage';
 
 // Wrapper that redirects to /login if not authenticated
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { token, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -23,7 +23,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!token) {
+  if (!isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
@@ -31,7 +31,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppRoutes() {
-  const { token, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -48,7 +48,7 @@ function AppRoutes() {
       {/* Public routes */}
       <Route
         path="/"
-        element={token ? <Navigate to="/dashboard" replace /> : <LandingPage />}
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />}
       />
 
       {/* Protected routes */}
