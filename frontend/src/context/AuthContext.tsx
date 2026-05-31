@@ -123,6 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await authClient.signIn.social({
       provider,
       callbackURL: `${window.location.origin}/dashboard`,
+      errorURL: `${window.location.origin}/`,
     });
     if (error) {
       return { success: false, error: error.message || 'Social sign-in failed' };

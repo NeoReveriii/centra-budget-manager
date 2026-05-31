@@ -52,7 +52,7 @@ function getJwks(): ReturnType<typeof createRemoteJWKSet> {
 function getIssuer(): string {
   const issuer = process.env.NEON_AUTH_ISSUER || process.env.VITE_NEON_AUTH_URL;
   if (issuer) {
-    return new URL(issuer).origin;
+    return issuer;
   }
 
   const jwksUrl = process.env.NEON_JWKS_URL;
