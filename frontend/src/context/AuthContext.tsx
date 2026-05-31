@@ -122,9 +122,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function loginWithSocial(provider: 'google' | 'apple'): Promise<AuthResult> {
+    // Callback to / so Vercel always serves the SPA; AppRoutes redirects to /dashboard once session is ready.
     const { error } = await authClient.signIn.social({
       provider,
-      callbackURL: `${window.location.origin}/dashboard`,
+      callbackURL: `${window.location.origin}/`,
       errorCallbackURL: `${window.location.origin}/`,
     });
     if (error) {

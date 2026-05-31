@@ -10,11 +10,16 @@ export const authClient = createAuthClient(authUrl || 'http://localhost');
 
 export async function getAccessToken(): Promise<string | null> {
   try {
-    // getSession exchanges OAuth verifiers and establishes the cookie session.
-    await authClient.getSession();
+    // getSession exchanges OAuth verifiers, sets cookies, and injects the JWT via set-auth-jwt.
+    const sessionResult = await authClient.getSession();
+    let token = sessionResult.data?.session?.token ?? null;
 
-    const tokenResult = await authClient.token();
-    const token = tokenResult.data?.token ?? null;
+    // token() is a separate POST; fall back only if the session response had no JWT.
+    if (!token) {
+      const tokenResult = await authClient.token();
+      token = tokenResult.data?.token ?? null;
+    }
+
     if (token) {
       localStorage.setItem('centra_token', token);
       return token;
