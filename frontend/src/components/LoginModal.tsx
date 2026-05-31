@@ -48,27 +48,26 @@ const LoginModal = ({ onClose }: LoginModalProps) => {
       {/* Backdrop */}
       <div 
         className={`absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300 ${mounted ? 'opacity-100' : 'opacity-0'}`}
-        onClick={onClose}
       />
 
       {/* Modal Content */}
       <main 
         className={`w-full max-w-[440px] relative z-10 transition-all duration-500 ease-out ${mounted ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-95'}`}
       >
-        <button 
-          onClick={onClose}
-          className="absolute -top-12 right-0 text-white/70 hover:text-white transition-colors p-2 cursor-pointer"
-        >
-          <span className="material-symbols-outlined text-[32px]">close</span>
-        </button>
-
         {/* The Minimalist Card */}
         <div className="bg-surface-container-lowest border-t-[4px] border-primary-container rounded-lg shadow-2xl overflow-hidden flex flex-col relative">
           
+          <button 
+            onClick={onClose}
+            className="absolute top-2 right-2 text-on-surface-variant hover:text-on-surface transition-colors p-2 cursor-pointer z-10"
+          >
+            <span className="material-symbols-outlined text-[24px]">close</span>
+          </button>
+
           {/* Modal Header */}
-          <div className="px-xl pt-xxl pb-lg text-center">
-            <div className="flex justify-center mb-md">
-              <span className="material-symbols-outlined text-primary text-[40px]">account_balance</span>
+          <div className="px-xl pt-16 pb-lg text-center">
+            <div className="flex justify-center mb-md mt-4">
+              <span className="material-symbols-outlined text-primary text-[48px]">account_balance</span>
             </div>
             <h1 className="font-h1 text-h1 text-primary tracking-tight mb-xs">BACARO BUDGET MANAGER</h1>
             <p className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Secure Financial Access</p>
