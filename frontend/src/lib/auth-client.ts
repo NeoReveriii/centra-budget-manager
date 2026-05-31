@@ -52,7 +52,7 @@ export function clearPersistedSession(): void {
 }
 
 export async function requestPasswordReset(email: string): Promise<{ success: boolean; error?: string }> {
-  const redirectTo = `${window.location.origin}/`;
+  const redirectTo = `${window.location.origin}/reset-password`;
   const result = await authClient.requestPasswordReset({
     email,
     redirectTo,
@@ -60,6 +60,22 @@ export async function requestPasswordReset(email: string): Promise<{ success: bo
 
   if (result.error) {
     return { success: false, error: result.error.message || 'Failed to send reset email' };
+  }
+
+  return { success: true };
+}
+
+export async function resetPasswordWithToken(
+  newPassword: string,
+  token: string
+): Promise<{ success: boolean; error?: string }> {
+  const result = await authClient.resetPassword({
+    newPassword,
+    token,
+  });
+
+  if (result.error) {
+    return { success: false, error: result.error.message || 'Failed to reset password' };
   }
 
   return { success: true };

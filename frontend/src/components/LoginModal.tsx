@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 interface LoginModalProps {
@@ -7,14 +8,13 @@ interface LoginModalProps {
 }
 
 const LoginModal = ({ onClose, onSwitchToCreateAccount }: LoginModalProps) => {
-  const { login, loginWithSocial, requestPasswordReset } = useAuth();
+  const { login, loginWithSocial } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [resetMessage, setResetMessage] = useState('');
 
   useEffect(() => {
     setMounted(true);
@@ -39,28 +39,6 @@ const LoginModal = ({ onClose, onSwitchToCreateAccount }: LoginModalProps) => {
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Login failed');
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function handleForgotPassword() {
-    setError('');
-    setResetMessage('');
-    if (!email.trim()) {
-      setError('Enter your email address first');
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const res = await requestPasswordReset(email.trim());
-      if (res.success) {
-        setResetMessage('If an account exists, a password reset link has been sent to your email.');
-      } else if (res.error) {
-        setError(res.error);
-      }
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to send reset email');
     } finally {
       setIsLoading(false);
     }
@@ -119,13 +97,6 @@ const LoginModal = ({ onClose, onSwitchToCreateAccount }: LoginModalProps) => {
               </div>
             )}
 
-            {resetMessage && (
-              <div className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 text-body-sm font-medium">
-                <span className="material-symbols-outlined text-[18px]">mail</span>
-                {resetMessage}
-              </div>
-            )}
-
             <div className="space-y-xs">
               <label className="font-label-caps text-label-caps text-secondary uppercase" htmlFor="email">Email Address</label>
               <input
@@ -142,7 +113,13 @@ const LoginModal = ({ onClose, onSwitchToCreateAccount }: LoginModalProps) => {
             <div className="space-y-xs">
               <div className="flex justify-between items-center">
                 <label className="font-label-caps text-label-caps text-secondary uppercase" htmlFor="password">Password</label>
-                <button type="button" onClick={handleForgotPassword} disabled={isLoading} className="font-label-caps text-label-caps text-slate-400 hover:text-primary transition-colors duration-300 cursor-pointer disabled:opacity-50">Forgot Password?</button>
+                <Link
+                  to="/forgot-password"
+                  onClick={onClose}
+                  className="font-label-caps text-label-caps text-slate-400 hover:text-primary transition-colors duration-300"
+                >
+                  Forgot Password?
+                </Link>
               </div>
               <div className="relative">
                 <input
