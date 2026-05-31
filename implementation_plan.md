@@ -9,6 +9,18 @@ This document outlines the roadmap for migrating **Centra Budget Manager** from 
 
 ---
 
+## Current Status (Latest Updates)
+*   **Completed**: 
+    *   Updated Neon PostgreSQL connection string.
+    *   Set up `tsconfig.json` for backend TypeScript compilation.
+    *   Converted `schema.js` to `schema.ts`.
+    *   Converted `accounts.js` to `accounts.ts` (adding type definitions for `TokenPayload`, `AccountRow`, etc., and ensuring strict TS compliance).
+    *   Verified full TypeScript compilation (`tsc --noEmit`).
+*   **Next Steps To Be Done**:
+    *   Convert remaining backend routes to TypeScript (`transactions.js`, `wallets.js`, `goals.js`, `chat.js`).
+    *   Implement **Neon Auth (Better Auth)** to replace the current custom HMAC system for native database branching and simpler config.
+
+---
 ## 2. Technology Stack
 
 ### Frontend (The "UI Shell")
@@ -41,9 +53,15 @@ This document outlines the roadmap for migrating **Centra Budget Manager** from 
 2.  **Dashboard Redesign**: Update dashboard layouts and UI components to match the new design system.
 3.  **Pages Redesign**: Modernize transactions, wallets, and goals pages.
 
-### Phase 3: Backend TypeScript Migration (Planned)
-1.  **Setup**: Configure `tsconfig.json` for the backend API inside the Vercel Serverless environment.
-2.  **Conversion**: Convert all existing Vercel Serverless functions (e.g., `accounts.js`, `transactions.js`, `wallets.js`) from `.js` to `.ts`.
-3.  **Typing**: Add precise TypeScript interfaces for all database schema entities, request payloads, and API responses to achieve end-to-end type safety.
-4.  **Validation**: Ensure types match between frontend `api.ts` definitions and backend implementations.
-5.  **Neon Auth (Better Auth) Integration**: Replace the custom HMAC authentication system with Neon Auth to enable database-native authentication, native branching support, and Google/Apple social logins.
+### Phase 3: Backend TypeScript Migration (In Progress)
+1.  **Setup**: Configure `tsconfig.json` for the backend API inside the Vercel Serverless environment. (Complete)
+2.  **Conversion**: Convert all existing Vercel Serverless functions from `.js` to `.ts`.
+    *   `accounts.js` -> `accounts.ts` (Complete)
+    *   `schema.js` -> `schema.ts` (Complete)
+    *   `transactions.js` -> `transactions.ts` (Planned)
+    *   `wallets.js` -> `wallets.ts` (Planned)
+    *   `goals.js` -> `goals.ts` (Planned)
+    *   `chat.js` -> `chat.ts` (Planned)
+3.  **Typing**: Add precise TypeScript interfaces for all database schema entities, request payloads, and API responses to achieve end-to-end type safety. (In Progress)
+4.  **Validation**: Ensure types match between frontend `api.ts` definitions and backend implementations. (In Progress)
+5.  **Neon Auth (Better Auth) Integration**: Replace the custom HMAC authentication system with Neon Auth to enable database-native authentication, native branching support, and Google/Apple social logins. (Planned)

@@ -8,7 +8,7 @@ function getSql() {
   return neon(dbUrl);
 }
 
-export async function ensurePasswordResetSchema() {
+export async function ensurePasswordResetSchema(): Promise<void> {
   const sql = getSql();
   await sql`
     CREATE TABLE IF NOT EXISTS password_resets (
@@ -29,7 +29,7 @@ export async function ensurePasswordResetSchema() {
   await sql`CREATE INDEX IF NOT EXISTS idx_password_resets_expires_at ON password_resets(expires_at)`;
 }
 
-export async function ensureAccountsSchema() {
+export async function ensureAccountsSchema(): Promise<void> {
   const sql = getSql();
   // Check if password reset attempt tracking column exists
   const columnCheck = await sql`
