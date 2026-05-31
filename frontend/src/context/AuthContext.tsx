@@ -61,6 +61,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch {
         clearPersistedSession();
+        setToken(null);
+        setUser(null);
         await authClient.signOut().catch(() => undefined);
       } finally {
         setIsLoading(false);

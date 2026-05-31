@@ -10,8 +10,11 @@ export const authClient = createAuthClient(authUrl || 'http://localhost');
 
 export async function getAccessToken(): Promise<string | null> {
   try {
-    const result = await authClient.getSession();
-    const token = result.data?.session?.token ?? null;
+    // getSession exchanges OAuth verifiers and establishes the cookie session.
+    await authClient.getSession();
+
+    const tokenResult = await authClient.token();
+    const token = tokenResult.data?.token ?? null;
     if (token) {
       localStorage.setItem('centra_token', token);
       return token;

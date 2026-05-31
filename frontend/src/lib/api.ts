@@ -30,7 +30,6 @@ async function request<T>(
 
   if (res.status === 401) {
     clearPersistedSession();
-    window.location.href = '/';
     throw new Error('Unauthorized');
   }
 

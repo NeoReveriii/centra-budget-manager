@@ -49,17 +49,13 @@ function getJwks(): ReturnType<typeof createRemoteJWKSet> {
   return jwks;
 }
 
-function getIssuer(): string {
-  const issuer = process.env.NEON_AUTH_ISSUER || process.env.VITE_NEON_AUTH_URL;
-  if (issuer) {
-    return issuer;
-  }
-
-  const jwksUrl = process.env.NEON_JWKS_URL;
-  if (!jwksUrl) {
+function getAuthOrigin(): string {
+  const authUrl = process.env.NEON_AUTH_ISSUER || process.env.VITE_NEON_AUTH_URL || process.env.NEON_JWKS_URL;
+  if (!authUrl) {
     throw new Error('NEON_AUTH_ISSUER or NEON_JWKS_URL is not configured');
   }
-  return new URL(jwksUrl).origin;
+  // Neon Auth JWTs use the auth host origin as iss/aud, not the full /neondb/auth path.
+  return new URL(authUrl).origin;
 }
 
 function getBearerToken(req: VercelRequest): string | null {
@@ -71,8 +67,10 @@ function getBearerToken(req: VercelRequest): string | null {
 
 async function verifyNeonToken(token: string): Promise<NeonJwtPayload | null> {
   try {
+    const origin = getAuthOrigin();
     const { payload } = await jwtVerify(token, getJwks(), {
-      issuer: getIssuer(),
+      issuer: origin,
+      audience: origin,
     });
     return payload as NeonJwtPayload;
   } catch (error) {
@@ -107,8 +105,9 @@ async function resolveNeonAuthIdentity(payload: NeonJwtPayload): Promise<{ neonA
     try {
       const rows = await sql`
         SELECT email, name
-        FROM neon_auth."user"
+        FROM neon_auth.users_sync
         WHERE id = ${neonAuthId}
+          AND deleted_at IS NULL
         LIMIT 1
       ` as NeonAuthUserRow[];
       if (rows.length > 0) {
@@ -116,7 +115,20 @@ async function resolveNeonAuthIdentity(payload: NeonJwtPayload): Promise<{ neonA
         name = name || rows[0].name?.trim() || undefined;
       }
     } catch {
-      // neon_auth schema may be unavailable in some environments
+      try {
+        const rows = await sql`
+          SELECT email, name
+          FROM neon_auth."user"
+          WHERE id = ${neonAuthId}
+          LIMIT 1
+        ` as NeonAuthUserRow[];
+        if (rows.length > 0) {
+          email = rows[0].email?.trim();
+          name = name || rows[0].name?.trim() || undefined;
+        }
+      } catch {
+        // neon_auth schema may be unavailable in some environments
+      }
     }
   }
 
