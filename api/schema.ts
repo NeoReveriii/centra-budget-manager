@@ -31,28 +31,53 @@ export async function ensurePasswordResetSchema(): Promise<void> {
 
 export async function ensureAccountsSchema(): Promise<void> {
   const sql = getSql();
-  // Check if password reset attempt tracking column exists
-  const columnCheck = await sql`
-    SELECT EXISTS (
-      SELECT 1 FROM information_schema.columns
-      WHERE table_name = 'accounts' AND column_name = 'last_password_reset_at'
-    ) AS exists
+
+  // 1. Create table if it doesn't exist
+  await sql`
+    CREATE TABLE IF NOT EXISTS accounts (
+      acc_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+      username TEXT NOT NULL,
+      email TEXT NOT NULL,
+      password TEXT NOT NULL,
+      pnumber TEXT,
+      bio TEXT,
+      avatar_seed TEXT,
+      avatar_url TEXT,
+      createdat DATE DEFAULT NOW(),
+      last_password_reset_at TIMESTAMPTZ,
+      password_reset_attempts INT DEFAULT 0,
+      password_reset_locked_until TIMESTAMPTZ
+    )
   `;
 
-  if (!columnCheck[0].exists) {
-    await sql`
-      ALTER TABLE accounts ADD COLUMN last_password_reset_at TIMESTAMPTZ,
-      ADD COLUMN password_reset_attempts INT DEFAULT 0,
-      ADD COLUMN password_reset_locked_until TIMESTAMPTZ,
-      ADD COLUMN bio TEXT,
-      ADD COLUMN avatar_seed TEXT,
-      ADD COLUMN avatar_url TEXT
+  // 2. Helper to check if a column exists
+  const checkCol = async (colName: string): Promise<boolean> => {
+    const res = await sql`
+      SELECT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'accounts' AND column_name = ${colName}
+      ) AS exists
     `;
-  } else {
-    // Check for the other new columns individually in case some exist but not others
-    const bioCheck = await sql`SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'bio') AS exists`;
-    if (!bioCheck[0].exists) {
-      await sql`ALTER TABLE accounts ADD COLUMN bio TEXT, ADD COLUMN avatar_seed TEXT, ADD COLUMN avatar_url TEXT`;
-    }
+    return res[0].exists;
+  };
+
+  // 3. Incrementally apply column updates for migration support
+  if (!(await checkCol('last_password_reset_at'))) {
+    await sql`ALTER TABLE accounts ADD COLUMN last_password_reset_at TIMESTAMPTZ`;
+  }
+  if (!(await checkCol('password_reset_attempts'))) {
+    await sql`ALTER TABLE accounts ADD COLUMN password_reset_attempts INT DEFAULT 0`;
+  }
+  if (!(await checkCol('password_reset_locked_until'))) {
+    await sql`ALTER TABLE accounts ADD COLUMN password_reset_locked_until TIMESTAMPTZ`;
+  }
+  if (!(await checkCol('bio'))) {
+    await sql`ALTER TABLE accounts ADD COLUMN bio TEXT`;
+  }
+  if (!(await checkCol('avatar_seed'))) {
+    await sql`ALTER TABLE accounts ADD COLUMN avatar_seed TEXT`;
+  }
+  if (!(await checkCol('avatar_url'))) {
+    await sql`ALTER TABLE accounts ADD COLUMN avatar_url TEXT`;
   }
 }

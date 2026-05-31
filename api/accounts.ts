@@ -1,6 +1,6 @@
 import { neon } from '@neondatabase/serverless';
 import crypto from 'crypto';
-import { ensureAccountsSchema } from './schema';
+import { ensureAccountsSchema } from './schema.js';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 // ── Types ──

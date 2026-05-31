@@ -12,9 +12,10 @@ This document outlines the roadmap for migrating **Centra Budget Manager** from 
 ## Current Status (Latest Updates)
 *   **Completed**: 
     *   Updated Neon PostgreSQL connection string.
-    *   Set up `tsconfig.json` for backend TypeScript compilation.
-    *   Converted `schema.js` to `schema.ts`.
+    *   Set up `tsconfig.json` for backend TypeScript compilation (using `NodeNext` modules to match Vercel Node ESM requirements).
+    *   Converted `schema.js` to `schema.ts` and enhanced it to automatically create the `accounts` table if missing and incrementally run safe column migrations.
     *   Converted `accounts.js` to `accounts.ts` (adding type definitions for `TokenPayload`, `AccountRow`, etc., and ensuring strict TS compliance).
+    *   Fixed Vercel Node ESM relative imports runtime crash (500 error) by appending the `.js` extension to internal imports.
     *   Verified full TypeScript compilation (`tsc --noEmit`).
 *   **Next Steps To Be Done**:
     *   Convert remaining backend routes to TypeScript (`transactions.js`, `wallets.js`, `goals.js`, `chat.js`).
