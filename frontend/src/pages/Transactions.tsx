@@ -1,5 +1,22 @@
-import { useState, useEffect, useMemo } from 'react';
-import { fetchTransactions, fetchWallets, createTransaction, deleteTransaction, type Transaction, type Wallet } from '../lib/api';
+import { useMemo, useState } from 'react';
+import {
+  useCreateTransaction,
+  useDeleteTransaction,
+  useTransactions,
+  useWallets,
+} from '@/hooks/use-budget-data';
+import { useUiStore } from '@/stores/ui-store';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 function formatCurrency(amount: number): string {
   return '₱' + amount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -46,39 +63,25 @@ function getIconStyle(desc: string, type: string) {
 const ITEMS_PER_PAGE = 10;
 
 const Transactions = () => {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [wallets, setWallets] = useState<Wallet[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState('All Types');
-  const [walletFilter, setWalletFilter] = useState('All Wallets');
-  const [page, setPage] = useState(1);
+  const { data: transactions = [], isLoading: loading } = useTransactions();
+  const { data: wallets = [] } = useWallets();
+  const createTx = useCreateTransaction();
+  const deleteTx = useDeleteTransaction();
 
-  // Add Transaction Modal
+  const search = useUiStore((s) => s.txSearch);
+  const typeFilter = useUiStore((s) => s.txTypeFilter);
+  const walletFilter = useUiStore((s) => s.txWalletFilter);
+  const page = useUiStore((s) => s.txPage);
+  const setSearch = useUiStore((s) => s.setTxSearch);
+  const setTypeFilter = useUiStore((s) => s.setTxTypeFilter);
+  const setWalletFilter = useUiStore((s) => s.setTxWalletFilter);
+  const setPage = useUiStore((s) => s.setTxPage);
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [newTx, setNewTx] = useState({ description: '', type: 'Expense', wallet_id: '', amount: '' });
   const [addError, setAddError] = useState('');
-  const [addLoading, setAddLoading] = useState(false);
 
-  // Delete confirmation
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  async function loadData() {
-    try {
-      const [t, w] = await Promise.all([fetchTransactions(), fetchWallets()]);
-      setTransactions(t);
-      setWallets(w);
-    } catch (err) {
-      console.error('Failed to load transactions:', err);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   // Filtering
   const filtered = useMemo(() => {
@@ -94,51 +97,38 @@ const Transactions = () => {
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
-  // Reset page when filters change
-  useEffect(() => { setPage(1); }, [search, typeFilter, walletFilter]);
-
   async function handleAddTransaction(e: React.FormEvent) {
     e.preventDefault();
     setAddError('');
-    setAddLoading(true);
+
+    const wallet = wallets.find((w) => w.wallet_id === Number(newTx.wallet_id));
+    if (!wallet) {
+      setAddError('Please select a wallet');
+      return;
+    }
 
     try {
-      const wallet = wallets.find((w) => w.wallet_id === Number(newTx.wallet_id));
-      if (!wallet) {
-        setAddError('Please select a wallet');
-        setAddLoading(false);
-        return;
-      }
-
-      await createTransaction({
+      await createTx.mutateAsync({
         description: newTx.description,
         type: newTx.type,
         wallet_type: wallet.name,
         wallet_id: wallet.wallet_id,
         amount: Number(newTx.amount),
       });
-
       setShowAddModal(false);
       setNewTx({ description: '', type: 'Expense', wallet_id: '', amount: '' });
-      await loadData();
     } catch (err: unknown) {
       setAddError(err instanceof Error ? err.message : 'Failed to add transaction');
-    } finally {
-      setAddLoading(false);
     }
   }
 
   async function handleDelete() {
     if (!deleteId) return;
-    setDeleteLoading(true);
     try {
-      await deleteTransaction(deleteId);
+      await deleteTx.mutateAsync(deleteId);
       setDeleteId(null);
-      await loadData();
     } catch (err) {
       console.error('Delete failed:', err);
-    } finally {
-      setDeleteLoading(false);
     }
   }
 
@@ -162,13 +152,10 @@ const Transactions = () => {
           <p className="font-body-sm text-body-sm text-on-surface-variant">Manage and monitor your financial activity across all accounts.</p>
         </div>
         <div className="flex gap-3">
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-xl font-bold text-body-sm hover:opacity-90 active:scale-95 transition-all cursor-pointer"
-          >
+          <Button onClick={() => setShowAddModal(true)} className="rounded-xl gap-2">
             <span className="material-symbols-outlined text-lg">add</span>
             Add Transaction
-          </button>
+          </Button>
         </div>
       </header>
 
@@ -303,99 +290,101 @@ const Transactions = () => {
         )}
       </section>
 
-      {/* ADD TRANSACTION MODAL */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black/40 z-[200] flex items-center justify-center p-4" onClick={() => setShowAddModal(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6 border-b border-slate-100">
-              <h3 className="font-h3 text-h3 text-primary">Add Transaction</h3>
+      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+        <DialogContent className="max-w-md p-0 gap-0 overflow-hidden" showCloseButton={false}>
+          <DialogHeader className="p-6 border-b border-slate-100 text-left">
+            <DialogTitle>Add Transaction</DialogTitle>
+            <DialogDescription>Record income or expense against a wallet.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleAddTransaction} className="p-6 space-y-4">
+            {addError && (
+              <div className="p-3 bg-error-container/20 border border-error/20 rounded-xl text-error text-body-sm font-medium flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px]">error</span>{addError}
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="tx-description">Description</Label>
+              <Input
+                id="tx-description"
+                value={newTx.description}
+                onChange={(e) => setNewTx({ ...newTx, description: e.target.value })}
+                placeholder="e.g. Lunch at Jollibee"
+                required
+              />
             </div>
-            <form onSubmit={handleAddTransaction} className="p-6 space-y-4">
-              {addError && (
-                <div className="p-3 bg-error-container/20 border border-error/20 rounded-xl text-error text-body-sm font-medium flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px]">error</span>{addError}
-                </div>
-              )}
-              <div>
-                <label className="block text-label-caps font-label-caps text-slate-500 uppercase mb-2">Description</label>
-                <input
-                  type="text"
-                  value={newTx.description}
-                  onChange={(e) => setNewTx({ ...newTx, description: e.target.value })}
-                  className="w-full px-4 py-3 bg-slate-50 border border-outline-variant rounded-xl text-body-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                  placeholder="e.g. Lunch at Jollibee"
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="tx-type">Type</Label>
+                <select
+                  id="tx-type"
+                  value={newTx.type}
+                  onChange={(e) => setNewTx({ ...newTx, type: e.target.value })}
+                  className="w-full h-11 px-4 bg-slate-50 border border-outline-variant rounded-xl text-body-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer"
+                >
+                  <option>Expense</option>
+                  <option>Income</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="tx-amount">Amount (₱)</Label>
+                <Input
+                  id="tx-amount"
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={newTx.amount}
+                  onChange={(e) => setNewTx({ ...newTx, amount: e.target.value })}
+                  placeholder="0.00"
                   required
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-label-caps font-label-caps text-slate-500 uppercase mb-2">Type</label>
-                  <select
-                    value={newTx.type}
-                    onChange={(e) => setNewTx({ ...newTx, type: e.target.value })}
-                    className="w-full px-4 py-3 bg-slate-50 border border-outline-variant rounded-xl text-body-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer"
-                  >
-                    <option>Expense</option>
-                    <option>Income</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-label-caps font-label-caps text-slate-500 uppercase mb-2">Amount (₱)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0.01"
-                    value={newTx.amount}
-                    onChange={(e) => setNewTx({ ...newTx, amount: e.target.value })}
-                    className="w-full px-4 py-3 bg-slate-50 border border-outline-variant rounded-xl text-body-sm focus:ring-2 focus:ring-primary/20 outline-none"
-                    placeholder="0.00"
-                    required
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-label-caps font-label-caps text-slate-500 uppercase mb-2">Wallet</label>
-                <select
-                  value={newTx.wallet_id}
-                  onChange={(e) => setNewTx({ ...newTx, wallet_id: e.target.value })}
-                  className="w-full px-4 py-3 bg-slate-50 border border-outline-variant rounded-xl text-body-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer"
-                  required
-                >
-                  <option value="">Select wallet</option>
-                  {wallets.map((w) => (
-                    <option key={w.wallet_id} value={w.wallet_id}>{w.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-3 border border-outline-variant rounded-xl font-bold text-body-sm text-slate-600 hover:bg-slate-50 cursor-pointer">Cancel</button>
-                <button type="submit" disabled={addLoading} className="flex-1 py-3 bg-primary text-white rounded-xl font-bold text-body-sm hover:opacity-90 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2">
-                  {addLoading ? <><span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>Adding...</> : 'Add Transaction'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tx-wallet">Wallet</Label>
+              <select
+                id="tx-wallet"
+                value={newTx.wallet_id}
+                onChange={(e) => setNewTx({ ...newTx, wallet_id: e.target.value })}
+                className="w-full h-11 px-4 bg-slate-50 border border-outline-variant rounded-xl text-body-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer"
+                required
+              >
+                <option value="">Select wallet</option>
+                {wallets.map((w) => (
+                  <option key={w.wallet_id} value={w.wallet_id}>{w.name}</option>
+                ))}
+              </select>
+            </div>
+            <DialogFooter className="pt-2 sm:justify-stretch gap-3">
+              <Button type="button" variant="outline" className="flex-1 rounded-xl" onClick={() => setShowAddModal(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={createTx.isPending} className="flex-1 rounded-xl">
+                {createTx.isPending ? 'Adding...' : 'Add Transaction'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-      {/* DELETE CONFIRMATION MODAL */}
-      {deleteId && (
-        <div className="fixed inset-0 bg-black/40 z-[200] flex items-center justify-center p-4" onClick={() => setDeleteId(null)}>
-          <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-6 text-center" onClick={(e) => e.stopPropagation()}>
-            <div className="w-16 h-16 rounded-full bg-error-container/20 flex items-center justify-center mx-auto mb-4">
-              <span className="material-symbols-outlined text-error text-[32px]">delete</span>
-            </div>
-            <h3 className="font-h3 text-h3 text-on-surface mb-2">Delete Transaction?</h3>
-            <p className="text-body-sm text-slate-500 mb-6">This action cannot be undone.</p>
-            <div className="flex gap-3">
-              <button onClick={() => setDeleteId(null)} className="flex-1 py-3 border border-outline-variant rounded-xl font-bold text-body-sm text-slate-600 hover:bg-slate-50 cursor-pointer">Cancel</button>
-              <button onClick={handleDelete} disabled={deleteLoading} className="flex-1 py-3 bg-error text-white rounded-xl font-bold text-body-sm hover:opacity-90 disabled:opacity-50 cursor-pointer">
-                {deleteLoading ? 'Deleting...' : 'Delete'}
-              </button>
-            </div>
+      <Dialog open={deleteId !== null} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <DialogContent className="max-w-sm text-center" showCloseButton={false}>
+          <div className="w-16 h-16 rounded-full bg-error-container/20 flex items-center justify-center mx-auto mb-4">
+            <span className="material-symbols-outlined text-error text-[32px]">delete</span>
           </div>
-        </div>
-      )}
+          <DialogHeader className="text-center sm:text-center">
+            <DialogTitle>Delete Transaction?</DialogTitle>
+            <DialogDescription>This action cannot be undone.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-center gap-3">
+            <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setDeleteId(null)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" className="flex-1 rounded-xl" onClick={handleDelete} disabled={deleteTx.isPending}>
+              {deleteTx.isPending ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

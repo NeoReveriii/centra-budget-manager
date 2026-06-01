@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { fetchWallets, fetchChatHistory, clearChatHistory } from '../lib/api';
+import { useChatHistory, useClearChatHistory, useWallets } from '@/hooks/use-budget-data';
 import { getAccessToken } from '../lib/auth-client';
 
 interface ChatMessage {
@@ -16,76 +16,61 @@ const KwartaAI = () => {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
+  const [historyHydrated, setHistoryHydrated] = useState(false);
 
-  // Financial vitals state
-  const [totalBalance, setTotalBalance] = useState(0);
-  const [assetDistribution, setAssetDistribution] = useState<{label: string; percent: number; color: string}[]>([]);
+  const { data: wallets = [], isLoading: walletsLoading } = useWallets();
+  const { data: history, isLoading: historyLoading } = useChatHistory();
+  const clearChat = useClearChatHistory();
+  const isLoading = walletsLoading || historyLoading;
+
+  const totalBalance = useMemo(
+    () => wallets.reduce((sum, w) => sum + parseFloat(w.calculated_balance || '0'), 0),
+    [wallets]
+  );
+
+  const assetDistribution = useMemo(() => {
+    if (totalBalance <= 0) {
+      return [{ label: 'No Funds', percent: 100, color: 'bg-slate-200' }];
+    }
+    let savingsTotal = 0;
+    let eWalletTotal = 0;
+    let cashTotal = 0;
+    wallets.forEach((w) => {
+      const bal = parseFloat(w.calculated_balance || '0');
+      if (w.type === 'Bank Account' || w.type === 'Investment') savingsTotal += bal;
+      else if (w.type === 'E-Wallet') eWalletTotal += bal;
+      else cashTotal += bal;
+    });
+    return [
+      { label: 'Bank & Investments', percent: Math.round((savingsTotal / totalBalance) * 100) || 0, color: 'bg-primary-container' },
+      { label: 'E-Wallets', percent: Math.round((eWalletTotal / totalBalance) * 100) || 0, color: 'bg-secondary' },
+      { label: 'Cash / Others', percent: Math.round((cashTotal / totalBalance) * 100) || 0, color: 'bg-on-primary-container' },
+    ];
+  }, [wallets, totalBalance]);
 
   useEffect(() => {
-    loadInitialData();
-  }, []);
-
-  async function loadInitialData() {
-    setIsLoading(true);
-    try {
-      const [wallets, history] = await Promise.all([
-        fetchWallets().catch(() => []),
-        fetchChatHistory().catch(() => [])
-      ]);
-
-      // Calculate total balance
-      let total = 0;
-      wallets.forEach(w => total += parseFloat(w.calculated_balance || '0'));
-      setTotalBalance(total);
-
-      // Calculate Asset Distribution
-      if (total > 0) {
-        let savingsTotal = 0;
-        let eWalletTotal = 0;
-        let cashTotal = 0;
-
-        wallets.forEach(w => {
-          const bal = parseFloat(w.calculated_balance || '0');
-          if (w.type === 'Bank Account' || w.type === 'Investment') savingsTotal += bal;
-          else if (w.type === 'E-Wallet') eWalletTotal += bal;
-          else cashTotal += bal;
-        });
-
-        setAssetDistribution([
-          { label: 'Bank & Investments', percent: Math.round((savingsTotal / total) * 100) || 0, color: 'bg-primary-container' },
-          { label: 'E-Wallets', percent: Math.round((eWalletTotal / total) * 100) || 0, color: 'bg-secondary' },
-          { label: 'Cash / Others', percent: Math.round((cashTotal / total) * 100) || 0, color: 'bg-on-primary-container' },
-        ]);
-      } else {
-        setAssetDistribution([
-          { label: 'No Funds', percent: 100, color: 'bg-slate-200' }
-        ]);
-      }
-
-      // Populate history
-      if (history && history.length > 0) {
-        setMessages(history.map((msg, i) => ({
+    if (historyLoading) return;
+    if (history && history.length > 0) {
+      setMessages(
+        history.map((msg, i) => ({
           id: msg.created_at || `hist-${i}`,
           sender: (msg.role === 'user' ? 'user' : 'ai') as 'user' | 'ai',
-          content: msg.content
-        })));
-      } else {
-        // Welcome message
-        setMessages([{
+          content: msg.content,
+        }))
+      );
+    } else if (!historyHydrated) {
+      setMessages([
+        {
           id: 'welcome',
           sender: 'ai',
-          content: 'Good morning! I am Kwarta AI, your strict financial advisor. I have secure access to your live wallets and transactions. How can I assist you with your budget or investments today?'
-        }]);
-      }
-
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
+          content:
+            'Good morning! I am Kwarta AI, your strict financial advisor. I have secure access to your live wallets and transactions. How can I assist you with your budget or investments today?',
+        },
+      ]);
     }
-  }
+    setHistoryHydrated(true);
+  }, [history, historyLoading, historyHydrated]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -94,7 +79,7 @@ const KwartaAI = () => {
   async function handleClearHistory() {
     if (!confirm('Are you sure you want to clear your chat history?')) return;
     try {
-      await clearChatHistory();
+      await clearChat.mutateAsync();
       setMessages([{
         id: 'welcome-reset',
         sender: 'ai',

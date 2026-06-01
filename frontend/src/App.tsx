@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { useUiStore } from '@/stores/ui-store';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
@@ -98,10 +99,19 @@ function AppRoutes() {
   );
 }
 
+function ThemeInit() {
+  const theme = useUiStore((s) => s.theme);
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+  }, [theme]);
+  return null;
+}
+
 function App() {
   return (
     <Router>
       <AuthProvider>
+        <ThemeInit />
         <AppRoutes />
       </AuthProvider>
     </Router>

@@ -1,5 +1,11 @@
 import { neon } from '@neondatabase/serverless';
 import { requireAccount } from './auth-helper.js';
+import {
+  createGoalSchema,
+  deleteGoalSchema,
+  updateGoalSchema,
+} from './schemas.js';
+import { parseBody } from './validate.js';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 interface ColumnRow {
@@ -102,18 +108,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'POST') {
-      const { title, target_amount, deadline, category, priority, allow_expense } = req.body as {
-        title?: string;
-        target_amount?: number | string;
-        deadline?: string;
-        category?: string;
-        priority?: number;
-        allow_expense?: boolean | string;
-      };
+      const body = parseBody(createGoalSchema, req.body, res);
+      if (!body) return;
 
-      if (!title || !target_amount) {
-        return res.status(400).json({ error: 'Missing title or target amount.' });
-      }
+      const { title, target_amount, deadline, category, priority, allow_expense } = body;
 
       if (deadline) {
         const selectedDate = new Date(deadline);
@@ -136,15 +134,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'PUT') {
-      const { goal_id, add_amount, note } = req.body as {
-        goal_id?: number;
-        add_amount?: number | string;
-        note?: string;
-      };
+      const body = parseBody(updateGoalSchema, req.body, res);
+      if (!body) return;
 
-      if (!goal_id || add_amount == null || !Number.isFinite(Number(add_amount))) {
-        return res.status(400).json({ error: 'Missing goal_id or valid amount.' });
-      }
+      const { goal_id, add_amount, note } = body;
 
       const rows = await sql`
         UPDATE goals
@@ -166,10 +159,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'DELETE') {
-      const { goal_id } = req.body as { goal_id?: number };
-      if (!goal_id) {
-        return res.status(400).json({ error: 'Missing goal_id' });
-      }
+      const body = parseBody(deleteGoalSchema, req.body, res);
+      if (!body) return;
+
+      const { goal_id } = body;
 
       const rows = await sql`
         DELETE FROM goals

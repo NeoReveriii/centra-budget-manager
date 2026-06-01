@@ -1,5 +1,12 @@
 import { neon } from '@neondatabase/serverless';
 import { requireAccount } from './auth-helper.js';
+import {
+  createTransactionSchema,
+  deleteTransactionSchema,
+  transferFundsSchema,
+  updateTransactionSchema,
+} from './schemas.js';
+import { parseBody } from './validate.js';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 interface ColumnRow {
@@ -194,25 +201,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const action = String(req.query?.action || '').toLowerCase();
 
       if (action === 'transfer') {
-        const body = req.body as {
-          from_wallet_id?: number | string;
-          to_wallet_id?: number | string;
-          amount?: number | string;
-        };
+        const body = parseBody(transferFundsSchema, req.body, res);
+        if (!body) return;
 
-        const fromWalletId = body?.from_wallet_id ? parseInt(String(body.from_wallet_id), 10) : null;
-        const toWalletId = body?.to_wallet_id ? parseInt(String(body.to_wallet_id), 10) : null;
-        const amountNum = Number(body?.amount);
-
-        if (!fromWalletId || !toWalletId) {
-          return res.status(400).json({ error: 'from_wallet_id and to_wallet_id are required' });
-        }
-        if (fromWalletId === toWalletId) {
-          return res.status(400).json({ error: 'Cannot transfer to the same wallet' });
-        }
-        if (!Number.isFinite(amountNum) || amountNum <= 0) {
-          return res.status(400).json({ error: 'Amount must be a number greater than 0' });
-        }
+        const fromWalletId = body.from_wallet_id;
+        const toWalletId = body.to_wallet_id;
+        const amountNum = body.amount;
 
         const walletRows = await sql`
           SELECT wallet_id, name, status
@@ -313,28 +307,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
       }
 
-      const postBody = req.body as {
-        description?: string;
-        title?: string;
-        type?: string;
-        wallet_type?: string;
-        wallet?: string;
-        wallet_id?: number | string;
-        amount?: number | string;
-      };
+      const postBody = parseBody(createTransactionSchema, req.body, res);
+      if (!postBody) return;
 
-      const description = String(postBody?.description ?? postBody?.title ?? '').trim();
-      const type = normalizeType(postBody?.type);
-      const walletType = String(postBody?.wallet_type ?? postBody?.wallet ?? '').trim();
-      const walletId = postBody?.wallet_id ? parseInt(String(postBody.wallet_id), 10) : null;
-      const amountNum = Number(postBody?.amount);
-
-      if (!description || !type || !walletType) {
-        return res.status(400).json({ error: 'All fields are required' });
-      }
-      if (!Number.isFinite(amountNum) || amountNum <= 0) {
-        return res.status(400).json({ error: 'Amount must be a number greater than 0' });
-      }
+      const description = String(postBody.description ?? postBody.title ?? '').trim();
+      const type = normalizeType(postBody.type);
+      const walletType = String(postBody.wallet_type ?? postBody.wallet ?? '').trim();
+      const walletId = postBody.wallet_id ?? null;
+      const amountNum = postBody.amount;
 
       const now = new Date();
 
@@ -346,26 +326,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(201).json(inserted[0]);
 
     } else if (method === 'PUT') {
-      const putBody = req.body as {
-        trans_id?: number;
-        id?: number;
-        description?: string;
-        title?: string;
-        type?: string;
-        wallet_type?: string;
-        wallet?: string;
-        wallet_id?: number | string;
-        amount?: number | string;
-      };
+      const putBody = parseBody(updateTransactionSchema, req.body, res);
+      if (!putBody) return;
 
-      const id = putBody?.trans_id ?? putBody?.id;
+      const id = putBody.trans_id ?? putBody.id;
       if (!id) return res.status(400).json({ error: 'Transaction ID required' });
 
-      const patchDescription = putBody?.description ?? putBody?.title ?? null;
-      const patchType = putBody?.type ?? null;
-      const patchWallet = putBody?.wallet_type ?? putBody?.wallet ?? null;
-      const patchWalletId = putBody?.wallet_id ? parseInt(String(putBody.wallet_id), 10) : null;
-      const patchAmount = putBody?.amount ?? null;
+      const patchDescription = putBody.description ?? putBody.title ?? null;
+      const patchType = putBody.type ?? null;
+      const patchWallet = putBody.wallet_type ?? putBody.wallet ?? null;
+      const patchWalletId = putBody.wallet_id ?? null;
+      const patchAmount = putBody.amount ?? null;
 
       const updated = await sql`
         UPDATE transactions
@@ -380,8 +351,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json(updated[0] || null);
 
     } else if (method === 'DELETE') {
-      const deleteBody = req.body as { trans_id?: number; id?: number };
-      const id = deleteBody?.trans_id ?? deleteBody?.id;
+      const deleteBody = parseBody(deleteTransactionSchema, req.body, res);
+      if (!deleteBody) return;
+
+      const id = deleteBody.trans_id ?? deleteBody.id;
       if (!id) return res.status(400).json({ error: 'Transaction ID required' });
 
       const deleted = await sql`

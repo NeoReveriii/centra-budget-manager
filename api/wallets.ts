@@ -1,5 +1,11 @@
 import { neon } from '@neondatabase/serverless';
 import { requireAccount } from './auth-helper.js';
+import {
+  createWalletSchema,
+  deleteWalletSchema,
+  updateWalletSchema,
+} from './schemas.js';
+import { parseBody } from './validate.js';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 interface RegClassRow {
@@ -117,37 +123,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'POST') {
-      const { name, type, initial_balance } = req.body as {
-        name?: string;
-        type?: string;
-        initial_balance?: number | string;
-      };
-      const parsedBalance = parseFloat(String(initial_balance)) || 0;
-
-      if (!name || !type) {
-        return res.status(400).json({ error: 'Name and type are required' });
-      }
+      const body = parseBody(createWalletSchema, req.body, res);
+      if (!body) return;
 
       const rows = await sql`
         INSERT INTO wallets (account_id, name, type, initial_balance)
-        VALUES (${account.acc_id}, ${name}, ${type}, ${parsedBalance})
+        VALUES (${account.acc_id}, ${body.name}, ${body.type}, ${body.initial_balance})
         RETURNING *
       `;
       return res.status(201).json({ message: 'Wallet created', wallet: rows[0] });
     }
 
     if (req.method === 'PUT') {
-      const { wallet_id, name, type, status, initial_balance } = req.body as {
-        wallet_id?: number;
-        name?: string;
-        type?: string;
-        status?: string;
-        initial_balance?: number | string;
-      };
+      const body = parseBody(updateWalletSchema, req.body, res);
+      if (!body) return;
 
-      if (!wallet_id || !name || !type) {
-        return res.status(400).json({ error: 'wallet_id, name, and type are required' });
-      }
+      const { wallet_id, name, type, status, initial_balance } = body;
+      const parsedBalance = initial_balance ?? 0;
 
       const oldWalletRows = await sql`
         SELECT name FROM wallets WHERE wallet_id = ${wallet_id} AND account_id = ${account.acc_id}
@@ -157,8 +149,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(404).json({ error: 'Wallet not found' });
       }
       const oldName = oldWalletRows[0].name;
-
-      const parsedBalance = parseFloat(String(initial_balance)) || 0;
 
       const rows = await sql`
         UPDATE wallets
@@ -179,10 +169,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'DELETE') {
-      const { wallet_id } = req.body as { wallet_id?: number };
-      if (!wallet_id) {
-        return res.status(400).json({ error: 'wallet_id is required' });
-      }
+      const body = parseBody(deleteWalletSchema, req.body, res);
+      if (!body) return;
+
+      const { wallet_id } = body;
 
       const walletRows = await sql`
         SELECT name FROM wallets WHERE wallet_id = ${wallet_id} AND account_id = ${account.acc_id}

@@ -1,5 +1,10 @@
-import { useState, useEffect } from 'react';
-import { fetchWallets, createWallet, deleteWallet, transferFunds, type Wallet } from '../lib/api';
+import { useState } from 'react';
+import {
+  useCreateWallet,
+  useDeleteWallet,
+  useTransferFunds,
+  useWallets,
+} from '@/hooks/use-budget-data';
 
 function formatCurrency(amount: number): string {
   return '₱' + amount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -24,38 +29,21 @@ function getWalletStyle(name: string) {
 }
 
 const Wallets = () => {
-  const [wallets, setWallets] = useState<Wallet[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: wallets = [], isLoading: loading } = useWallets();
+  const createWalletMutation = useCreateWallet();
+  const deleteWalletMutation = useDeleteWallet();
+  const transferMutation = useTransferFunds();
 
-  // Add Wallet Modal
   const [showAddModal, setShowAddModal] = useState(false);
   const [newWallet, setNewWallet] = useState({ name: '', type: 'E-Wallet', initial_balance: '' });
   const [addError, setAddError] = useState('');
-  const [addLoading, setAddLoading] = useState(false);
 
-  // Transfer Modal
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [transfer, setTransfer] = useState({ from_wallet_id: '', to_wallet_id: '', amount: '' });
   const [transferError, setTransferError] = useState('');
-  const [transferLoading, setTransferLoading] = useState(false);
 
-  // Delete
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState('');
-
-  useEffect(() => { loadData(); }, []);
-
-  async function loadData() {
-    try {
-      const w = await fetchWallets();
-      setWallets(w);
-    } catch (err) {
-      console.error('Failed to load wallets:', err);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   // Computed
   const totalBalance = wallets.reduce((sum, w) => sum + Number(w.calculated_balance || 0), 0);
@@ -64,55 +52,43 @@ const Wallets = () => {
   async function handleAddWallet(e: React.FormEvent) {
     e.preventDefault();
     setAddError('');
-    setAddLoading(true);
     try {
-      await createWallet({
+      await createWalletMutation.mutateAsync({
         name: newWallet.name,
         type: newWallet.type,
         initial_balance: Number(newWallet.initial_balance) || 0,
       });
       setShowAddModal(false);
       setNewWallet({ name: '', type: 'E-Wallet', initial_balance: '' });
-      await loadData();
     } catch (err: unknown) {
       setAddError(err instanceof Error ? err.message : 'Failed to create wallet');
-    } finally {
-      setAddLoading(false);
     }
   }
 
   async function handleTransfer(e: React.FormEvent) {
     e.preventDefault();
     setTransferError('');
-    setTransferLoading(true);
     try {
-      await transferFunds({
+      await transferMutation.mutateAsync({
         from_wallet_id: Number(transfer.from_wallet_id),
         to_wallet_id: Number(transfer.to_wallet_id),
         amount: Number(transfer.amount),
       });
       setShowTransferModal(false);
       setTransfer({ from_wallet_id: '', to_wallet_id: '', amount: '' });
-      await loadData();
     } catch (err: unknown) {
       setTransferError(err instanceof Error ? err.message : 'Transfer failed');
-    } finally {
-      setTransferLoading(false);
     }
   }
 
   async function handleDelete() {
     if (!deleteId) return;
-    setDeleteLoading(true);
     setDeleteError('');
     try {
-      await deleteWallet(deleteId);
+      await deleteWalletMutation.mutateAsync(deleteId);
       setDeleteId(null);
-      await loadData();
     } catch (err: unknown) {
       setDeleteError(err instanceof Error ? err.message : 'Delete failed');
-    } finally {
-      setDeleteLoading(false);
     }
   }
 
@@ -289,8 +265,8 @@ const Wallets = () => {
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-3 border border-outline-variant rounded-xl font-bold text-body-sm text-slate-600 hover:bg-slate-50 cursor-pointer">Cancel</button>
-                <button type="submit" disabled={addLoading} className="flex-1 py-3 bg-primary text-white rounded-xl font-bold text-body-sm hover:opacity-90 disabled:opacity-50 cursor-pointer">
-                  {addLoading ? 'Creating...' : 'Create Wallet'}
+                <button type="submit" disabled={createWalletMutation.isPending} className="flex-1 py-3 bg-primary text-white rounded-xl font-bold text-body-sm hover:opacity-90 disabled:opacity-50 cursor-pointer">
+                  {createWalletMutation.isPending ? 'Creating...' : 'Create Wallet'}
                 </button>
               </div>
             </form>
@@ -352,8 +328,8 @@ const Wallets = () => {
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowTransferModal(false)} className="flex-1 py-3 border border-outline-variant rounded-xl font-bold text-body-sm text-slate-600 hover:bg-slate-50 cursor-pointer">Cancel</button>
-                <button type="submit" disabled={transferLoading} className="flex-1 py-3 bg-primary text-white rounded-xl font-bold text-body-sm hover:opacity-90 disabled:opacity-50 cursor-pointer">
-                  {transferLoading ? 'Transferring...' : 'Transfer'}
+                <button type="submit" disabled={transferMutation.isPending} className="flex-1 py-3 bg-primary text-white rounded-xl font-bold text-body-sm hover:opacity-90 disabled:opacity-50 cursor-pointer">
+                  {transferMutation.isPending ? 'Transferring...' : 'Transfer'}
                 </button>
               </div>
             </form>
@@ -375,8 +351,8 @@ const Wallets = () => {
             )}
             <div className="flex gap-3">
               <button onClick={() => { setDeleteId(null); setDeleteError(''); }} className="flex-1 py-3 border border-outline-variant rounded-xl font-bold text-body-sm text-slate-600 hover:bg-slate-50 cursor-pointer">Cancel</button>
-              <button onClick={handleDelete} disabled={deleteLoading} className="flex-1 py-3 bg-error text-white rounded-xl font-bold text-body-sm hover:opacity-90 disabled:opacity-50 cursor-pointer">
-                {deleteLoading ? 'Deleting...' : 'Delete'}
+              <button onClick={handleDelete} disabled={deleteWalletMutation.isPending} className="flex-1 py-3 bg-error text-white rounded-xl font-bold text-body-sm hover:opacity-90 disabled:opacity-50 cursor-pointer">
+                {deleteWalletMutation.isPending ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>

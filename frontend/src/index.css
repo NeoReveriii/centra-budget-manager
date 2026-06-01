@@ -83,6 +83,15 @@
     color: var(--color-on-background);
     font-family: "Manrope", sans-serif;
   }
+
+  .dark body {
+    background-color: #0f172a;
+    color: #f1f5f9;
+  }
+
+  .dark .bg-surface-container-lowest {
+    background-color: #1e293b;
+  }
   
   /* Seamless Premium Scrollbar */
   ::-webkit-scrollbar {

@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
-import { fetchWallets, fetchTransactions, type Wallet, type Transaction } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
+import { useTransactions, useWallets } from '@/hooks/use-budget-data';
 
 // Icon/color mapping for transaction categories
 const CATEGORY_MAP: Record<string, { icon: string; iconBg: string; iconColor: string }> = {
@@ -49,24 +48,9 @@ function formatDate(dateStr: string): string {
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const [wallets, setWallets] = useState<Wallet[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const [w, t] = await Promise.all([fetchWallets(), fetchTransactions()]);
-        setWallets(w);
-        setTransactions(t);
-      } catch (err) {
-        console.error('Dashboard load error:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
-  }, []);
+  const { data: wallets = [], isLoading: walletsLoading } = useWallets();
+  const { data: transactions = [], isLoading: transactionsLoading } = useTransactions();
+  const loading = walletsLoading || transactionsLoading;
 
   // ── Computed values ──
   const totalBalance = wallets.reduce((sum, w) => sum + Number(w.calculated_balance || 0), 0);

@@ -1,4 +1,9 @@
+import { useUiStore } from '@/stores/ui-store';
+
 const Settings = () => {
+  const theme = useUiStore((s) => s.theme);
+  const setTheme = useUiStore((s) => s.setTheme);
+
   return (
     <div className="max-w-[800px] w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
       <header className="mb-lg">
@@ -20,7 +25,12 @@ const Settings = () => {
               <p className="font-body-sm text-on-surface-variant">Switch between standard and low-light interface themes.</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer hover:scale-105 transition-transform">
-              <input className="sr-only peer" type="checkbox" />
+              <input
+                className="sr-only peer"
+                type="checkbox"
+                checked={theme === 'dark'}
+                onChange={(e) => setTheme(e.target.checked ? 'dark' : 'light')}
+              />
               <div className="w-11 h-6 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-outline-variant after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
             </label>
           </div>

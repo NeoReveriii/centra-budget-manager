@@ -1,6 +1,8 @@
 import { neon } from '@neondatabase/serverless';
 import { ensureAccountsSchema } from './schema.js';
 import { requireAccount, requireAccountProfile } from './auth-helper.js';
+import { accountDeleteSchema, accountUpdateSchema } from './schemas.js';
+import { parseBody } from './validate.js';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 interface AccountRow {
@@ -31,15 +33,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const account = await requireAccount(req, res);
       if (!account) return;
 
-      const { id, username, email, pnumber, bio, avatar_seed, avatar_url } = req.body as {
-        id?: number;
-        username?: string;
-        email?: string;
-        pnumber?: string;
-        bio?: string;
-        avatar_seed?: string | null;
-        avatar_url?: string | null;
-      };
+      const body = parseBody(accountUpdateSchema, req.body, res);
+      if (!body) return;
+
+      const { id, username, email, pnumber, bio, avatar_seed, avatar_url } = body;
 
       const targetId = id ?? account.acc_id;
       if (targetId !== account.acc_id) {
@@ -81,8 +78,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const account = await requireAccount(req, res);
       if (!account) return;
 
-      const { id } = req.body as { id?: number };
-      const targetId = id ?? account.acc_id;
+      const body = parseBody(accountDeleteSchema, req.body, res);
+      if (!body) return;
+
+      const targetId = body.id ?? account.acc_id;
       if (targetId !== account.acc_id) {
         return res.status(403).json({ error: 'Forbidden' });
       }

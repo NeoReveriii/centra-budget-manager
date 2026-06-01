@@ -1,5 +1,7 @@
 import { neon } from '@neondatabase/serverless';
 import { requireAccount } from './auth-helper.js';
+import { chatMessageSchema } from './schemas.js';
+import { parseBody } from './validate.js';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 interface ChatHistoryRow {
@@ -65,10 +67,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ success: true, message: 'Chat cleared' });
 
     } else if (method === 'POST') {
-      const { message } = req.body as { message?: string };
-      if (!message || message.trim() === '') {
-        return res.status(400).json({ error: 'Message is required' });
-      }
+      const payload = parseBody(chatMessageSchema, req.body, res);
+      if (!payload) return;
+
+      const { message } = payload;
 
       await sql`
         INSERT INTO ai_chats (acc_id, role, content)
@@ -235,8 +237,8 @@ QUERY TYPE ROUTING — follow these rules strictly:
         return res.status(502).json({ error: 'AI provider error' });
       }
 
-      const body = fetchRes.body;
-      if (!body) {
+      const streamBody = fetchRes.body;
+      if (!streamBody) {
         return res.status(502).json({ error: 'AI provider error' });
       }
 
@@ -246,7 +248,7 @@ QUERY TYPE ROUTING — follow these rules strictly:
         'Connection': 'keep-alive'
       });
 
-      const reader = body.getReader();
+      const reader = streamBody.getReader();
       const decoder = new TextDecoder('utf-8');
       let fullResponse = '';
 
