@@ -1,17 +1,17 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { CentraBrand } from '@/components/CentraBrand';
 
 const Sidebar = () => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+  const initials = user?.username
+    ? user.username.slice(0, 2).toUpperCase()
+    : 'U';
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-slate-200 flex flex-col z-50">
-      <div className="p-8 flex items-center gap-3 border-b border-slate-100">
-        <img src="/assets/images/bb_logo_db.png" alt="Centra Logo" className="w-12 h-12 object-contain rounded-lg shrink-0" />
-        <div className="flex flex-col justify-center">
-          <h1 className="text-xl font-bold text-primary tracking-tight leading-none mb-1">Centra</h1>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Budget Manager</p>
-        </div>
+    <aside className="fixed left-0 top-0 h-screen w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-50">
+      <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800">
+        <CentraBrand variant="text" to="/dashboard" className="h-8" />
       </div>
       
       <nav className="flex-1 py-6 px-4 space-y-2">
@@ -20,8 +20,8 @@ const Sidebar = () => {
           className={({ isActive }) => 
             `flex items-center gap-3 px-4 py-3 font-bold rounded-lg transition-colors ${
               isActive 
-                ? 'bg-emerald-50 text-primary border-l-4 border-primary' 
-                : 'text-slate-500 font-medium hover:bg-slate-50'
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-primary border-l-4 border-primary' 
+                : 'text-slate-500 dark:text-slate-400 font-medium hover:bg-slate-50 dark:hover:bg-slate-800/60'
             }`
           }
         >
@@ -33,8 +33,8 @@ const Sidebar = () => {
           className={({ isActive }) => 
             `flex items-center gap-3 px-4 py-3 font-bold rounded-lg transition-colors ${
               isActive 
-                ? 'bg-emerald-50 text-primary border-l-4 border-primary' 
-                : 'text-slate-500 font-medium hover:bg-slate-50'
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-primary border-l-4 border-primary' 
+                : 'text-slate-500 dark:text-slate-400 font-medium hover:bg-slate-50 dark:hover:bg-slate-800/60'
             }`
           }
         >
@@ -46,8 +46,8 @@ const Sidebar = () => {
           className={({ isActive }) => 
             `flex items-center gap-3 px-4 py-3 font-bold rounded-lg transition-colors ${
               isActive 
-                ? 'bg-emerald-50 text-primary border-l-4 border-primary' 
-                : 'text-slate-500 font-medium hover:bg-slate-50'
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-primary border-l-4 border-primary' 
+                : 'text-slate-500 dark:text-slate-400 font-medium hover:bg-slate-50 dark:hover:bg-slate-800/60'
             }`
           }
         >
@@ -59,8 +59,8 @@ const Sidebar = () => {
           className={({ isActive }) => 
             `flex items-center gap-3 px-4 py-3 font-bold rounded-lg transition-colors ${
               isActive 
-                ? 'bg-emerald-50 text-primary border-l-4 border-primary' 
-                : 'text-slate-500 font-medium hover:bg-slate-50'
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-primary border-l-4 border-primary' 
+                : 'text-slate-500 dark:text-slate-400 font-medium hover:bg-slate-50 dark:hover:bg-slate-800/60'
             }`
           }
         >
@@ -72,8 +72,8 @@ const Sidebar = () => {
           className={({ isActive }) => 
             `flex items-center gap-3 px-4 py-3 font-bold rounded-lg transition-colors ${
               isActive 
-                ? 'bg-emerald-50 text-primary border-l-4 border-primary' 
-                : 'text-slate-500 font-medium hover:bg-slate-50'
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-primary border-l-4 border-primary' 
+                : 'text-slate-500 dark:text-slate-400 font-medium hover:bg-slate-50 dark:hover:bg-slate-800/60'
             }`
           }
         >
@@ -81,11 +81,15 @@ const Sidebar = () => {
         </NavLink>
       </nav>
       
-      <div className="p-4 border-t border-slate-200 flex items-center gap-2">
-        <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shrink-0">AP</div>
-        <div className="flex-1 overflow-hidden">
-          <div className="font-bold text-body-sm text-on-background truncate">Arthur P.</div>
-          <div className="text-[12px] text-slate-500 truncate">Premium Plan</div>
+      <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2">
+        <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shrink-0">
+          {initials}
+        </div>
+        <div className="flex-1 overflow-hidden min-w-0">
+          <div className="font-bold text-body-sm text-on-background dark:text-slate-100 truncate">
+            {user?.username ?? 'Account'}
+          </div>
+          <div className="text-[12px] text-slate-500 dark:text-slate-400 truncate">{user?.email ?? ''}</div>
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <button 

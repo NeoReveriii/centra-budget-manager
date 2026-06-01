@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import LoginModal from '../components/LoginModal';
 import CreateAccountModal from '../components/CreateAccountModal';
-import centraLogo from '../assets/centraLogo.png';
+import { CentraBrand } from '@/components/CentraBrand';
 
 const LandingPage = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -10,9 +10,9 @@ const LandingPage = () => {
   return (
     <div className="bg-background min-h-screen text-on-surface font-body-md">
       {/* TopNavBar */}
-      <nav className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-emerald-100 shadow-sm shadow-emerald-900/5">
+      <nav className="fixed top-0 w-full z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-emerald-100 dark:border-slate-800 shadow-sm shadow-emerald-900/5">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <img src={centraLogo} alt="Centra" className="h-16 w-auto object-contain scale-[1.8] origin-left translate-y-1" />
+          <CentraBrand variant="text" className="h-9" />
 
           <div className="flex items-center space-x-4">
             <button onClick={() => setShowLoginModal(true)} className="px-4 py-2 text-emerald-900 font-semibold text-sm hover:bg-emerald-50/50 transition-colors rounded-lg cursor-pointer">
