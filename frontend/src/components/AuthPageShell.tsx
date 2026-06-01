@@ -11,9 +11,9 @@ interface AuthPageShellProps {
 export default function AuthPageShell({ title, subtitle, children, footer }: AuthPageShellProps) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <nav className="w-full border-b border-emerald-100 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-sm shadow-emerald-900/5">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center">
-          <CentraBrand variant="text" to="/" className="h-9" />
+      <nav className="w-full border-b border-emerald-100 bg-white shadow-sm shadow-emerald-900/5">
+        <div className="max-w-7xl mx-auto px-6 h-[72px] flex items-center">
+          <CentraBrand variant="text" to="/" size="nav" surface="light" />
         </div>
       </nav>
 

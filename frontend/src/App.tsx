@@ -103,12 +103,9 @@ function ThemeInit() {
   const theme = useUiStore((s) => s.theme);
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
-    const favicon = document.querySelector<HTMLLinkElement>("link[rel='icon']");
-    if (favicon) {
-      favicon.href =
-        theme === 'dark'
-          ? '/assets/images/CentraLogoDark.png'
-          : '/assets/images/CentraLogoDefault.png';
+    const favicon32 = document.querySelector<HTMLLinkElement>("link[rel='icon'][sizes='32x32']");
+    if (favicon32) {
+      favicon32.href = theme === 'dark' ? '/favicon-dark-32.png' : '/favicon-32.png';
     }
   }, [theme]);
   return null;

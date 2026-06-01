@@ -9,9 +9,9 @@ const Sidebar = () => {
     : 'U';
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-50">
-      <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800">
-        <CentraBrand variant="text" to="/dashboard" className="h-8" />
+    <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-slate-200 flex flex-col z-50">
+      <div className="px-5 py-5 border-b border-slate-100 dark:border-slate-800">
+        <CentraBrand variant="text" to="/dashboard" size="sidebar" surface="light" />
       </div>
       
       <nav className="flex-1 py-6 px-4 space-y-2">

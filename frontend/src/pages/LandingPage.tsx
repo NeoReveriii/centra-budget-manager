@@ -10,9 +10,9 @@ const LandingPage = () => {
   return (
     <div className="bg-background min-h-screen text-on-surface font-body-md">
       {/* TopNavBar */}
-      <nav className="fixed top-0 w-full z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-emerald-100 dark:border-slate-800 shadow-sm shadow-emerald-900/5">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <CentraBrand variant="text" className="h-9" />
+      <nav className="fixed top-0 w-full z-50 bg-white border-b border-emerald-100 shadow-sm shadow-emerald-900/5">
+        <div className="max-w-7xl mx-auto px-6 h-[72px] flex items-center justify-between">
+          <CentraBrand variant="text" size="nav" surface="light" />
 
           <div className="flex items-center space-x-4">
             <button onClick={() => setShowLoginModal(true)} className="px-4 py-2 text-emerald-900 font-semibold text-sm hover:bg-emerald-50/50 transition-colors rounded-lg cursor-pointer">
@@ -26,7 +26,7 @@ const LandingPage = () => {
       </nav>
 
       {/* Main Content Canvas */}
-      <main className="pt-24 pb-24">
+      <main className="pt-[88px] pb-24">
         {/* Hero Section */}
         <section className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
