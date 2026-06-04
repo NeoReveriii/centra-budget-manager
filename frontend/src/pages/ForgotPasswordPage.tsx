@@ -1,30 +1,34 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import AuthPageShell from '../components/AuthPageShell';
-import { requestPasswordReset } from '../lib/auth-client';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import AuthPageShell from "../components/AuthPageShell";
+import { requestPasswordReset } from "../lib/auth-client";
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
-    setSuccessMessage('');
+    setError("");
+    setSuccessMessage("");
     setIsLoading(true);
 
     try {
       const result = await requestPasswordReset(email.trim());
       if (result.success) {
-        setSuccessMessage('If an account exists for that email, a password reset link has been sent.');
-        setEmail('');
+        setSuccessMessage(
+          "If an account exists for that email, a password reset link has been sent.",
+        );
+        setEmail("");
       } else if (result.error) {
         setError(result.error);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to send reset email');
+      setError(
+        err instanceof Error ? err.message : "Failed to send reset email",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -36,7 +40,9 @@ export default function ForgotPasswordPage() {
       subtitle="Enter your email address and we will send you a link to reset your password."
       footer={
         <>
-          <p className="font-label-caps text-label-caps text-on-surface-variant uppercase">Remember your password?</p>
+          <p className="font-label-caps text-label-caps text-on-surface-variant uppercase">
+            Remember your password?
+          </p>
           <Link
             to="/"
             className="ml-sm font-label-caps text-label-caps text-primary hover:underline transition-all"
@@ -62,7 +68,10 @@ export default function ForgotPasswordPage() {
         )}
 
         <div className="space-y-xs">
-          <label className="font-label-caps text-label-caps text-secondary uppercase" htmlFor="email">
+          <label
+            className="font-label-caps text-label-caps text-secondary uppercase"
+            htmlFor="email"
+          >
             Email Address
           </label>
           <input
@@ -83,7 +92,7 @@ export default function ForgotPasswordPage() {
           className="w-full bg-primary-container text-on-primary font-bold text-sm py-3 px-xl rounded-full flex items-center justify-center hover:bg-primary hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-300 ease-out active:scale-[0.98] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span className="uppercase tracking-widest">
-            {isLoading ? 'Sending...' : 'Send Reset Link'}
+            {isLoading ? "Sending..." : "Send Reset Link"}
           </span>
         </button>
       </form>

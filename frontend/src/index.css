@@ -66,13 +66,13 @@
 
   --animate-fade-in: fade-in 0.6s ease-out;
   @keyframes fade-in {
-    from { 
-      opacity: 0; 
-      transform: translateY(12px); 
+    from {
+      opacity: 0;
+      transform: translateY(12px);
     }
-    to { 
-      opacity: 1; 
-      transform: translateY(0); 
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 }
@@ -92,7 +92,7 @@
   .dark .bg-surface-container-lowest {
     background-color: #1e293b;
   }
-  
+
   /* Seamless Premium Scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
@@ -112,33 +112,101 @@
 
 @layer utilities {
   .material-symbols-outlined {
-    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    font-variation-settings:
+      "FILL" 0,
+      "wght" 400,
+      "GRAD" 0,
+      "opsz" 24;
   }
-  
-  .font-h1 { font-family: "Manrope", sans-serif; }
-  .text-h1 { font-size: 32px; line-height: 1.2; letter-spacing: -0.01em; font-weight: 800; }
-  
-  .font-h2 { font-family: "Manrope", sans-serif; }
-  .text-h2 { font-size: 24px; line-height: 1.3; letter-spacing: -0.01em; font-weight: 700; }
-  
-  .font-h3 { font-family: "Manrope", sans-serif; }
-  .text-h3 { font-size: 20px; line-height: 1.4; letter-spacing: 0; font-weight: 600; }
-  
-  .font-display { font-family: "Manrope", sans-serif; }
-  .text-display { font-size: 48px; line-height: 1.1; letter-spacing: -0.02em; font-weight: 800; }
-  
-  .font-body-lg { font-family: "Manrope", sans-serif; }
-  .text-body-lg { font-size: 18px; line-height: 1.6; letter-spacing: 0; font-weight: 400; }
-  
-  .font-body-md { font-family: "Manrope", sans-serif; }
-  .text-body-md { font-size: 16px; line-height: 1.5; letter-spacing: 0; font-weight: 400; }
-  
-  .font-body-sm { font-family: "Manrope", sans-serif; }
-  .text-body-sm { font-size: 14px; line-height: 1.4; letter-spacing: 0.01em; font-weight: 500; }
-  
-  .font-label-caps { font-family: "Manrope", sans-serif; }
-  .text-label-caps { font-size: 12px; line-height: 1; letter-spacing: 0.05em; font-weight: 700; text-transform: uppercase; }
-  
-  .font-numeric-data { font-family: "Manrope", sans-serif; }
-  .text-numeric-data { font-size: 16px; line-height: 1; letter-spacing: -0.02em; font-weight: 600; }
+
+  .font-h1 {
+    font-family: "Manrope", sans-serif;
+  }
+  .text-h1 {
+    font-size: 32px;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    font-weight: 800;
+  }
+
+  .font-h2 {
+    font-family: "Manrope", sans-serif;
+  }
+  .text-h2 {
+    font-size: 24px;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    font-weight: 700;
+  }
+
+  .font-h3 {
+    font-family: "Manrope", sans-serif;
+  }
+  .text-h3 {
+    font-size: 20px;
+    line-height: 1.4;
+    letter-spacing: 0;
+    font-weight: 600;
+  }
+
+  .font-display {
+    font-family: "Manrope", sans-serif;
+  }
+  .text-display {
+    font-size: 48px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-weight: 800;
+  }
+
+  .font-body-lg {
+    font-family: "Manrope", sans-serif;
+  }
+  .text-body-lg {
+    font-size: 18px;
+    line-height: 1.6;
+    letter-spacing: 0;
+    font-weight: 400;
+  }
+
+  .font-body-md {
+    font-family: "Manrope", sans-serif;
+  }
+  .text-body-md {
+    font-size: 16px;
+    line-height: 1.5;
+    letter-spacing: 0;
+    font-weight: 400;
+  }
+
+  .font-body-sm {
+    font-family: "Manrope", sans-serif;
+  }
+  .text-body-sm {
+    font-size: 14px;
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+    font-weight: 500;
+  }
+
+  .font-label-caps {
+    font-family: "Manrope", sans-serif;
+  }
+  .text-label-caps {
+    font-size: 12px;
+    line-height: 1;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .font-numeric-data {
+    font-family: "Manrope", sans-serif;
+  }
+  .text-numeric-data {
+    font-size: 16px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
 }

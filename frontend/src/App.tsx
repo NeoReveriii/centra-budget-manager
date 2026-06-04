@@ -1,17 +1,24 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { useUiStore } from '@/stores/ui-store';
-import Layout from './components/Layout';
-import Dashboard from './pages/Dashboard';
-import Settings from './pages/Settings';
-import Transactions from './pages/Transactions';
-import Wallets from './pages/Wallets';
-import SavingsGoals from './pages/SavingsGoals';
-import KwartaAI from './pages/KwartaAI';
-import LandingPage from './pages/LandingPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+import { useEffect } from "react";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { useUiStore } from "@/stores/ui-store";
+import Layout from "./components/Layout";
+import Dashboard from "./pages/Dashboard";
+import Settings from "./pages/Settings";
+import Transactions from "./pages/Transactions";
+import Wallets from "./pages/Wallets";
+import SavingsGoals from "./pages/SavingsGoals";
+import KwartaAI from "./pages/KwartaAI";
+import LandingPage from "./pages/LandingPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 // Wrapper that redirects to /login if not authenticated
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -44,9 +51,11 @@ function ResetTokenRedirect() {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const token = params.get('token');
-    if (token && location.pathname === '/') {
-      navigate(`/reset-password?token=${encodeURIComponent(token)}`, { replace: true });
+    const token = params.get("token");
+    if (token && location.pathname === "/") {
+      navigate(`/reset-password?token=${encodeURIComponent(token)}`, {
+        replace: true,
+      });
     }
   }, [location.pathname, location.search, navigate]);
 
@@ -57,7 +66,8 @@ function AppRoutes() {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
   const isPublicAuthPage =
-    location.pathname === '/forgot-password' || location.pathname === '/reset-password';
+    location.pathname === "/forgot-password" ||
+    location.pathname === "/reset-password";
 
   if (isLoading && !isPublicAuthPage) {
     return <AuthLoadingScreen />;
@@ -73,7 +83,13 @@ function AppRoutes() {
         {/* Public routes */}
         <Route
           path="/"
-          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />}
+          element={
+            isAuthenticated ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <LandingPage />
+            )
+          }
         />
 
         {/* Protected routes */}
@@ -102,10 +118,13 @@ function AppRoutes() {
 function ThemeInit() {
   const theme = useUiStore((s) => s.theme);
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-    const favicon32 = document.querySelector<HTMLLinkElement>("link[rel='icon'][sizes='32x32']");
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    const favicon32 = document.querySelector<HTMLLinkElement>(
+      "link[rel='icon'][sizes='32x32']",
+    );
     if (favicon32) {
-      favicon32.href = theme === 'dark' ? '/favicon-dark-32.png' : '/favicon-32.png';
+      favicon32.href =
+        theme === "dark" ? "/favicon-dark-32.png" : "/favicon-32.png";
     }
   }, [theme]);
   return null;

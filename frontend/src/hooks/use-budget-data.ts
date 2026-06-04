@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   clearChatHistory,
   createTransaction,
@@ -12,13 +12,13 @@ import {
   transferFunds,
   type Transaction,
   type Wallet,
-} from '@/lib/api';
+} from "@/lib/api";
 
 export const budgetQueryKeys = {
-  wallets: ['wallets'] as const,
-  transactions: ['transactions'] as const,
-  goals: ['goals'] as const,
-  chatHistory: ['chatHistory'] as const,
+  wallets: ["wallets"] as const,
+  transactions: ["transactions"] as const,
+  goals: ["goals"] as const,
+  chatHistory: ["chatHistory"] as const,
 };
 
 export function useWallets() {

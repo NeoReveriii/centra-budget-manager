@@ -1,9 +1,9 @@
 // ── API Service Layer ──
 // Thin fetch wrapper that attaches the Neon Auth JWT to every request.
 
-import { getAccessToken, clearPersistedSession } from './auth-client';
+import { getAccessToken, clearPersistedSession } from "./auth-client";
 
-const API_BASE = '/api';
+const API_BASE = "/api";
 
 async function resolveToken(): Promise<string | null> {
   return getAccessToken();
@@ -11,16 +11,16 @@ async function resolveToken(): Promise<string | null> {
 
 async function request<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<T> {
   const token = await resolveToken();
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string> || {}),
+    "Content-Type": "application/json",
+    ...((options.headers as Record<string, string>) || {}),
   };
 
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
   const res = await fetch(`${API_BASE}${endpoint}`, {
@@ -30,7 +30,7 @@ async function request<T>(
 
   if (res.status === 401) {
     clearPersistedSession();
-    throw new Error('Unauthorized');
+    throw new Error("Unauthorized");
   }
 
   if (!res.ok) {
@@ -57,9 +57,8 @@ export interface UserProfile {
 }
 
 export async function fetchCurrentUser(): Promise<UserProfile> {
-  return request<UserProfile>('/accounts');
+  return request<UserProfile>("/accounts");
 }
-
 
 // ──────────────────────────────────────────────
 // Transactions
@@ -68,18 +67,18 @@ export async function fetchCurrentUser(): Promise<UserProfile> {
 export interface Transaction {
   trans_id: number;
   description: string;
-  type: string;          // 'Income' | 'Expense' | 'Transfer'
+  type: string; // 'Income' | 'Expense' | 'Transfer'
   wallet_type: string;
   wallet_id: number | null;
   transfer_from_wallet_id: number | null;
   transfer_to_wallet_id: number | null;
-  amount: string;        // comes as string from NUMERIC
+  amount: string; // comes as string from NUMERIC
   account_id: number;
   dateoftrans: string;
 }
 
 export async function fetchTransactions(): Promise<Transaction[]> {
-  return request<Transaction[]>('/transactions');
+  return request<Transaction[]>("/transactions");
 }
 
 export async function createTransaction(data: {
@@ -89,15 +88,17 @@ export async function createTransaction(data: {
   wallet_id?: number;
   amount: number;
 }): Promise<Transaction> {
-  return request<Transaction>('/transactions', {
-    method: 'POST',
+  return request<Transaction>("/transactions", {
+    method: "POST",
     body: JSON.stringify(data),
   });
 }
 
-export async function deleteTransaction(trans_id: number): Promise<Transaction | null> {
-  return request<Transaction | null>('/transactions', {
-    method: 'DELETE',
+export async function deleteTransaction(
+  trans_id: number,
+): Promise<Transaction | null> {
+  return request<Transaction | null>("/transactions", {
+    method: "DELETE",
     body: JSON.stringify({ trans_id }),
   });
 }
@@ -107,8 +108,8 @@ export async function transferFunds(data: {
   to_wallet_id: number;
   amount: number;
 }): Promise<{ success: boolean; message: string; row: Transaction }> {
-  return request('/transactions?action=transfer', {
-    method: 'POST',
+  return request("/transactions?action=transfer", {
+    method: "POST",
     body: JSON.stringify(data),
   });
 }
@@ -128,7 +129,7 @@ export interface Wallet {
 }
 
 export async function fetchWallets(): Promise<Wallet[]> {
-  const res = await request<{ wallets: Wallet[] }>('/wallets');
+  const res = await request<{ wallets: Wallet[] }>("/wallets");
   return res.wallets;
 }
 
@@ -137,8 +138,8 @@ export async function createWallet(data: {
   type: string;
   initial_balance: number;
 }): Promise<{ message: string; wallet: Wallet }> {
-  return request('/wallets', {
-    method: 'POST',
+  return request("/wallets", {
+    method: "POST",
     body: JSON.stringify(data),
   });
 }
@@ -150,15 +151,17 @@ export async function updateWallet(data: {
   status?: string;
   initial_balance?: number;
 }): Promise<{ message: string; wallet: Wallet }> {
-  return request('/wallets', {
-    method: 'PUT',
+  return request("/wallets", {
+    method: "PUT",
     body: JSON.stringify(data),
   });
 }
 
-export async function deleteWallet(wallet_id: number): Promise<{ message: string }> {
-  return request('/wallets', {
-    method: 'DELETE',
+export async function deleteWallet(
+  wallet_id: number,
+): Promise<{ message: string }> {
+  return request("/wallets", {
+    method: "DELETE",
     body: JSON.stringify({ wallet_id }),
   });
 }
@@ -182,7 +185,7 @@ export interface Goal {
 }
 
 export async function fetchGoals(): Promise<Goal[]> {
-  const res = await request<{ goals: Goal[] }>('/goals');
+  const res = await request<{ goals: Goal[] }>("/goals");
   return res.goals;
 }
 
@@ -191,19 +194,21 @@ export async function fetchGoals(): Promise<Goal[]> {
 // ──────────────────────────────────────────────
 
 export interface ChatMessageData {
-  role: 'user' | 'assistant' | 'system';
+  role: "user" | "assistant" | "system";
   content: string;
   created_at: string;
 }
 
 export async function fetchChatHistory(): Promise<ChatMessageData[]> {
-  const res = await request<{ data: ChatMessageData[] }>('/chat');
+  const res = await request<{ data: ChatMessageData[] }>("/chat");
   return res.data;
 }
 
-export async function clearChatHistory(): Promise<{ success: boolean; message: string }> {
-  return request('/chat', {
-    method: 'DELETE',
+export async function clearChatHistory(): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  return request("/chat", {
+    method: "DELETE",
   });
 }
-

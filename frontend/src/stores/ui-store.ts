@@ -1,7 +1,7 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
-type ThemeMode = 'light' | 'dark';
+type ThemeMode = "light" | "dark";
 
 interface UiState {
   sidebarCollapsed: boolean;
@@ -28,17 +28,18 @@ export const useUiStore = create<UiState>()(
     (set) => ({
       sidebarCollapsed: false,
       fabOpen: false,
-      theme: 'light',
-      txSearch: '',
-      txTypeFilter: 'All Types',
-      txWalletFilter: 'All Wallets',
+      theme: "light",
+      txSearch: "",
+      txTypeFilter: "All Types",
+      txWalletFilter: "All Wallets",
       txPage: 1,
       setSidebarCollapsed: (sidebarCollapsed) => set({ sidebarCollapsed }),
-      toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
+      toggleSidebar: () =>
+        set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
       setFabOpen: (fabOpen) => set({ fabOpen }),
       toggleFab: () => set((s) => ({ fabOpen: !s.fabOpen })),
       setTheme: (theme) => {
-        document.documentElement.classList.toggle('dark', theme === 'dark');
+        document.documentElement.classList.toggle("dark", theme === "dark");
         set({ theme });
       },
       setTxSearch: (txSearch) => set({ txSearch, txPage: 1 }),
@@ -47,15 +48,18 @@ export const useUiStore = create<UiState>()(
       setTxPage: (txPage) => set({ txPage }),
       resetTxFilters: () =>
         set({
-          txSearch: '',
-          txTypeFilter: 'All Types',
-          txWalletFilter: 'All Wallets',
+          txSearch: "",
+          txTypeFilter: "All Types",
+          txWalletFilter: "All Wallets",
           txPage: 1,
         }),
     }),
     {
-      name: 'centra-ui',
-      partialize: (state) => ({ theme: state.theme, sidebarCollapsed: state.sidebarCollapsed }),
-    }
-  )
+      name: "centra-ui",
+      partialize: (state) => ({
+        theme: state.theme,
+        sidebarCollapsed: state.sidebarCollapsed,
+      }),
+    },
+  ),
 );

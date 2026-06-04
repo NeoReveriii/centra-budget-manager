@@ -1,5 +1,5 @@
-import { CentraBrand } from '@/components/CentraBrand';
-import type { ReactNode } from 'react';
+import { CentraBrand } from "@/components/CentraBrand";
+import type { ReactNode } from "react";
 
 interface AuthPageShellProps {
   title: string;
@@ -8,7 +8,12 @@ interface AuthPageShellProps {
   footer?: ReactNode;
 }
 
-export default function AuthPageShell({ title, subtitle, children, footer }: AuthPageShellProps) {
+export default function AuthPageShell({
+  title,
+  subtitle,
+  children,
+  footer,
+}: AuthPageShellProps) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <nav className="w-full border-b border-emerald-100 bg-white shadow-sm shadow-emerald-900/5">
@@ -21,9 +26,13 @@ export default function AuthPageShell({ title, subtitle, children, footer }: Aut
         <div className="w-full max-w-[520px]">
           <div className="bg-surface-container-lowest rounded-3xl shadow-2xl overflow-hidden flex flex-col relative">
             <div className="px-xl pt-12 pb-6 text-center relative z-10">
-              <h1 className="text-[26px] font-extrabold text-slate-900 tracking-tight mb-xs">{title}</h1>
+              <h1 className="text-[26px] font-extrabold text-slate-900 tracking-tight mb-xs">
+                {title}
+              </h1>
               {subtitle && (
-                <p className="text-body-sm text-slate-500 mt-2 max-w-sm mx-auto">{subtitle}</p>
+                <p className="text-body-sm text-slate-500 mt-2 max-w-sm mx-auto">
+                  {subtitle}
+                </p>
               )}
             </div>
 
@@ -39,12 +48,20 @@ export default function AuthPageShell({ title, subtitle, children, footer }: Aut
           <div className="mt-xl flex flex-col items-center gap-md opacity-60">
             <div className="flex items-center gap-lg text-slate-500">
               <div className="flex items-center gap-xs">
-                <span className="material-symbols-outlined text-[14px]">lock</span>
-                <span className="font-label-caps text-[10px] uppercase tracking-tighter">Encrypted</span>
+                <span className="material-symbols-outlined text-[14px]">
+                  lock
+                </span>
+                <span className="font-label-caps text-[10px] uppercase tracking-tighter">
+                  Encrypted
+                </span>
               </div>
               <div className="flex items-center gap-xs">
-                <span className="material-symbols-outlined text-[14px]">verified_user</span>
-                <span className="font-label-caps text-[10px] uppercase tracking-tighter">Secure Connection</span>
+                <span className="material-symbols-outlined text-[14px]">
+                  verified_user
+                </span>
+                <span className="font-label-caps text-[10px] uppercase tracking-tighter">
+                  Secure Connection
+                </span>
               </div>
             </div>
           </div>
