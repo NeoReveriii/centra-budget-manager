@@ -235,14 +235,6 @@ const Dashboard = () => {
           <h1 className="font-h1 text-h1 text-on-background">
             Welcome back, {displayName}
           </h1>
-          <div className="flex items-center gap-2 mt-2">
-            <span className="px-2 py-0.5 bg-secondary-container text-on-secondary-container font-label-caps text-label-caps rounded-full">
-              {currentMonth}
-            </span>
-            <span className="text-body-sm text-on-surface-variant">
-              Last sync: just now
-            </span>
-          </div>
         </div>
 
         {/* Filters */}
