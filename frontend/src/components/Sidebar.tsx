@@ -16,7 +16,7 @@ const Sidebar = () => {
     : "U";
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-[300px] bg-[#f2f4f6] border-r border-[#bccabe] py-6 px-4 flex flex-col z-50">
+    <aside className="fixed left-0 top-0 h-screen w-[300px] bg-[#f2f4f6] border-r border-[#bccabe] py-6 px-4 flex flex-col z-50" style={{ fontFamily: "'Inter', sans-serif" }}>
       {/* Header */}
       <div className="flex items-center gap-3 px-2 mb-8">
         {/* Logo PNG */}
