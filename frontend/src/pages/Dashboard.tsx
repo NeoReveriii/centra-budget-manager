@@ -208,10 +208,6 @@ const Dashboard = () => {
   // Recent transactions (first 5)
   const recentTx = transactions.slice(0, 5);
 
-  const currentMonth = now.toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
   const displayName = user?.username || "User";
 
   if (loading) {
