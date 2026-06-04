@@ -1,6 +1,5 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { CentraBrand } from "@/components/CentraBrand";
 
 const Sidebar = () => {
   const { logout, user } = useAuth();
