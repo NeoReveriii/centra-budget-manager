@@ -9,7 +9,7 @@ A full-stack personal finance app that helps users track wallets, transactions, 
 ## 🚀 The Core Problem & Solution
 
 * **The Problem:** Most people juggle spending across multiple wallets and accounts, but typical spreadsheets or generic budgeting apps make it hard to see balances, history, and progress toward goals in one coherent view—let alone get actionable advice without manually exporting data.
-* **The Solution:** Centra Budget Manager centralizes wallets, transactions, and savings goals on a live dashboard, secures each user’s data with Neon Auth, and powers **Kwarta AI**—a chat assistant that reads the user’s actual transactions, wallets, and goals to deliver contextual financial guidance.
+* **The Solution:** Centra Budget Manager centralizes wallets, transactions, and savings goals on a live dashboard, secures each user's data with Neon Auth, and powers **Kwarta AI**—a chat assistant that reads the user's actual transactions, wallets, and goals to deliver contextual financial guidance.
 
 ---
 
@@ -17,11 +17,14 @@ A full-stack personal finance app that helps users track wallets, transactions, 
 
 | Category | Technologies Used |
 | :--- | :--- |
-| **Frontend** | React 19, TypeScript, Vite, Tailwind CSS v4, React Router |
+| **Frontend** | React 19, TypeScript, Vite 6, Tailwind CSS v4, React Router v7 |
+| **UI Components** | Radix UI (`@radix-ui/react-dialog`, `@radix-ui/react-label`, `@radix-ui/react-slot`), Lucide React, shadcn/ui |
+| **State Management** | Zustand v5 (client UI state + persistence), TanStack Query v5 (server state & caching) |
+| **AI Chat** | `react-markdown` + `remark-gfm` (Markdown rendering), DeepSeek streaming |
 | **Backend** | Vercel Serverless Functions (Node.js), `@vercel/node` |
 | **Database** | PostgreSQL on Neon, `@neondatabase/serverless` |
 | **Authentication** | Neon Auth (Better Auth), `@neondatabase/auth`, JWT verification with `jose` |
-| **AI** | DeepSeek API (streaming chat in Kwarta AI) |
+| **AI** | DeepSeek API (`deepseek-chat`, server-side SSE streaming) |
 | **Deployment** | Vercel (frontend + API), Neon (database + auth) |
 
 ---
@@ -30,10 +33,13 @@ A full-stack personal finance app that helps users track wallets, transactions, 
 
 * **Neon Auth integration:** Email/password sign-up, Google OAuth, password reset flows, and JWT-based API protection—with local `accounts` profiles auto-linked to Neon Auth identities on first login.
 * **Financial dashboard:** Real-time overview of wallet balances, recent transactions, and savings goal progress in a responsive React SPA.
-* **Multi-wallet transactions:** Income, expense, and transfer operations with balance calculations derived from transaction history.
-* **Savings goals:** Goal creation, contributions, deadlines, and progress tracking with contribution history.
-* **Kwarta AI:** Server-side streaming chat that injects the user’s transactions, wallets, and goals into the prompt so responses stay personalized and data-aware.
-* **Dedicated auth pages:** Custom `/forgot-password` and `/reset-password` flows styled to match the login experience, with Neon Auth email links redirecting back to the app.
+* **Multi-wallet transactions:** Income, expense, and transfer operations with balance calculations derived from transaction history. Full search, type filter, wallet filter, and pagination managed via Zustand.
+* **Savings goals:** Goal creation, contributions, deadlines, category tags, priority levels, and progress tracking with per-goal contribution history rendered via `GoalCard`.
+* **Kwarta AI:** Server-side SSE streaming chat that injects the user's real-time transactions, wallets, and goals into the system prompt. Supports inline chart tags (`[CHART:INCOME]`, `[CHART:EXPENSE]`) that the frontend renders as visual summaries. Responses are persisted to `ai_chats` and rendered with full Markdown (lists, bold, tables) via `react-markdown`.
+* **Dark / Light mode:** Persistent theme toggle powered by Zustand (`centra-ui` key in `localStorage`), toggling `dark` class on `<html>` and swapping favicons at runtime.
+* **Settings page:** Appearance (dark mode, contrast, language, currency display ₱), data management (CSV export), legal (privacy policy, terms), and a danger zone (delete account). App version displayed as `v4.2.0`.
+* **Input validation layer:** All API routes validate request bodies against Zod schemas (`api/schemas.ts`) through a shared `parseBody` helper (`api/validate.ts`), returning structured 400 errors on bad input.
+* **Dedicated auth pages:** Custom `/forgot-password` and `/reset-password` flows styled via `AuthPageShell`, matching the landing page experience. Neon Auth email links redirect back to the app and are intercepted by `ResetTokenRedirect`.
 
 ---
 
@@ -44,10 +50,15 @@ A full-stack personal finance app that helps users track wallets, transactions, 
 * **The Issue:** After Google sign-in, users were redirected to `/dashboard` but hit Vercel 404s or bounced back to the landing page. The Neon Auth SDK only exchanges the OAuth `session_verifier` on `getSession()`, not on `token()`. Combined with `cleanUrls: true` in `vercel.json`, the SPA fallback rewrite pointed to the wrong destination and sub-routes never loaded the React app.
 * **The Fix:** Switched token retrieval to `getSession()` first (so the verifier is exchanged), corrected the Vercel rewrite to `/index` for `cleanUrls`, added public routes for auth pages, and verified Neon JWTs against the auth host **origin** (not the full `/neondb/auth` path). OAuth callbacks now land on `/`, restore the session, and route authenticated users to the dashboard reliably.
 
-### Challenge: Stale sessions & false “logged in” state
+### Challenge: Stale sessions & false "logged in" state
 
-* **The Issue:** Logout did not always clear Neon Auth cookies, so “Continue with Google” could skip the provider and send users straight to the dashboard. Stale tokens in `localStorage` also allowed redirects before a valid user profile existed.
+* **The Issue:** Logout did not always clear Neon Auth cookies, so "Continue with Google" could skip the provider and send users straight to the dashboard. Stale tokens in `localStorage` also allowed redirects before a valid user profile existed.
 * **The Fix:** Clear Neon sessions before login, register, and social sign-in; require both `token` and `user` for protected routes; and stop falling back to cached localStorage tokens when the live session is empty.
+
+### Challenge: Zustand UI state persistence & hydration
+
+* **The Issue:** Theme preference and sidebar state needed to survive hard refreshes without a flash of wrong theme (FOWT). Naively reading from `localStorage` in `useEffect` caused a visible flash.
+* **The Fix:** Zustand's `persist` middleware with `partialize` syncs only `theme` and `sidebarCollapsed` to `localStorage` under the `centra-ui` key. `ThemeInit` applies the `dark` class and swaps favicons synchronously on mount, before the first paint.
 
 ---
 
@@ -72,10 +83,10 @@ Neon hosts both application data (`public` schema) and auth data (`neon_auth` sc
 
 | Table | Purpose |
 | :--- | :--- |
-| `accounts` | User profile (username, email, avatar, `neon_auth_id`) |
+| `accounts` | User profile (username, email, avatar, bio, phone, `neon_auth_id`) |
 | `wallets` | Cash / bank / e-wallet accounts with computed balances |
 | `transactions` | Income, expense, and transfer records |
-| `goals` | Savings targets with status and metadata |
+| `goals` | Savings targets with category, priority, status, and metadata |
 | `goal_contributions` | Contribution history per goal |
 | `ai_chats` | Persisted Kwarta AI messages per user |
 | `neon_auth.*` | Managed by Neon Auth (users, sessions, OAuth) |
@@ -127,21 +138,44 @@ Neon hosts both application data (`public` schema) and auth data (`neon_auth` sc
 
 ```text
 centra-budget-manager/
-├── api/                 # Vercel serverless API routes
-│   ├── accounts.ts      # Profile CRUD
-│   ├── auth-helper.ts   # JWT verification & account linking
-│   ├── chat.ts          # Kwarta AI (DeepSeek streaming)
-│   ├── goals.ts
-│   ├── transactions.ts
-│   └── wallets.ts
-├── frontend/            # React + Vite SPA
+├── api/                    # Vercel serverless API routes
+│   ├── accounts.ts         # Profile CRUD (username, avatar, bio, phone)
+│   ├── auth-helper.ts      # JWT verification & Neon Auth account linking
+│   ├── chat.ts             # Kwarta AI — DeepSeek SSE streaming + context injection
+│   ├── goals.ts            # Goals & contributions CRUD
+│   ├── schema.ts           # ensureAccountsSchema (DB migration helper)
+│   ├── schemas.ts          # Zod validation schemas for all API payloads
+│   ├── transactions.ts     # Transactions CRUD with balance logic
+│   ├── validate.ts         # parseBody helper — runs Zod schemas, returns 400 on failure
+│   └── wallets.ts          # Wallets CRUD with computed balance query
+├── frontend/               # React 19 + Vite 6 SPA
 │   └── src/
-│       ├── components/  # Login modal, sidebar, layout, auth pages
-│       ├── context/     # AuthProvider
-│       ├── lib/         # API client, Neon Auth client
-│       └── pages/       # Dashboard, wallets, goals, Kwarta AI, etc.
-├── public/              # Built SPA output (generated on deploy)
-└── vercel.json          # SPA rewrites + API routing
+│       ├── components/     # Shared UI components
+│       │   ├── ui/         # shadcn/ui primitives (Button, Dialog, Label, etc.)
+│       │   ├── AuthPageShell.tsx   # Wrapper layout for auth pages
+│       │   ├── CentraBrand.tsx     # Logo / brand mark component
+│       │   ├── CreateAccountModal.tsx
+│       │   ├── GoalCard.tsx        # Savings goal card with progress bar
+│       │   ├── Layout.tsx          # App shell (sidebar + main content area)
+│       │   ├── LoginModal.tsx
+│       │   └── Sidebar.tsx         # Navigation sidebar with user profile footer
+│       ├── context/        # AuthProvider (Neon Auth session + user profile)
+│       ├── hooks/          # use-budget-data.ts (TanStack Query data hook)
+│       ├── lib/            # api.ts, auth-client.ts, query-client.ts, utils.ts
+│       ├── pages/          # Route-level page components
+│       │   ├── Dashboard.tsx       # Overview: balances, recent tx, goal progress
+│       │   ├── ForgotPasswordPage.tsx
+│       │   ├── KwartaAI.tsx        # AI chat with Markdown + chart rendering
+│       │   ├── LandingPage.tsx
+│       │   ├── ResetPasswordPage.tsx
+│       │   ├── SavingsGoals.tsx
+│       │   ├── Settings.tsx        # Theme, language, CSV export, danger zone
+│       │   ├── Transactions.tsx    # Filterable, paginated transaction list
+│       │   └── Wallets.tsx         # Wallet management with balance breakdown
+│       └── stores/         # Zustand stores
+│           └── ui-store.ts # Theme, sidebar, FAB, transaction filter & page state
+├── public/                 # Built SPA output (generated on deploy)
+└── vercel.json             # SPA rewrites + API routing + cache headers
 ```
 
 ---
