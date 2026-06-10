@@ -5,6 +5,7 @@ type ThemeMode = "light" | "dark";
 
 interface UiState {
   sidebarCollapsed: boolean;
+  mobileSidebarOpen: boolean;
   fabOpen: boolean;
   theme: ThemeMode;
   txSearch: string;
@@ -13,6 +14,7 @@ interface UiState {
   txPage: number;
   setSidebarCollapsed: (collapsed: boolean) => void;
   toggleSidebar: () => void;
+  setMobileSidebarOpen: (open: boolean) => void;
   setFabOpen: (open: boolean) => void;
   toggleFab: () => void;
   setTheme: (theme: ThemeMode) => void;
@@ -31,6 +33,7 @@ export const useUiStore = create<UiState>()(
   persist(
     (set) => ({
       sidebarCollapsed: false,
+      mobileSidebarOpen: false,
       fabOpen: false,
       theme: "light",
       txSearch: "",
@@ -40,6 +43,7 @@ export const useUiStore = create<UiState>()(
       setSidebarCollapsed: (sidebarCollapsed) => set({ sidebarCollapsed }),
       toggleSidebar: () =>
         set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
+      setMobileSidebarOpen: (mobileSidebarOpen) => set({ mobileSidebarOpen }),
       setFabOpen: (fabOpen) => set({ fabOpen }),
       toggleFab: () => set((s) => ({ fabOpen: !s.fabOpen })),
       setTheme: (theme) => {

@@ -1,110 +1,147 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-// Shared nav link class builder — used for ALL nav items (main + footer)
-const navClass = ({ isActive }: { isActive: boolean }) =>
-  `flex items-center gap-3 px-3 py-2.5 rounded-full transition-all duration-300 ease-out active:scale-[0.97] outline-none focus:outline-none border group ${
-    isActive
-      ? "bg-white text-[#0f5a5c] font-medium shadow-[0_0_12px_rgba(0,0,0,0.06)] border-[#bccabe]/10"
-      : "text-[#3d4a40] hover:text-[#0f5a5c] hover:bg-[#e0e3e5] font-medium border-transparent"
-  }`;
+import { useUiStore } from "@/stores/ui-store";
 
 const Sidebar = () => {
   const { logout, user } = useAuth();
+  const isCollapsed = useUiStore((s) => s.sidebarCollapsed);
+  const toggleSidebar = useUiStore((s) => s.toggleSidebar);
+  const mobileSidebarOpen = useUiStore((s) => s.mobileSidebarOpen);
+  const setMobileSidebarOpen = useUiStore((s) => s.setMobileSidebarOpen);
+
   const initials = user?.username
     ? user.username.slice(0, 2).toUpperCase()
     : "U";
 
-  return (
-    <aside className="group fixed left-0 top-0 h-screen w-[300px] bg-[#f2f4f6] border-r border-[#bccabe] py-6 px-4 flex flex-col z-50" style={{ fontFamily: "'Inter', sans-serif" }}>
-      {/* Header */}
-      <div className="flex items-center px-2 mb-8">
-        {/* Logo — tight-cropped favicon asset, no background padding */}
-        <img
-          src="/favicon-32.png"
-          alt="Centra logo"
-          className="w-8 h-8 object-contain mr-1"
+  // Shared nav link class builder
+  const navClass = ({ isActive }: { isActive: boolean }) =>
+    `relative flex items-center gap-3 px-3 py-2.5 rounded-full transition-all duration-300 ease-out active:scale-[0.97] outline-none focus:outline-none border group cursor-pointer ${
+      isActive
+        ? "bg-white text-[#0f5a5c] font-medium shadow-[0_0_12px_rgba(0,0,0,0.06)] border-[#bccabe]/10"
+        : "text-[#3d4a40] hover:text-[#0f5a5c] hover:bg-[#e0e3e5] font-medium border-transparent"
+    } ${isCollapsed ? "md:justify-center md:px-0 md:w-10 md:h-10 md:mx-auto" : ""}`;
+
+  const renderTooltip = (label: string) => {
+    return isCollapsed ? (
+      <span className="hidden md:block absolute left-14 bg-[#191c1e] text-white text-[12px] font-medium px-2.5 py-1.5 rounded-lg shadow-xl whitespace-nowrap z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        {label}
+      </span>
+    ) : null;
+  };  return (
+    <>
+      {/* Mobile Backdrop */}
+      {mobileSidebarOpen && (
+        <div 
+          className="md:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 transition-opacity" 
+          onClick={() => setMobileSidebarOpen(false)}
         />
-        <div>
-          <h1
-            className="text-[20px] leading-tight"
-            style={{
-              fontFamily: "Inter, sans-serif",
-              fontWeight: 700,
-              color: "#1a7a5e",
-              letterSpacing: "-0.3px",
-            }}
+      )}
+
+      <aside className={`group fixed left-0 top-0 h-screen bg-[#f2f4f6] border-r border-[#bccabe] py-6 px-4 flex flex-col z-50 transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"} ${isCollapsed ? "w-[300px] md:w-[80px]" : "w-[300px]"}`} style={{ fontFamily: "'Inter', sans-serif" }}>
+        {/* Header */}
+        <div className={`relative flex items-center px-2 mb-8 ${isCollapsed ? "md:justify-center" : ""}`}>
+          <img
+            src="/favicon-32.png"
+            alt="Centra logo"
+            className="w-8 h-8 object-contain shrink-0"
+          />
+          <div className={`ml-1 overflow-hidden transition-all duration-300 ${isCollapsed ? "md:w-0 md:opacity-0" : "w-auto opacity-100"}`}>
+            <h1
+              className="text-[20px] leading-tight"
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 700,
+                color: "#1a7a5e",
+                letterSpacing: "-0.3px",
+              }}
+            >
+              centra
+            </h1>
+          </div>
+          
+          {/* Mobile Close Button */}
+          <button 
+            onClick={() => setMobileSidebarOpen(false)}
+            className="md:hidden ml-auto w-8 h-8 flex items-center justify-center border border-transparent rounded-full text-[#3d4a40] hover:text-[#0f5a5c] hover:bg-[#e0e3e5] transition-all duration-300 cursor-pointer"
           >
-            centra
-          </h1>
+            <span className="material-symbols-outlined text-[20px]">close</span>
+          </button>
+
+          {/* Desktop Toggle Button */}
+          <button 
+            onClick={toggleSidebar}
+            className={`hidden md:flex ${isCollapsed ? "absolute inset-0 m-auto bg-[#e0e3e5]" : "ml-auto"} w-8 h-8 items-center justify-center border border-transparent rounded-full text-[#3d4a40] hover:text-[#0f5a5c] hover:bg-[#e0e3e5] opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer z-10`}>
+            <span className={`material-symbols-outlined text-[20px] transition-transform duration-300 ${isCollapsed ? "" : "scale-x-[-1]"}`}>
+              keyboard_tab
+            </span>
+          </button>
         </div>
-        {/* Close button — only visible when sidebar is hovered */}
-        <button className="ml-auto w-8 h-8 flex items-center justify-center border border-transparent rounded-full text-[#3d4a40] hover:text-[#0f5a5c] hover:bg-[#e0e3e5] opacity-0 group-hover:opacity-100 transition-all duration-300">
-          <span className="material-symbols-outlined text-[20px] scale-x-[-1]">
-            keyboard_tab
-          </span>
-        </button>
-      </div>
 
       <div className="mx-4 mb-6 border-b border-[#bccabe]/30"></div>
 
       {/* Navigation Tabs */}
-      <nav className="flex-1 space-y-1 overflow-y-auto custom-scrollbar">
-        <NavLink to="/dashboard" className={navClass}>
-          <span className="material-symbols-outlined">dashboard</span>
-          <span className="text-[14px]">Dashboard</span>
+      <nav className="flex-1 space-y-2 overflow-y-auto custom-scrollbar overflow-x-hidden">
+        <NavLink to="/dashboard" className={navClass} onClick={() => setMobileSidebarOpen(false)}>
+          <span className="material-symbols-outlined shrink-0 text-[20px]">dashboard</span>
+          <span className={`text-[14px] overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "md:max-w-0 md:opacity-0" : "max-w-[200px] opacity-100"}`}>Dashboard</span>
+          {renderTooltip("Dashboard")}
         </NavLink>
 
-        <NavLink to="/transactions" className={navClass}>
-          <span className="material-symbols-outlined">receipt_long</span>
-          <span className="text-[14px]">Transactions</span>
+        <NavLink to="/transactions" className={navClass} onClick={() => setMobileSidebarOpen(false)}>
+          <span className="material-symbols-outlined shrink-0 text-[20px]">receipt_long</span>
+          <span className={`text-[14px] overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "md:max-w-0 md:opacity-0" : "max-w-[200px] opacity-100"}`}>Transactions</span>
+          {renderTooltip("Transactions")}
         </NavLink>
 
-        <NavLink to="/wallets" className={navClass}>
-          <span className="material-symbols-outlined">account_balance_wallet</span>
-          <span className="text-[14px]">Wallets</span>
+        <NavLink to="/wallets" className={navClass} onClick={() => setMobileSidebarOpen(false)}>
+          <span className="material-symbols-outlined shrink-0 text-[20px]">account_balance_wallet</span>
+          <span className={`text-[14px] overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "md:max-w-0 md:opacity-0" : "max-w-[200px] opacity-100"}`}>Wallets</span>
+          {renderTooltip("Wallets")}
         </NavLink>
 
-        <NavLink to="/goals" className={navClass}>
-          <span className="material-symbols-outlined">target</span>
-          <span className="text-[14px]">Goals</span>
+        <NavLink to="/goals" className={navClass} onClick={() => setMobileSidebarOpen(false)}>
+          <span className="material-symbols-outlined shrink-0 text-[20px]">target</span>
+          <span className={`text-[14px] overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "md:max-w-0 md:opacity-0" : "max-w-[200px] opacity-100"}`}>Goals</span>
+          {renderTooltip("Goals")}
         </NavLink>
 
-        <NavLink to="/kwarta-ai" className={navClass}>
-          <span className="material-symbols-outlined">auto_awesome</span>
-          <span className="text-[14px]">Kwarta AI</span>
+        <NavLink to="/kwarta-ai" className={navClass} onClick={() => setMobileSidebarOpen(false)}>
+          <span className="material-symbols-outlined shrink-0 text-[20px]">auto_awesome</span>
+          <span className={`text-[14px] overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "md:max-w-0 md:opacity-0" : "max-w-[200px] opacity-100"}`}>Kwarta AI</span>
+          {renderTooltip("Kwarta AI")}
         </NavLink>
       </nav>
 
       {/* Footer Actions */}
-      <div className="mt-4 pt-4 border-t border-[#bccabe]/30 space-y-1">
-        {/* Settings — same pill style as nav items */}
-        <NavLink to="/settings" className={navClass}>
-          <span className="material-symbols-outlined">settings</span>
-          <span className="text-[14px]">Settings</span>
+      <div className={`mt-4 pt-4 border-t border-[#bccabe]/30 space-y-2 ${isCollapsed ? "md:flex md:flex-col md:items-center" : ""}`}>
+        <NavLink to="/settings" className={navClass} onClick={() => setMobileSidebarOpen(false)}>
+          <span className="material-symbols-outlined shrink-0 text-[20px]">settings</span>
+          <span className={`text-[14px] overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "md:max-w-0 md:opacity-0" : "max-w-[200px] opacity-100"}`}>Settings</span>
+          {renderTooltip("Settings")}
         </NavLink>
 
-        {/* Sign Out — same pill shape but red tint on hover */}
         <button
           onClick={async () => {
             await logout();
             window.location.href = "/";
           }}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-full transition-all duration-300 ease-out active:scale-[0.97] outline-none focus:outline-none border border-transparent font-medium text-[#3d4a40] hover:text-red-600 hover:bg-red-50 group"
+          className={`relative flex items-center gap-3 px-3 py-2.5 rounded-full transition-all duration-300 ease-out active:scale-[0.97] outline-none focus:outline-none border border-transparent font-medium text-[#3d4a40] hover:text-red-600 hover:bg-red-50 hover:border-red-100 cursor-pointer ${isCollapsed ? "md:justify-center md:px-0 md:w-10 md:h-10 md:mx-auto" : "w-full"} group`}
         >
-          <span className="material-symbols-outlined">logout</span>
-          <span className="text-[14px]">Sign Out</span>
+          <span className="material-symbols-outlined shrink-0 text-[20px]">logout</span>
+          <span className={`text-[14px] overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "md:max-w-0 md:opacity-0" : "max-w-[200px] opacity-100"}`}>Sign Out</span>
+          {renderTooltip("Sign Out")}
         </button>
       </div>
 
       {/* Profile */}
       <div className="mt-6">
-        <div className="bg-[#f2f4f6] rounded-xl p-4 border border-[#bccabe]/50">
-          <div className="flex items-center gap-3">
+        <div className={`bg-[#f2f4f6] rounded-xl p-4 border border-[#bccabe]/50 transition-all duration-300 overflow-hidden ${isCollapsed ? "md:p-0 md:border-transparent md:bg-transparent md:flex md:justify-center" : ""}`}>
+          <div className={`flex items-center gap-3 ${isCollapsed ? "md:justify-center" : ""}`}>
             <div className="w-10 h-10 rounded-full bg-[#0f5a5c] text-white flex items-center justify-center font-bold text-sm shrink-0 border border-[#bccabe]">
               {initials}
             </div>
-            <div className="flex-1 min-w-0">
+            <div className={`flex-1 min-w-0 overflow-hidden transition-all duration-300 ${isCollapsed ? "md:max-w-0 md:opacity-0" : "max-w-[200px] opacity-100"}`}>
               <p className="text-[14px] font-bold text-[#191c1e] truncate" style={{ fontFamily: "'Inter', sans-serif" }}>
                 {user?.username ?? "Account"}
               </p>
@@ -112,13 +149,14 @@ const Sidebar = () => {
                 {user?.email ?? ""}
               </p>
             </div>
-            <span className="material-symbols-outlined text-[#3d4a40] text-sm cursor-pointer hover:text-[#0f5a5c] transition-colors">
+            <span className={`material-symbols-outlined text-[#3d4a40] text-sm cursor-pointer hover:text-[#0f5a5c] transition-all duration-300 ${isCollapsed ? "md:w-0 md:opacity-0 md:hidden" : ""}`}>
               unfold_more
             </span>
           </div>
         </div>
       </div>
     </aside>
+    </>
   );
 };
 

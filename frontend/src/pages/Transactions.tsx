@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import {
-  useCreateTransaction,
   useDeleteTransaction,
   useTransactions,
   useWallets,
@@ -15,8 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 function formatCurrency(amount: number): string {
   return (
@@ -155,7 +152,7 @@ const ITEMS_PER_PAGE = 10;
 const Transactions = () => {
   const { data: transactions = [], isLoading: loading } = useTransactions();
   const { data: wallets = [] } = useWallets();
-  const createTx = useCreateTransaction();
+
   const deleteTx = useDeleteTransaction();
 
   const search = useUiStore((s) => s.txSearch);

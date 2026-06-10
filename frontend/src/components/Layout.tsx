@@ -9,6 +9,8 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const isFabOpen = useUiStore((s) => s.fabOpen);
+  const isSidebarCollapsed = useUiStore((s) => s.sidebarCollapsed);
+  const setMobileSidebarOpen = useUiStore((s) => s.setMobileSidebarOpen);
   const setFabOpen = useUiStore((s) => s.setFabOpen);
   const setAddModalOpen = useUiStore((s) => s.setAddModalOpen);
   const setAddModalDefaultType = useUiStore((s) => s.setAddModalDefaultType);
@@ -20,10 +22,24 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-background">
+    <div className="flex min-h-screen w-full bg-background relative">
       <Sidebar />
-      <div className="flex-1 ml-[300px] min-h-screen flex flex-col">
-        <main className="flex-1 pt-10 pb-12 px-12 max-w-[1400px] w-full mx-auto">
+      <div className={`flex-1 min-h-screen flex flex-col transition-all duration-300 md:${isSidebarCollapsed ? "ml-[80px]" : "ml-[300px]"}`}>
+        {/* Mobile Header */}
+        <header className="md:hidden flex items-center justify-between p-4 border-b border-outline-variant bg-white sticky top-0 z-40">
+          <button 
+            onClick={() => setMobileSidebarOpen(true)}
+            className="p-2 text-slate-600 hover:bg-slate-100 rounded-full flex items-center justify-center cursor-pointer"
+          >
+            <span className="material-symbols-outlined">menu</span>
+          </button>
+          <h1 className="font-bold text-primary text-lg" style={{ fontFamily: "Inter, sans-serif", letterSpacing: "-0.3px" }}>
+            centra
+          </h1>
+          <div className="w-10"></div> {/* Spacer for center alignment */}
+        </header>
+        
+        <main className="flex-1 pt-6 pb-12 px-4 md:pt-10 md:px-12 max-w-[1400px] w-full mx-auto">
           {children}
         </main>
       </div>
