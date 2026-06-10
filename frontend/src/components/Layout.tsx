@@ -1,6 +1,7 @@
 import React from "react";
 import Sidebar from "./Sidebar";
 import { useUiStore } from "@/stores/ui-store";
+import { AddTransactionModal } from "./AddTransactionModal";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -9,6 +10,14 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const isFabOpen = useUiStore((s) => s.fabOpen);
   const setFabOpen = useUiStore((s) => s.setFabOpen);
+  const setAddModalOpen = useUiStore((s) => s.setAddModalOpen);
+  const setAddModalDefaultType = useUiStore((s) => s.setAddModalDefaultType);
+
+  const openAddModal = (type: string) => {
+    setAddModalDefaultType(type);
+    setAddModalOpen(true);
+    setFabOpen(false);
+  };
 
   return (
     <div className="flex min-h-screen w-full bg-background">
@@ -26,7 +35,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           className={`absolute bottom-full right-0 mb-4 flex flex-col gap-3 transition-all duration-300 origin-bottom ${isFabOpen ? "opacity-100 translate-y-0 scale-100 visible" : "opacity-0 translate-y-4 scale-90 invisible"}`}
           aria-hidden={!isFabOpen}
         >
-          <button className="group flex items-center gap-3 bg-white border border-outline-variant px-4 py-3 rounded-2xl shadow-xl hover:bg-slate-50 transition-all cursor-pointer whitespace-nowrap">
+          <button
+            onClick={() => openAddModal("Income")}
+            className="group flex items-center gap-3 bg-white border border-outline-variant px-4 py-3 rounded-2xl shadow-xl hover:bg-slate-50 transition-all cursor-pointer whitespace-nowrap"
+          >
             <span className="font-bold text-sm text-emerald-700">
               Add Income
             </span>
@@ -36,7 +48,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </span>
             </div>
           </button>
-          <button className="group flex items-center gap-3 bg-white border border-outline-variant px-4 py-3 rounded-2xl shadow-xl hover:bg-slate-50 transition-all cursor-pointer whitespace-nowrap">
+          <button
+            onClick={() => openAddModal("Expense")}
+            className="group flex items-center gap-3 bg-white border border-outline-variant px-4 py-3 rounded-2xl shadow-xl hover:bg-slate-50 transition-all cursor-pointer whitespace-nowrap"
+          >
             <span className="font-bold text-sm text-rose-700">Add Expense</span>
             <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center group-hover:scale-110 transition-transform">
               <span className="material-symbols-outlined text-[20px]">
@@ -44,7 +59,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </span>
             </div>
           </button>
-          <button className="group flex items-center gap-3 bg-white border border-outline-variant px-4 py-3 rounded-2xl shadow-xl hover:bg-slate-50 transition-all cursor-pointer whitespace-nowrap">
+          <button
+            onClick={() => openAddModal("Transfer")}
+            className="group flex items-center gap-3 bg-white border border-outline-variant px-4 py-3 rounded-2xl shadow-xl hover:bg-slate-50 transition-all cursor-pointer whitespace-nowrap"
+          >
             <span className="font-bold text-sm text-blue-700">
               Add Transfer
             </span>
@@ -68,6 +86,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </span>
         </button>
       </div>
+
+      <AddTransactionModal />
     </div>
   );
 };

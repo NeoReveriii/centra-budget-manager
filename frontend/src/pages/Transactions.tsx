@@ -167,15 +167,6 @@ const Transactions = () => {
   const setWalletFilter = useUiStore((s) => s.setTxWalletFilter);
   const setPage = useUiStore((s) => s.setTxPage);
 
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [newTx, setNewTx] = useState({
-    description: "",
-    type: "Expense",
-    wallet_id: "",
-    amount: "",
-  });
-  const [addError, setAddError] = useState("");
-
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
   // Filtering
@@ -199,33 +190,6 @@ const Transactions = () => {
     (page - 1) * ITEMS_PER_PAGE,
     page * ITEMS_PER_PAGE,
   );
-
-  async function handleAddTransaction(e: React.FormEvent) {
-    e.preventDefault();
-    setAddError("");
-
-    const wallet = wallets.find((w) => w.wallet_id === Number(newTx.wallet_id));
-    if (!wallet) {
-      setAddError("Please select a wallet");
-      return;
-    }
-
-    try {
-      await createTx.mutateAsync({
-        description: newTx.description,
-        type: newTx.type,
-        wallet_type: wallet.name,
-        wallet_id: wallet.wallet_id,
-        amount: Number(newTx.amount),
-      });
-      setShowAddModal(false);
-      setNewTx({ description: "", type: "Expense", wallet_id: "", amount: "" });
-    } catch (err: unknown) {
-      setAddError(
-        err instanceof Error ? err.message : "Failed to add transaction",
-      );
-    }
-  }
 
   async function handleDelete() {
     if (!deleteId) return;
@@ -259,15 +223,6 @@ const Transactions = () => {
           <p className="font-body-sm text-body-sm text-on-surface-variant">
             Manage and monitor your financial activity across all accounts.
           </p>
-        </div>
-        <div className="flex gap-3">
-          <Button
-            onClick={() => setShowAddModal(true)}
-            className="rounded-xl gap-2"
-          >
-            <span className="material-symbols-outlined text-lg">add</span>
-            Add Transaction
-          </Button>
         </div>
       </header>
 
@@ -472,107 +427,6 @@ const Transactions = () => {
           </div>
         )}
       </section>
-
-      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
-        <DialogContent
-          className="max-w-[448px] p-0 gap-0 overflow-hidden"
-          showCloseButton={false}
-        >
-          <DialogHeader className="p-6 border-b border-slate-100 text-left">
-            <DialogTitle>Add Transaction</DialogTitle>
-            <DialogDescription>
-              Record income or expense against a wallet.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleAddTransaction} className="p-6 space-y-4">
-            {addError && (
-              <div className="p-3 bg-error-container/20 border border-error/20 rounded-xl text-error text-body-sm font-medium flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px]">
-                  error
-                </span>
-                {addError}
-              </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="tx-description">Description</Label>
-              <Input
-                id="tx-description"
-                value={newTx.description}
-                onChange={(e) =>
-                  setNewTx({ ...newTx, description: e.target.value })
-                }
-                placeholder="e.g. Lunch at Jollibee"
-                required
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="tx-type">Type</Label>
-                <select
-                  id="tx-type"
-                  value={newTx.type}
-                  onChange={(e) => setNewTx({ ...newTx, type: e.target.value })}
-                  className="w-full h-11 px-4 bg-slate-50 border border-outline-variant rounded-xl text-body-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer"
-                >
-                  <option>Expense</option>
-                  <option>Income</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="tx-amount">Amount (₱)</Label>
-                <Input
-                  id="tx-amount"
-                  type="number"
-                  step="0.01"
-                  min="0.01"
-                  value={newTx.amount}
-                  onChange={(e) =>
-                    setNewTx({ ...newTx, amount: e.target.value })
-                  }
-                  placeholder="0.00"
-                  required
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="tx-wallet">Wallet</Label>
-              <select
-                id="tx-wallet"
-                value={newTx.wallet_id}
-                onChange={(e) =>
-                  setNewTx({ ...newTx, wallet_id: e.target.value })
-                }
-                className="w-full h-11 px-4 bg-slate-50 border border-outline-variant rounded-xl text-body-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer"
-                required
-              >
-                <option value="">Select wallet</option>
-                {wallets.map((w) => (
-                  <option key={w.wallet_id} value={w.wallet_id}>
-                    {w.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <DialogFooter className="pt-2 sm:justify-stretch gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1 rounded-xl"
-                onClick={() => setShowAddModal(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={createTx.isPending}
-                className="flex-1 rounded-xl"
-              >
-                {createTx.isPending ? "Adding..." : "Add Transaction"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
 
       <Dialog
         open={deleteId !== null}

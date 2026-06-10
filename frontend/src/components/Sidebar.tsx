@@ -16,31 +16,31 @@ const Sidebar = () => {
     : "U";
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-[300px] bg-[#f2f4f6] border-r border-[#bccabe] py-6 px-4 flex flex-col z-50" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <aside className="group fixed left-0 top-0 h-screen w-[300px] bg-[#f2f4f6] border-r border-[#bccabe] py-6 px-4 flex flex-col z-50" style={{ fontFamily: "'Inter', sans-serif" }}>
       {/* Header */}
-      <div className="flex items-center gap-3 px-2 mb-8">
+      <div className="flex items-center px-2 mb-8">
         {/* Logo — tight-cropped favicon asset, no background padding */}
         <img
           src="/favicon-32.png"
           alt="Centra logo"
-          className="w-8 h-8 object-contain"
+          className="w-8 h-8 object-contain mr-1"
         />
         <div>
           <h1
             className="text-[20px] leading-tight"
             style={{
-              fontFamily: "'Inter', sans-serif",
+              fontFamily: "Inter, sans-serif",
               fontWeight: 700,
               color: "#1a7a5e",
               letterSpacing: "-0.3px",
             }}
           >
-            Centra
+            centra
           </h1>
         </div>
-        {/* Close button — fully rounded, smaller icon */}
-        <button className="ml-auto w-8 h-8 flex items-center justify-center border border-[#bccabe]/40 rounded-full bg-white text-[#3d4a40] hover:text-[#0f5a5c] hover:border-[#0f5a5c]/30 transition-colors">
-          <span className="material-symbols-outlined text-[16px] scale-x-[-1]">
+        {/* Close button — only visible when sidebar is hovered */}
+        <button className="ml-auto w-8 h-8 flex items-center justify-center border border-transparent rounded-full text-[#3d4a40] hover:text-[#0f5a5c] hover:bg-[#e0e3e5] opacity-0 group-hover:opacity-100 transition-all duration-300">
+          <span className="material-symbols-outlined text-[20px] scale-x-[-1]">
             keyboard_tab
           </span>
         </button>

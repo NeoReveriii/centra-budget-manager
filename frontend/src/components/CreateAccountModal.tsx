@@ -141,7 +141,7 @@ const CreateAccountModal = ({
               />
               <button
                 type="button"
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-outline-variant hover:text-secondary transition-colors cursor-pointer"
+                className="absolute right-4 inset-y-0 flex items-center text-outline-variant hover:text-secondary transition-colors cursor-pointer"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 <span className="material-symbols-outlined text-[20px]">

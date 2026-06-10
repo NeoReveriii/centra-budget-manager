@@ -21,6 +21,10 @@ interface UiState {
   setTxWalletFilter: (filter: string) => void;
   setTxPage: (page: number) => void;
   resetTxFilters: () => void;
+  addModalOpen: boolean;
+  setAddModalOpen: (open: boolean) => void;
+  addModalDefaultType: string;
+  setAddModalDefaultType: (type: string) => void;
 }
 
 export const useUiStore = create<UiState>()(
@@ -53,6 +57,10 @@ export const useUiStore = create<UiState>()(
           txWalletFilter: "All Wallets",
           txPage: 1,
         }),
+      addModalOpen: false,
+      setAddModalOpen: (addModalOpen) => set({ addModalOpen }),
+      addModalDefaultType: "Expense",
+      setAddModalDefaultType: (addModalDefaultType) => set({ addModalDefaultType }),
     }),
     {
       name: "centra-ui",
