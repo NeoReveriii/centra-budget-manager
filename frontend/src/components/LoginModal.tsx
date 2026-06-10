@@ -143,7 +143,7 @@ const LoginModal = ({ onClose, onSwitchToCreateAccount }: LoginModalProps) => {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full rounded-full uppercase tracking-widest bg-primary-container hover:bg-primary"
+            className="w-full rounded-full uppercase tracking-widest bg-primary-container text-on-primary font-bold hover:bg-primary hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-300 ease-out active:scale-[0.98] cursor-pointer"
           >
             {isLoading ? "Authenticating..." : "Sign In"}
           </Button>

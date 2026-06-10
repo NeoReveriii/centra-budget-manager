@@ -475,7 +475,7 @@ const Transactions = () => {
 
       <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
         <DialogContent
-          className="max-w-md p-0 gap-0 overflow-hidden"
+          className="max-w-[448px] p-0 gap-0 overflow-hidden"
           showCloseButton={false}
         >
           <DialogHeader className="p-6 border-b border-slate-100 text-left">
@@ -578,7 +578,7 @@ const Transactions = () => {
         open={deleteId !== null}
         onOpenChange={(open) => !open && setDeleteId(null)}
       >
-        <DialogContent className="max-w-sm text-center" showCloseButton={false}>
+        <DialogContent className="max-w-[384px] text-center" showCloseButton={false}>
           <div className="w-16 h-16 rounded-full bg-error-container/20 flex items-center justify-center mx-auto mb-4">
             <span className="material-symbols-outlined text-error text-[32px]">
               delete

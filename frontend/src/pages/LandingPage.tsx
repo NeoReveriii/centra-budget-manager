@@ -17,7 +17,7 @@ const LandingPage = () => {
           <div className="flex items-center space-x-4">
             <button
               onClick={() => setShowLoginModal(true)}
-              className="px-4 py-2 text-emerald-900 font-semibold text-sm hover:bg-emerald-50/50 transition-colors rounded-lg cursor-pointer"
+              className="px-4 py-2 text-emerald-900 font-semibold text-sm hover:bg-emerald-100 hover:text-emerald-950 transition-all rounded-lg cursor-pointer active:scale-95 duration-150"
             >
               Sign In
             </button>
@@ -43,7 +43,7 @@ const LandingPage = () => {
               The Next Evolution in <br />
               <span className="text-secondary">Personal Finance.</span>
             </h1>
-            <p className="text-[18px] text-slate-500 max-w-lg leading-relaxed">
+            <p className="text-[18px] text-slate-500 leading-relaxed max-w-[512px]">
               Experience a sophisticated, intelligence-driven platform designed
               for precision capital management and growth. Built for those who
               demand institutional-grade reliability.
@@ -192,7 +192,7 @@ const LandingPage = () => {
             <div className="font-bold text-emerald-900 text-[18px]">
               Centra Financial Systems
             </div>
-            <p className="text-[12px] font-medium tracking-wide text-emerald-700/60 leading-relaxed max-w-sm">
+            <p className="text-[12px] font-medium tracking-wide text-emerald-700/60 leading-relaxed">
               Providing institutional-grade financial infrastructure for the
               modern era. Secure, intelligent, and private.
             </p>

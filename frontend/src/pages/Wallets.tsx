@@ -313,7 +313,7 @@ const Wallets = () => {
           onClick={() => setShowAddModal(false)}
         >
           <div
-            className="bg-white rounded-2xl w-full max-w-md shadow-2xl"
+            className="bg-white rounded-2xl w-full max-w-[448px] shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6 border-b border-slate-100">
@@ -408,7 +408,7 @@ const Wallets = () => {
           onClick={() => setShowTransferModal(false)}
         >
           <div
-            className="bg-white rounded-2xl w-full max-w-md shadow-2xl"
+            className="bg-white rounded-2xl w-full max-w-[448px] shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6 border-b border-slate-100">
@@ -513,7 +513,7 @@ const Wallets = () => {
           }}
         >
           <div
-            className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-6 text-center"
+            className="bg-white rounded-2xl w-full max-w-[384px] shadow-2xl p-6 text-center"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="w-16 h-16 rounded-full bg-error-container/20 flex items-center justify-center mx-auto mb-4">

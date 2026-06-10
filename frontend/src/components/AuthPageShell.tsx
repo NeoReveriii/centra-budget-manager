@@ -30,7 +30,7 @@ export default function AuthPageShell({
                 {title}
               </h1>
               {subtitle && (
-                <p className="text-body-sm text-slate-500 mt-2 max-w-sm mx-auto">
+                <p className="text-body-sm text-slate-500 mt-2 mx-auto">
                   {subtitle}
                 </p>
               )}

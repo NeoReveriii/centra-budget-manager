@@ -410,7 +410,7 @@ const Dashboard = () => {
                 </div>
               </div>
               {/* Progress bar showing income vs expense ratio */}
-              <div className="w-full max-w-md mx-auto mt-4">
+              <div className="w-full max-w-[448px] mx-auto mt-4">
                 <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden flex">
                   {monthlyIncome > 0 && (
                     <>
