@@ -38,7 +38,7 @@ const Sidebar = () => {
         />
       )}
 
-      <aside className={`group fixed left-0 top-0 h-[100dvh] bg-[#f2f4f6] border-r border-[#bccabe] py-6 px-4 flex flex-col z-50 transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"} ${isCollapsed ? "w-[300px] md:w-[80px] md:px-3" : "w-[300px]"}`} style={{ fontFamily: "'Inter', sans-serif" }}>
+      <aside className={`group/sidebar fixed left-0 top-0 h-[100dvh] bg-[#f2f4f6] border-r border-[#bccabe] py-6 px-4 flex flex-col z-50 transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"} ${isCollapsed ? "w-[300px] md:w-[80px] md:px-3" : "w-[300px]"}`} style={{ fontFamily: "'Inter', sans-serif" }}>
         {/* Header */}
         <div className={`relative flex items-center px-2 mb-8 ${isCollapsed ? "md:px-0 md:justify-center" : ""}`}>
           <img
@@ -71,7 +71,7 @@ const Sidebar = () => {
           {/* Desktop Toggle Button */}
           <button 
             onClick={toggleSidebar}
-            className={`hidden md:flex ml-auto shrink-0 w-8 h-8 items-center justify-center border border-transparent rounded-full text-[#3d4a40] hover:text-[#0f5a5c] hover:bg-[#e0e3e5] opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer z-10 ${isCollapsed ? "md:absolute md:top-1/2 md:-translate-y-1/2 md:left-1/2 md:-translate-x-1/2" : ""}`}>
+            className={`hidden md:flex ml-auto shrink-0 w-8 h-8 items-center justify-center border border-transparent rounded-full text-[#3d4a40] hover:text-[#0f5a5c] hover:bg-[#e0e3e5] opacity-0 group-hover/sidebar:opacity-100 transition-all duration-300 cursor-pointer z-10 ${isCollapsed ? "md:absolute md:top-1/2 md:-translate-y-1/2 md:left-1/2 md:-translate-x-1/2" : ""}`}>
             <span className={`material-symbols-outlined text-[20px] transition-transform duration-300 ${isCollapsed ? "" : "scale-x-[-1]"}`}>
               keyboard_tab
             </span>
