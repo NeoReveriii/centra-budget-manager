@@ -22,9 +22,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-background relative">
+    <div className={`min-h-screen w-full bg-background transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${isSidebarCollapsed ? "md:pl-[80px]" : "md:pl-[300px]"}`}>
       <Sidebar />
-      <div className={`flex-1 min-h-screen flex flex-col transition-all duration-300 ${isSidebarCollapsed ? "md:ml-[80px]" : "md:ml-[300px]"}`}>
+      <div className="min-h-screen flex flex-col">
         {/* Mobile Header */}
         <header className="md:hidden flex items-center justify-between p-4 border-b border-outline-variant bg-white sticky top-0 z-40">
           <button 

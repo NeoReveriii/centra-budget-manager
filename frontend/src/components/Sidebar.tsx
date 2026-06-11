@@ -84,40 +84,40 @@ const Sidebar = () => {
       <nav className="flex-1 min-h-0 space-y-2 overflow-y-auto custom-scrollbar overflow-x-hidden">
         <NavLink to="/dashboard" className={navClass} onClick={() => setMobileSidebarOpen(false)}>
           <span className="material-symbols-outlined shrink-0 text-[20px]">dashboard</span>
-          <span className={`block text-[14px] overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "md:max-w-0 md:opacity-0" : "max-w-[200px] opacity-100"}`}>Dashboard</span>
+          <span className={`text-[14px] whitespace-nowrap ${isCollapsed ? "md:hidden" : ""}`}>Dashboard</span>
           {renderTooltip("Dashboard")}
         </NavLink>
 
         <NavLink to="/transactions" className={navClass} onClick={() => setMobileSidebarOpen(false)}>
           <span className="material-symbols-outlined shrink-0 text-[20px]">receipt_long</span>
-          <span className={`block text-[14px] overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "md:max-w-0 md:opacity-0" : "max-w-[200px] opacity-100"}`}>Transactions</span>
+          <span className={`text-[14px] whitespace-nowrap ${isCollapsed ? "md:hidden" : ""}`}>Transactions</span>
           {renderTooltip("Transactions")}
         </NavLink>
 
         <NavLink to="/wallets" className={navClass} onClick={() => setMobileSidebarOpen(false)}>
           <span className="material-symbols-outlined shrink-0 text-[20px]">account_balance_wallet</span>
-          <span className={`block text-[14px] overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "md:max-w-0 md:opacity-0" : "max-w-[200px] opacity-100"}`}>Wallets</span>
+          <span className={`text-[14px] whitespace-nowrap ${isCollapsed ? "md:hidden" : ""}`}>Wallets</span>
           {renderTooltip("Wallets")}
         </NavLink>
 
         <NavLink to="/goals" className={navClass} onClick={() => setMobileSidebarOpen(false)}>
           <span className="material-symbols-outlined shrink-0 text-[20px]">target</span>
-          <span className={`block text-[14px] overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "md:max-w-0 md:opacity-0" : "max-w-[200px] opacity-100"}`}>Goals</span>
+          <span className={`text-[14px] whitespace-nowrap ${isCollapsed ? "md:hidden" : ""}`}>Goals</span>
           {renderTooltip("Goals")}
         </NavLink>
 
         <NavLink to="/kwarta-ai" className={navClass} onClick={() => setMobileSidebarOpen(false)}>
           <span className="material-symbols-outlined shrink-0 text-[20px]">auto_awesome</span>
-          <span className={`block text-[14px] overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "md:max-w-0 md:opacity-0" : "max-w-[200px] opacity-100"}`}>Kwarta AI</span>
+          <span className={`text-[14px] whitespace-nowrap ${isCollapsed ? "md:hidden" : ""}`}>Kwarta AI</span>
           {renderTooltip("Kwarta AI")}
         </NavLink>
       </nav>
 
       {/* Footer Actions */}
-      <div className={`mt-4 pt-4 border-t border-[#bccabe]/30 space-y-2 ${isCollapsed ? "md:flex md:flex-col md:items-center" : ""}`}>
+      <div className={`mt-4 pt-4 shrink-0 border-t border-[#bccabe]/30 space-y-2 ${isCollapsed ? "md:flex md:flex-col md:items-center" : ""}`}>
         <NavLink to="/settings" className={navClass} onClick={() => setMobileSidebarOpen(false)}>
           <span className="material-symbols-outlined shrink-0 text-[20px]">settings</span>
-          <span className={`block text-[14px] overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "md:max-w-0 md:opacity-0" : "max-w-[200px] opacity-100"}`}>Settings</span>
+          <span className={`text-[14px] whitespace-nowrap ${isCollapsed ? "md:hidden" : ""}`}>Settings</span>
           {renderTooltip("Settings")}
         </NavLink>
 
@@ -129,7 +129,7 @@ const Sidebar = () => {
           className={`relative flex items-center gap-3 px-3 py-2.5 rounded-full transition-all duration-300 ease-out active:scale-[0.97] outline-none focus:outline-none border border-transparent font-medium text-[#3d4a40] hover:text-red-600 hover:bg-red-50 hover:border-red-100 cursor-pointer ${isCollapsed ? "md:justify-center md:gap-0 md:px-0 md:w-10 md:h-10 md:mx-auto" : "w-full"} group`}
         >
           <span className="material-symbols-outlined shrink-0 text-[20px]">logout</span>
-          <span className={`block text-[14px] overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "md:max-w-0 md:opacity-0" : "max-w-[200px] opacity-100"}`}>Sign Out</span>
+          <span className={`text-[14px] whitespace-nowrap ${isCollapsed ? "md:hidden" : ""}`}>Sign Out</span>
           {renderTooltip("Sign Out")}
         </button>
       </div>
