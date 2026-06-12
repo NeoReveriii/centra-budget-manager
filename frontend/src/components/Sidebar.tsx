@@ -71,9 +71,11 @@ const Sidebar = () => {
             className="hidden md:flex w-10 h-10 shrink-0 items-center justify-center rounded-full
                        text-[#3d4a40] hover:bg-[#e0e3e5] transition-colors cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[22px]">
-              {isCollapsed ? "menu" : "menu_open"}
-            </span>
+            {isCollapsed ? (
+              <img src="/favicon-32.png" alt="Centra logo" className="w-6 h-6 object-contain" />
+            ) : (
+              <span className="material-symbols-outlined text-[22px]">menu_open</span>
+            )}
           </button>
 
           {/* Mobile close button — same slot as desktop toggle */}
