@@ -25,6 +25,16 @@ const Sidebar = () => {
 
   const initials = user?.username?.slice(0, 2).toUpperCase() ?? "U";
 
+  // Expand sidebar on clicking empty space when collapsed
+  const handleSidebarClick = (e: React.MouseEvent<HTMLElement>) => {
+    if (!isCollapsed) return;
+    const target = e.target as HTMLElement;
+    if (target.closest("button") || target.closest("a") || target.closest(".cursor-pointer")) {
+      return;
+    }
+    toggleSidebar();
+  };
+
   // Nav item class — active vs idle styling only, layout is stable
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `relative flex items-center w-full h-10 rounded-2xl cursor-pointer transition-colors duration-200 ${
@@ -47,14 +57,16 @@ const Sidebar = () => {
       )}
 
       <aside
+        onClick={handleSidebarClick}
         className={`
+          group/sidebar
           fixed left-0 top-0 h-[100dvh]
           bg-[#f2f4f6] border-r border-[#bccabe]
           flex flex-col z-50
           overflow-hidden
           transition-[width] duration-300 ease-[cubic-bezier(0.2,0,0,1)]
           ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
-          ${isCollapsed ? "w-[300px] md:w-[80px]" : "w-[300px]"}
+          ${isCollapsed ? "w-[300px] md:w-[80px] cursor-col-resize" : "w-[300px]"}
         `}
         style={{ fontFamily: "'Inter', sans-serif" }}
       >
@@ -72,7 +84,12 @@ const Sidebar = () => {
                        text-[#3d4a40] hover:bg-[#e0e3e5] transition-colors cursor-pointer"
           >
             {isCollapsed ? (
-              <img src="/favicon-32.png" alt="Centra logo" className="w-6 h-6 object-contain" />
+              <>
+                <img src="/favicon-32.png" alt="Centra logo" className="w-6 h-6 object-contain block group-hover/sidebar:hidden" />
+                <span className="material-symbols-outlined text-[22px] hidden group-hover/sidebar:block">
+                  menu
+                </span>
+              </>
             ) : (
               <span className="material-symbols-outlined text-[22px]">menu_open</span>
             )}
