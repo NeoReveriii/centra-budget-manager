@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useUiStore } from "@/stores/ui-store";
@@ -22,6 +23,8 @@ const Sidebar = () => {
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
   const mobileSidebarOpen = useUiStore((s) => s.mobileSidebarOpen);
   const setMobileSidebarOpen = useUiStore((s) => s.setMobileSidebarOpen);
+
+  const [btnHover, setBtnHover] = useState(false);
 
   const initials = user?.username?.slice(0, 2).toUpperCase() ?? "U";
 
@@ -79,17 +82,18 @@ const Sidebar = () => {
           {/* Desktop toggle — pinned at left edge, never moves */}
           <button
             onClick={toggleSidebar}
+            onMouseEnter={() => setBtnHover(true)}
+            onMouseLeave={() => setBtnHover(false)}
             title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             className="hidden md:flex w-10 h-10 shrink-0 items-center justify-center rounded-full
                        text-[#3d4a40] hover:bg-[#e0e3e5] transition-colors cursor-pointer"
           >
             {isCollapsed ? (
-              <>
-                <img src="/favicon-32.png" alt="Centra logo" className="w-6 h-6 object-contain block group-hover/sidebar:hidden" />
-                <span className="material-symbols-outlined text-[22px] hidden group-hover/sidebar:block">
-                  menu
-                </span>
-              </>
+              btnHover ? (
+                <span className="material-symbols-outlined text-[22px]">menu</span>
+              ) : (
+                <img src="/favicon-32.png" alt="Centra logo" className="w-6 h-6 object-contain" />
+              )
             ) : (
               <span className="material-symbols-outlined text-[22px]">menu_open</span>
             )}
