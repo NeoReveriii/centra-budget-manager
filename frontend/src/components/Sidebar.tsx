@@ -78,36 +78,7 @@ const Sidebar = () => {
             The toggle button ALWAYS occupies px-3 from the left.
             Logo sits to its right and fades when collapsing.
         ──────────────────────────────────────────────────────── */}
-        <div className="h-16 flex items-center shrink-0 px-3 gap-2">
-          {/* Desktop toggle — pinned at left edge, never moves */}
-          <button
-            onClick={toggleSidebar}
-            onMouseEnter={() => setBtnHover(true)}
-            onMouseLeave={() => setBtnHover(false)}
-            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="hidden md:flex w-10 h-10 shrink-0 items-center justify-center rounded-full
-                       text-[#3d4a40] hover:bg-[#e0e3e5] transition-colors cursor-pointer"
-          >
-            {isCollapsed ? (
-              btnHover ? (
-                <span className="material-symbols-outlined text-[22px]">menu</span>
-              ) : (
-                <img src="/favicon-32.png" alt="Centra logo" className="w-6 h-6 object-contain" />
-              )
-            ) : (
-              <span className="material-symbols-outlined text-[22px]">menu_open</span>
-            )}
-          </button>
-
-          {/* Mobile close button — same slot as desktop toggle */}
-          <button
-            onClick={() => setMobileSidebarOpen(false)}
-            className="md:hidden w-10 h-10 shrink-0 flex items-center justify-center rounded-full
-                       text-[#3d4a40] hover:bg-[#e0e3e5] transition-colors cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-[22px]">close</span>
-          </button>
-
+        <div className="h-16 flex items-center shrink-0 px-3 relative">
           {/* Logo — fades out first, then aside narrows (opacity transition is fast) */}
           <div
             className="flex items-center gap-2 transition-opacity duration-150 pointer-events-none"
@@ -122,6 +93,36 @@ const Sidebar = () => {
               centra
             </span>
           </div>
+
+          {/* Desktop toggle — centered when collapsed, ml-auto when expanded */}
+          <button
+            onClick={toggleSidebar}
+            onMouseEnter={() => setBtnHover(true)}
+            onMouseLeave={() => setBtnHover(false)}
+            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className={`hidden md:flex w-10 h-10 shrink-0 items-center justify-center rounded-full
+                       text-[#3d4a40] hover:bg-[#e0e3e5] transition-colors cursor-pointer
+                       ${isCollapsed ? "absolute left-5" : "ml-auto"}`}
+          >
+            {isCollapsed ? (
+              btnHover ? (
+                <span className="material-symbols-outlined text-[22px]">menu</span>
+              ) : (
+                <img src="/favicon-32.png" alt="Centra logo" className="w-6 h-6 object-contain" />
+              )
+            ) : (
+              <span className="material-symbols-outlined text-[22px]">menu_open</span>
+            )}
+          </button>
+
+          {/* Mobile close button — aligned on the right */}
+          <button
+            onClick={() => setMobileSidebarOpen(false)}
+            className="md:hidden w-10 h-10 shrink-0 flex items-center justify-center rounded-full
+                       text-[#3d4a40] hover:bg-[#e0e3e5] transition-colors cursor-pointer ml-auto"
+          >
+            <span className="material-symbols-outlined text-[22px]">close</span>
+          </button>
         </div>
 
         {/* Divider */}
