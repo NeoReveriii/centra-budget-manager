@@ -118,7 +118,7 @@ Neon hosts both application data (`public` schema) and auth data (`neon_auth` sc
 
 4. **Run locally**
    ```bash
-   npx vercel dev
+   npm run dev
    ```
 
 5. **Production build**
@@ -151,7 +151,8 @@ centra-budget-manager/
 ├── frontend/               # React 19 + Vite 6 SPA
 │   └── src/
 │       ├── components/     # Shared UI components
-│       │   ├── ui/         # shadcn/ui primitives (Button, Dialog, Label, etc.)
+│       │   ├── ui/         # shadcn/ui primitives (button, card, dialog, input, label)
+│       │   ├── AddTransactionModal.tsx # Dialog for adding new transactions
 │       │   ├── AuthPageShell.tsx   # Wrapper layout for auth pages
 │       │   ├── CentraBrand.tsx     # Logo / brand mark component
 │       │   ├── CreateAccountModal.tsx
@@ -159,7 +160,7 @@ centra-budget-manager/
 │       │   ├── Layout.tsx          # App shell (sidebar + main content area)
 │       │   ├── LoginModal.tsx
 │       │   └── Sidebar.tsx         # Navigation sidebar with user profile footer
-│       ├── context/        # AuthProvider (Neon Auth session + user profile)
+│       ├── context/        # AuthProvider (AuthContext.tsx - Neon Auth session + user profile)
 │       ├── hooks/          # use-budget-data.ts (TanStack Query data hook)
 │       ├── lib/            # api.ts, auth-client.ts, query-client.ts, utils.ts
 │       ├── pages/          # Route-level page components
