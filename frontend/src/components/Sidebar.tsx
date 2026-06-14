@@ -38,9 +38,11 @@ const Sidebar = () => {
     toggleSidebar();
   };
 
-  // Nav item class — active vs idle styling only, layout is stable
+  // Nav item class — transitions width and centers in collapsed state
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `relative flex items-center w-full h-10 rounded-2xl cursor-pointer transition-colors duration-200 ${
+    `relative flex items-center h-10 rounded-2xl cursor-pointer transition-all duration-300 ${
+      isCollapsed ? "w-10 mx-auto justify-center" : "w-full"
+    } ${
       isActive
         ? "bg-[#c8d8d0] text-[#0f5a5c] font-semibold"
         : "text-[#3d4a40] hover:bg-[#e0e3e5] font-medium"
@@ -81,7 +83,7 @@ const Sidebar = () => {
         <div className="h-16 flex items-center shrink-0 px-3 relative">
           {/* Logo — fades out first, then aside narrows (opacity transition is fast) */}
           <div
-            className="flex items-center gap-2 transition-opacity duration-150 pointer-events-none"
+            className="flex items-center gap-2 transition-opacity duration-150 pointer-events-none absolute left-3"
             style={{ opacity: labelVisible ? 1 : 0 }}
             aria-hidden={isCollapsed}
           >
@@ -94,15 +96,15 @@ const Sidebar = () => {
             </span>
           </div>
 
-          {/* Desktop toggle — centered when collapsed, ml-auto when expanded */}
+          {/* Desktop toggle — centered when collapsed, left-aligned at expanded offset */}
           <button
             onClick={toggleSidebar}
             onMouseEnter={() => setBtnHover(true)}
             onMouseLeave={() => setBtnHover(false)}
             title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             className={`hidden md:flex w-10 h-10 shrink-0 items-center justify-center rounded-full
-                       text-[#3d4a40] hover:bg-[#e0e3e5] transition-colors cursor-pointer
-                       ${isCollapsed ? "absolute left-5" : "ml-auto"}`}
+                       text-[#3d4a40] hover:bg-[#e0e3e5] transition-[colors,left] duration-300 ease-[cubic-bezier(0.2,0,0,1)] cursor-pointer
+                       absolute ${isCollapsed ? "left-5" : "left-[248px]"}`}
           >
             {isCollapsed ? (
               btnHover ? (
@@ -184,8 +186,10 @@ const Sidebar = () => {
               window.location.href = "/";
             }}
             title={isCollapsed ? "Sign Out" : undefined}
-            className="flex items-center w-full h-10 rounded-2xl cursor-pointer transition-colors
-                       duration-200 text-[#3d4a40] hover:text-rose-600 hover:bg-rose-50 font-medium"
+            className={`flex items-center h-10 rounded-2xl cursor-pointer transition-all
+                       duration-300 text-[#3d4a40] hover:text-rose-600 hover:bg-rose-50 font-medium ${
+                         isCollapsed ? "w-10 mx-auto justify-center" : "w-full"
+                       }`}
           >
             <span className="w-10 h-10 flex items-center justify-center shrink-0">
               <span className="material-symbols-outlined text-[20px]">logout</span>
@@ -205,8 +209,10 @@ const Sidebar = () => {
         ──────────────────────────────────────────────────────── */}
         <div className="px-2 pb-4 shrink-0">
           <div
-            className="flex items-center h-12 rounded-2xl hover:bg-[#e0e3e5]
-                       cursor-pointer transition-colors"
+            className={`flex items-center h-12 rounded-2xl hover:bg-[#e0e3e5]
+                       cursor-pointer transition-all duration-300 ${
+                         isCollapsed ? "w-10 mx-auto justify-center" : "w-full"
+                       }`}
             title={isCollapsed ? (user?.username ?? "Account") : undefined}
           >
             {/* Avatar — same x-position as all icons (w-10 zone at px-2 on parent) */}
