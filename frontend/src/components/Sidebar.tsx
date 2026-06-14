@@ -70,7 +70,7 @@ const Sidebar = () => {
           overflow-hidden
           transition-[width] duration-300 ease-[cubic-bezier(0.2,0,0,1)]
           ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
-          ${isCollapsed ? "w-[300px] md:w-[80px] cursor-col-resize" : "w-[300px]"}
+          ${isCollapsed ? "w-[300px] md:w-[56px] cursor-col-resize" : "w-[300px]"}
         `}
         style={{ fontFamily: "'Inter', sans-serif" }}
       >
