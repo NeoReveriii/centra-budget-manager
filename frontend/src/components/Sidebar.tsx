@@ -44,7 +44,7 @@ const Sidebar = () => {
       isCollapsed ? "w-10" : "w-full"
     } ${
       isActive
-        ? "bg-[#c8d8d0] text-[#0f5a5c] font-semibold"
+        ? "bg-white shadow-sm text-[#0f5a5c] font-semibold"
         : "text-[#3d4a40] hover:bg-[#e0e3e5] font-medium"
     }`;
 
