@@ -38,11 +38,9 @@ const Sidebar = () => {
     toggleSidebar();
   };
 
-  // Nav item class — transitions width and centers in collapsed state
+  // Nav item class — active vs idle styling only, layout is stable
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `relative flex items-center h-10 rounded-2xl cursor-pointer transition-all duration-300 ${
-      isCollapsed ? "w-10 mx-auto justify-center" : "w-full"
-    } ${
+    `relative flex items-center w-full h-10 rounded-2xl cursor-pointer transition-colors duration-200 ${
       isActive
         ? "bg-[#c8d8d0] text-[#0f5a5c] font-semibold"
         : "text-[#3d4a40] hover:bg-[#e0e3e5] font-medium"
@@ -83,7 +81,7 @@ const Sidebar = () => {
         <div className="h-16 flex items-center shrink-0 px-3 relative">
           {/* Logo — fades out first, then aside narrows (opacity transition is fast) */}
           <div
-            className="flex items-center gap-2 transition-opacity duration-150 pointer-events-none absolute left-[14px]"
+            className="flex items-center gap-2 transition-opacity duration-150 pointer-events-none"
             style={{ opacity: labelVisible ? 1 : 0 }}
             aria-hidden={isCollapsed}
           >
@@ -96,15 +94,15 @@ const Sidebar = () => {
             </span>
           </div>
 
-          {/* Desktop toggle — centered when collapsed, left-aligned at expanded offset */}
+          {/* Desktop toggle — centered when collapsed, ml-auto when expanded */}
           <button
             onClick={toggleSidebar}
             onMouseEnter={() => setBtnHover(true)}
             onMouseLeave={() => setBtnHover(false)}
             title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             className={`hidden md:flex w-10 h-10 shrink-0 items-center justify-center rounded-full
-                       text-[#3d4a40] hover:bg-[#e0e3e5] transition-[colors,left] duration-300 ease-[cubic-bezier(0.2,0,0,1)] cursor-pointer
-                       absolute ${isCollapsed ? "left-5" : "left-[248px]"}`}
+                       text-[#3d4a40] hover:bg-[#e0e3e5] transition-colors cursor-pointer
+                       ${isCollapsed ? "absolute left-5" : "ml-auto"}`}
           >
             {isCollapsed ? (
               btnHover ? (
@@ -134,7 +132,7 @@ const Sidebar = () => {
             Each item: [fixed 40px icon zone] [label that fades].
             The aside's overflow:hidden clips the label as it narrows.
         ──────────────────────────────────────────────────────── */}
-        <nav className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-2 py-1 space-y-0.5">
+        <nav className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-5 py-1 space-y-0.5">
           {NAV_ITEMS.map(({ to, icon, label }) => (
             <NavLink
               key={to}
@@ -143,7 +141,7 @@ const Sidebar = () => {
               title={isCollapsed ? label : undefined}
               onClick={() => setMobileSidebarOpen(false)}
             >
-              {/* Icon zone — w-10 h-10, always at x=8 (px-2 on nav).
+              {/* Icon zone — w-10 h-10, always at x=20 (px-5 on nav).
                   Never shifts regardless of sidebar state. */}
               <span className="w-10 h-10 flex items-center justify-center shrink-0">
                 <span className="material-symbols-outlined text-[20px]">{icon}</span>
@@ -152,9 +150,8 @@ const Sidebar = () => {
               {/* Label — fades to opacity-0 quickly when collapsing.
                   The aside overflow:hidden is the structural clip. */}
               <span
-                className={`ml-2 text-[14px] whitespace-nowrap transition-all duration-150 ${
-                  isCollapsed ? "w-0 opacity-0 overflow-hidden ml-0" : "w-auto opacity-100"
-                }`}
+                className="ml-2 text-[14px] whitespace-nowrap transition-opacity duration-150"
+                style={{ opacity: labelVisible ? 1 : 0 }}
               >
                 {label}
               </span>
@@ -163,7 +160,7 @@ const Sidebar = () => {
         </nav>
 
         {/* ── FOOTER ──────────────────────────────────────────── */}
-        <div className="px-2 py-2 shrink-0 border-t border-[#bccabe]/30 space-y-0.5">
+        <div className="px-5 py-2 shrink-0 border-t border-[#bccabe]/30 space-y-0.5">
           <NavLink
             to="/settings"
             className={navLinkClass}
@@ -174,9 +171,8 @@ const Sidebar = () => {
               <span className="material-symbols-outlined text-[20px]">settings</span>
             </span>
             <span
-              className={`ml-2 text-[14px] whitespace-nowrap transition-all duration-150 ${
-                isCollapsed ? "w-0 opacity-0 overflow-hidden ml-0" : "w-auto opacity-100"
-              }`}
+              className="ml-2 text-[14px] whitespace-nowrap transition-opacity duration-150"
+              style={{ opacity: labelVisible ? 1 : 0 }}
             >
               Settings
             </span>
@@ -188,18 +184,15 @@ const Sidebar = () => {
               window.location.href = "/";
             }}
             title={isCollapsed ? "Sign Out" : undefined}
-            className={`flex items-center h-10 rounded-2xl cursor-pointer transition-all
-                       duration-300 text-[#3d4a40] hover:text-rose-600 hover:bg-rose-50 font-medium ${
-                         isCollapsed ? "w-10 mx-auto justify-center" : "w-full"
-                       }`}
+            className="flex items-center w-full h-10 rounded-2xl cursor-pointer transition-colors
+                       duration-200 text-[#3d4a40] hover:text-rose-600 hover:bg-rose-50 font-medium"
           >
             <span className="w-10 h-10 flex items-center justify-center shrink-0">
               <span className="material-symbols-outlined text-[20px]">logout</span>
             </span>
             <span
-              className={`ml-2 text-[14px] whitespace-nowrap transition-all duration-150 ${
-                isCollapsed ? "w-0 opacity-0 overflow-hidden ml-0" : "w-auto opacity-100"
-              }`}
+              className="ml-2 text-[14px] whitespace-nowrap transition-opacity duration-150"
+              style={{ opacity: labelVisible ? 1 : 0 }}
             >
               Sign Out
             </span>
@@ -210,15 +203,13 @@ const Sidebar = () => {
             Avatar always in a fixed slot (px-3 from left edge).
             Name/email/caret fade away when collapsed.
         ──────────────────────────────────────────────────────── */}
-        <div className="px-2 pb-4 shrink-0">
+        <div className="px-5 pb-4 shrink-0">
           <div
-            className={`flex items-center h-12 rounded-2xl hover:bg-[#e0e3e5]
-                       cursor-pointer transition-all duration-300 ${
-                         isCollapsed ? "w-10 mx-auto justify-center" : "w-full"
-                       }`}
+            className="flex items-center w-full h-12 rounded-2xl hover:bg-[#e0e3e5]
+                       cursor-pointer transition-colors"
             title={isCollapsed ? (user?.username ?? "Account") : undefined}
           >
-            {/* Avatar — same x-position as all icons (w-10 zone at px-2 on parent) */}
+            {/* Avatar — same x-position as all icons */}
             <span className="w-10 h-10 flex items-center justify-center shrink-0">
               <span className="w-8 h-8 rounded-full bg-[#0f5a5c] text-white flex items-center
                               justify-center font-bold text-xs border border-[#0f5a5c]/20">
@@ -228,9 +219,8 @@ const Sidebar = () => {
 
             {/* User info + caret — fades out with the same timing as nav labels */}
             <div
-              className={`flex items-center flex-1 min-w-0 gap-1 transition-all duration-150 ${
-                isCollapsed ? "w-0 opacity-0 overflow-hidden ml-0" : "w-auto opacity-100"
-              }`}
+              className="flex items-center flex-1 min-w-0 gap-1 transition-opacity duration-150"
+              style={{ opacity: labelVisible ? 1 : 0 }}
               aria-hidden={isCollapsed}
             >
               <div className="flex-1 min-w-0">
