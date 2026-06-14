@@ -83,7 +83,7 @@ const Sidebar = () => {
         <div className="h-16 flex items-center shrink-0 px-3 relative">
           {/* Logo — fades out first, then aside narrows (opacity transition is fast) */}
           <div
-            className="flex items-center gap-2 transition-opacity duration-150 pointer-events-none absolute left-3"
+            className="flex items-center gap-2 transition-opacity duration-150 pointer-events-none absolute left-[14px]"
             style={{ opacity: labelVisible ? 1 : 0 }}
             aria-hidden={isCollapsed}
           >
@@ -152,8 +152,9 @@ const Sidebar = () => {
               {/* Label — fades to opacity-0 quickly when collapsing.
                   The aside overflow:hidden is the structural clip. */}
               <span
-                className="ml-2 text-[14px] whitespace-nowrap transition-opacity duration-150"
-                style={{ opacity: labelVisible ? 1 : 0 }}
+                className={`ml-2 text-[14px] whitespace-nowrap transition-all duration-150 ${
+                  isCollapsed ? "w-0 opacity-0 overflow-hidden ml-0" : "w-auto opacity-100"
+                }`}
               >
                 {label}
               </span>
@@ -173,8 +174,9 @@ const Sidebar = () => {
               <span className="material-symbols-outlined text-[20px]">settings</span>
             </span>
             <span
-              className="ml-2 text-[14px] whitespace-nowrap transition-opacity duration-150"
-              style={{ opacity: labelVisible ? 1 : 0 }}
+              className={`ml-2 text-[14px] whitespace-nowrap transition-all duration-150 ${
+                isCollapsed ? "w-0 opacity-0 overflow-hidden ml-0" : "w-auto opacity-100"
+              }`}
             >
               Settings
             </span>
@@ -195,8 +197,9 @@ const Sidebar = () => {
               <span className="material-symbols-outlined text-[20px]">logout</span>
             </span>
             <span
-              className="ml-2 text-[14px] whitespace-nowrap transition-opacity duration-150"
-              style={{ opacity: labelVisible ? 1 : 0 }}
+              className={`ml-2 text-[14px] whitespace-nowrap transition-all duration-150 ${
+                isCollapsed ? "w-0 opacity-0 overflow-hidden ml-0" : "w-auto opacity-100"
+              }`}
             >
               Sign Out
             </span>
@@ -225,8 +228,9 @@ const Sidebar = () => {
 
             {/* User info + caret — fades out with the same timing as nav labels */}
             <div
-              className="flex items-center flex-1 min-w-0 gap-1 transition-opacity duration-150"
-              style={{ opacity: labelVisible ? 1 : 0 }}
+              className={`flex items-center flex-1 min-w-0 gap-1 transition-all duration-150 ${
+                isCollapsed ? "w-0 opacity-0 overflow-hidden ml-0" : "w-auto opacity-100"
+              }`}
               aria-hidden={isCollapsed}
             >
               <div className="flex-1 min-w-0">
