@@ -40,4 +40,3 @@ To test the password reset functionality:
 ## 🧹 Legacy Code Note
 
 If you are maintaining older parts of the application (such as the legacy `public/assets/js/main.js` or `views/guest.html`), please note that they may still contain references to the old `/api/reset` endpoint. These are no longer functional and should be cleaned up as the transition to the Full-Stack React SPA is completed.
-temporary 
