@@ -9,6 +9,8 @@ export interface GoalCardProps {
   icon: string;
   priorityLevel?: PriorityLevel;
   nextMilestoneAmount?: number;
+  onContribute?: () => void;
+  onDelete?: () => void;
 }
 
 const formatCurrency = (amount: number) => {
@@ -43,6 +45,8 @@ const GoalCard: React.FC<GoalCardProps> = ({
   icon,
   priorityLevel,
   nextMilestoneAmount,
+  onContribute,
+  onDelete,
 }) => {
   const progressPercentage = Math.min(
     Math.round((currentAmount / targetAmount) * 100),
@@ -64,14 +68,25 @@ const GoalCard: React.FC<GoalCardProps> = ({
             </span>
           </div>
           <div>
-            <h3 className="font-h3 text-h3 text-primary mb-0.5">{title}</h3>
+            <h3 className="font-h3 text-h3 text-primary mb-0.5 pr-6">{title}</h3>
             <p className="font-body-sm text-body-sm text-on-surface-variant">
               Target: {formatCurrency(targetAmount)}
             </p>
           </div>
         </div>
 
-        {priorityLevel && <PriorityBadge level={priorityLevel} />}
+        <div className="flex flex-col items-end gap-2">
+          {priorityLevel && <PriorityBadge level={priorityLevel} />}
+          {onDelete && (
+            <button
+              onClick={onDelete}
+              className="text-on-surface-variant hover:text-error transition-colors"
+              title="Delete Goal"
+            >
+              <span className="material-symbols-outlined text-[18px]">delete</span>
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex justify-between items-end mt-2">
@@ -99,7 +114,10 @@ const GoalCard: React.FC<GoalCardProps> = ({
         )}
       </div>
 
-      <button className="w-full bg-secondary-fixed text-on-secondary-fixed py-2.5 rounded-lg font-body-md text-body-md hover:bg-secondary-fixed-dim active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-auto">
+      <button 
+        onClick={onContribute}
+        className="w-full bg-secondary-fixed text-on-secondary-fixed py-2.5 rounded-lg font-body-md text-body-md hover:bg-secondary-fixed-dim active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-auto"
+      >
         <span className="material-symbols-outlined text-lg">payments</span>
         Contribute
       </button>

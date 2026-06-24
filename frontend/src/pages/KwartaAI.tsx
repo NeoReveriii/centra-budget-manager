@@ -152,25 +152,6 @@ const KwartaAI = () => {
 
   return (
     <div className="grid grid-cols-12 gap-gutter animate-fade-in pb-10">
-      {/* Strategy Overview Header */}
-      <section className="col-span-12 mb-4">
-        <div className="flex items-end justify-between border-b-2 border-primary-container pb-4">
-          <div>
-            <span className="font-label-caps text-secondary uppercase mb-1 block">
-              AI Financial Advisor
-            </span>
-            <h2 className="font-h1 text-h1 text-primary">Kwarta AI Chat</h2>
-          </div>
-          <div className="text-right">
-            <p className="font-label-caps text-slate-500">LIVE SYNC</p>
-            <p className="font-numeric-data text-on-surface flex items-center justify-end gap-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              Connected
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* Column 2: Kwarta AI Chat */}
       <div className="col-span-12 flex flex-col h-[700px] bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
         {/* Chat Header */}
