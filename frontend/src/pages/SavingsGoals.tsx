@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import GoalCard from "../components/GoalCard";
 import type { PriorityLevel } from "../components/GoalCard";
 import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal } from "../hooks/use-budget-data";
+import { useQueryClient } from "@tanstack/react-query";
+import { budgetQueryKeys } from "../hooks/use-budget-data";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -26,8 +28,8 @@ const CATEGORY_ICONS: Record<string, string> = {
 };
 
 const SELECT_CLS =
-  "w-full flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm " +
-  "outline-none focus:border-primary focus:ring-0 transition-colors cursor-pointer " +
+  "w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm " +
+  "outline-none focus:border-primary transition-colors cursor-pointer " +
   "disabled:cursor-not-allowed disabled:opacity-50";
 
 function formatCurrency(n: number) {
@@ -49,6 +51,7 @@ function getMonthsRemaining(deadline: string): number {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 const SavingsGoals: React.FC = () => {
+  const queryClient = useQueryClient();
   const { data: goals = [], isLoading } = useGoals();
   const createGoalMut  = useCreateGoal();
   const updateGoalMut  = useUpdateGoal();
@@ -106,6 +109,8 @@ const SavingsGoals: React.FC = () => {
       },
       {
         onSuccess: () => {
+          // Force immediate refetch — bypasses staleTime
+          queryClient.refetchQueries({ queryKey: budgetQueryKeys.goals });
           setIsAddOpen(false);
           setTitle("");
           setTargetAmount("");
