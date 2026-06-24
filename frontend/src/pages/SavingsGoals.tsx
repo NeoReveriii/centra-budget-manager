@@ -105,23 +105,6 @@ const SavingsGoals: React.FC = () => {
           ))}
         </div>
       </section>
-
-      {/* Atmospheric Visual (optional enhancement from design) */}
-      <section className="mt-12 p-8 rounded-2xl bg-white border border-outline-variant text-center overflow-hidden">
-        <h4 className="font-h3 text-h3 text-primary mb-3">
-          Your Wealth Journey
-        </h4>
-        <div className="relative w-full h-48 bg-surface-container-low rounded-xl overflow-hidden flex items-center justify-center">
-          <img
-            alt="Institutional Wealth Graph"
-            className="absolute inset-0 w-full h-full object-cover mix-blend-multiply opacity-30"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2YVmhuXIOsYKzHy0kqLvoKCtawN2ryZ-TjE4kqSkNZaZmR8Nv-Ba9PLCPjAHbAKAQeOca0hTdEylWNoZbTyxLveS96MQY31YNL9nF82N_D5_BAMlCtA6FypL4YsEeyQGnl-LQY2MfrLSrTAsCN9BSIzRPxBXhOZ0zzwmnPi0ISK3I-fkQ5iQXuIY1oafuZLWgF8FPjFR3tNb6YwVB0JawiztIcthFtzwDRAkJsytb9XhrlUo7mIoJkmPJfJOkCb1OwTaa3thu32Q"
-          />
-          <p className="relative z-10 font-body-md text-body-md text-primary font-bold px-6">
-            Achieve your milestones faster with automated rounding.
-          </p>
-        </div>
-      </section>
     </div>
   );
 };
