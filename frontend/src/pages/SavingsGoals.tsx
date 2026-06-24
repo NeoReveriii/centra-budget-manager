@@ -84,7 +84,7 @@ const SavingsGoals: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-full">
+    <div className="flex flex-col min-h-full animate-fade-in">
       {/* Header Section */}
       <header className="flex justify-between items-end mb-8">
         <div>
