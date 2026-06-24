@@ -22,10 +22,42 @@ const formatCurrency = (amount: number) =>
     maximumFractionDigits: 0,
   }).format(amount);
 
-const PRIORITY_STYLES: Record<PriorityLevel, { badge: string; bar: string; glow: string }> = {
-  High:   { badge: "bg-rose-100 text-rose-700 border-rose-300",     bar: "bg-rose-500",    glow: "shadow-rose-100" },
-  Medium: { badge: "bg-amber-100 text-amber-700 border-amber-300",   bar: "bg-amber-500",   glow: "shadow-amber-100" },
-  Low:    { badge: "bg-emerald-100 text-emerald-700 border-emerald-300", bar: "bg-emerald-500", glow: "shadow-emerald-100" },
+const PRIORITY_STYLES: Record<PriorityLevel, {
+  badge: string;
+  bar: string;
+  leftBorder: string;
+  iconBg: string;
+  iconColor: string;
+  icon: string;
+  label: string;
+}> = {
+  High: {
+    badge: "bg-rose-100 text-rose-700 border-rose-300",
+    bar: "bg-rose-500",
+    leftBorder: "border-l-rose-500",
+    iconBg: "bg-rose-50",
+    iconColor: "text-rose-600",
+    icon: "priority_high",
+    label: "High Priority",
+  },
+  Medium: {
+    badge: "bg-amber-100 text-amber-700 border-amber-300",
+    bar: "bg-amber-400",
+    leftBorder: "border-l-amber-400",
+    iconBg: "bg-amber-50",
+    iconColor: "text-amber-600",
+    icon: "density_medium",
+    label: "Medium Priority",
+  },
+  Low: {
+    badge: "bg-emerald-100 text-emerald-700 border-emerald-300",
+    bar: "bg-emerald-500",
+    leftBorder: "border-l-emerald-400",
+    iconBg: "bg-emerald-50",
+    iconColor: "text-emerald-600",
+    icon: "expand_more",
+    label: "Low Priority",
+  },
 };
 
 function getMonthsRemaining(deadline: string): number {
@@ -73,27 +105,23 @@ const GoalCard: React.FC<GoalCardProps> = ({
 
   return (
     <div
-      className={`bg-white border border-outline-variant rounded-2xl flex flex-col gap-0 hover:shadow-xl transition-all duration-300 relative overflow-hidden group ${
-        isCompleted ? "border-emerald-300" : ""
-      }`}
+      className={`bg-white border border-outline-variant border-l-4 ${
+        isCompleted ? "border-l-emerald-400" : styles.leftBorder
+      } rounded-2xl flex flex-col gap-0 hover:shadow-xl transition-all duration-300 relative overflow-hidden group`}
     >
-      {/* Priority top accent bar */}
-      <div
-        className={`h-1 w-full rounded-t-2xl ${
-          isCompleted ? "bg-emerald-400" : styles.bar
-        } opacity-70`}
-      />
+      {/* No generic top bar — left border IS the indicator */}
 
       <div className="p-6 flex flex-col gap-4 flex-1">
-        {/* Header */}
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-3">
             <div
-              className={`w-11 h-11 rounded-xl flex items-center justify-center text-white shrink-0 ${
-                isCompleted ? "bg-emerald-500" : "bg-primary"
+              className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
+                isCompleted ? "bg-emerald-50" : styles.iconBg
               }`}
             >
-              <span className="material-symbols-outlined text-[22px]">
+              <span className={`material-symbols-outlined text-[22px] ${
+                isCompleted ? "text-emerald-600" : styles.iconColor
+              }`}>
                 {isCompleted ? "check_circle" : icon}
               </span>
             </div>
@@ -106,11 +134,18 @@ const GoalCard: React.FC<GoalCardProps> = ({
           </div>
 
           <div className="flex flex-col items-end gap-1.5">
-            <span
-              className={`text-[10px] font-bold px-2 py-0.5 rounded-full border tracking-wider uppercase ${styles.badge}`}
-            >
-              {priorityLevel}
-            </span>
+            {/* Priority badge with icon */}
+            {!isCompleted ? (
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border tracking-wider uppercase flex items-center gap-1 ${styles.badge}`}>
+                <span className="material-symbols-outlined text-[11px]">{styles.icon}</span>
+                {priorityLevel}
+              </span>
+            ) : (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border tracking-wider uppercase flex items-center gap-1 bg-emerald-100 text-emerald-700 border-emerald-300">
+                <span className="material-symbols-outlined text-[11px]">verified</span>
+                Done
+              </span>
+            )}
             {onDelete && (
               <button
                 onClick={onDelete}

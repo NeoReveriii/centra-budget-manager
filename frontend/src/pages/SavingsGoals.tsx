@@ -27,8 +27,8 @@ const CATEGORY_ICONS: Record<string, string> = {
 
 const SELECT_CLS =
   "w-full flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm " +
-  "ring-offset-background focus-visible:outline-none focus-visible:ring-2 " +
-  "focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer";
+  "outline-none focus:border-primary focus:ring-0 transition-colors cursor-pointer " +
+  "disabled:cursor-not-allowed disabled:opacity-50";
 
 function formatCurrency(n: number) {
   return (
@@ -67,6 +67,9 @@ const SavingsGoals: React.FC = () => {
   const [selectedGoalId,   setSelectedGoalId]     = useState<number | null>(null);
   const [contributeAmount, setContributeAmount]   = useState("");
   const [contributeNote,   setContributeNote]     = useState("");
+
+  // ── Delete Confirm State ──
+  const [deleteGoalId, setDeleteGoalId] = useState<number | null>(null);
 
   // ── Analytics ──
   const totalSavings      = goals.reduce((s, g) => s + Number(g.current_amount), 0);
@@ -130,7 +133,15 @@ const SavingsGoals: React.FC = () => {
   };
 
   const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this goal?")) deleteGoalMut.mutate(id);
+    setDeleteGoalId(id);
+  };
+
+  const confirmDelete = () => {
+    if (deleteGoalId) {
+      deleteGoalMut.mutate(deleteGoalId, {
+        onSuccess: () => setDeleteGoalId(null),
+      });
+    }
   };
 
   const openContribute = (id: number) => {
@@ -444,6 +455,38 @@ const SavingsGoals: React.FC = () => {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Delete Confirmation Dialog ─────────────────────────── */}
+      <Dialog open={deleteGoalId !== null} onOpenChange={(open) => !open && setDeleteGoalId(null)}>
+        <DialogContent className="max-w-[360px] text-center">
+          <div className="w-16 h-16 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center mx-auto mb-2">
+            <span className="material-symbols-outlined text-error text-[30px]">delete</span>
+          </div>
+          <DialogHeader className="text-center sm:text-center">
+            <DialogTitle>Delete Goal?</DialogTitle>
+            <DialogDescription>
+              This goal and all its contribution history will be permanently removed.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-center gap-3 mt-2">
+            <Button
+              variant="outline"
+              className="flex-1 rounded-xl"
+              onClick={() => setDeleteGoalId(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              className="flex-1 rounded-xl"
+              onClick={confirmDelete}
+              disabled={deleteGoalMut.isPending}
+            >
+              {deleteGoalMut.isPending ? "Deleting…" : "Delete"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
