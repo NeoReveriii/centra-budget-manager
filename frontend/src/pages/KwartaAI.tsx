@@ -1,10 +1,9 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
   useChatHistory,
   useClearChatHistory,
-  useWallets,
 } from "@/hooks/use-budget-data";
 import { getAccessToken } from "../lib/auth-client";
 
@@ -23,52 +22,9 @@ const KwartaAI = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [historyHydrated, setHistoryHydrated] = useState(false);
 
-  const { data: wallets = [], isLoading: walletsLoading } = useWallets();
   const { data: history, isLoading: historyLoading } = useChatHistory();
   const clearChat = useClearChatHistory();
-  const isLoading = walletsLoading || historyLoading;
-
-  const totalBalance = useMemo(
-    () =>
-      wallets.reduce(
-        (sum, w) => sum + parseFloat(w.calculated_balance || "0"),
-        0,
-      ),
-    [wallets],
-  );
-
-  const assetDistribution = useMemo(() => {
-    if (totalBalance <= 0) {
-      return [{ label: "No Funds", percent: 100, color: "bg-slate-200" }];
-    }
-    let savingsTotal = 0;
-    let eWalletTotal = 0;
-    let cashTotal = 0;
-    wallets.forEach((w) => {
-      const bal = parseFloat(w.calculated_balance || "0");
-      if (w.type === "Bank Account" || w.type === "Investment")
-        savingsTotal += bal;
-      else if (w.type === "E-Wallet") eWalletTotal += bal;
-      else cashTotal += bal;
-    });
-    return [
-      {
-        label: "Bank & Investments",
-        percent: Math.round((savingsTotal / totalBalance) * 100) || 0,
-        color: "bg-primary-container",
-      },
-      {
-        label: "E-Wallets",
-        percent: Math.round((eWalletTotal / totalBalance) * 100) || 0,
-        color: "bg-secondary",
-      },
-      {
-        label: "Cash / Others",
-        percent: Math.round((cashTotal / totalBalance) * 100) || 0,
-        color: "bg-on-primary-container",
-      },
-    ];
-  }, [wallets, totalBalance]);
+  const isLoading = historyLoading;
 
   useEffect(() => {
     if (historyLoading) return;
