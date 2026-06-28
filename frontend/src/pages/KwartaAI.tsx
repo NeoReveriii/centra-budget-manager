@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useAuth } from "@/context/AuthContext";
 import {
   useChatHistory,
   useClearChatHistory,
@@ -32,6 +33,10 @@ const currencyFormatter = new Intl.NumberFormat(undefined, {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
+
+function getInitials(name?: string | null): string {
+  return name?.trim().slice(0, 2).toUpperCase() || "U";
+}
 
 function parseAssistantContent(content: string): ParsedAssistantContent {
   let chartType: ChartType | null = null;
@@ -87,6 +92,21 @@ function buildArcPath(startAngle: number, endAngle: number, radius: number) {
   const end = polarToCartesian(50, 50, radius, startAngle);
   const largeArcFlag = endAngle - startAngle > 180 ? 1 : 0;
   return `M 50 50 L ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 0 ${end.x} ${end.y} Z`;
+}
+
+function KwartaAvatar() {
+  return (
+    <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-[#0f5a5c] shadow-sm ring-1 ring-[#0f5a5c]/20">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.35),transparent_45%),linear-gradient(145deg,#134e4a,#0f5a5c_55%,#083344)]" />
+      <div className="relative flex h-full w-full items-center justify-center">
+        <svg viewBox="0 0 32 32" className="h-6 w-6 text-white drop-shadow-[0_1px_0_rgba(0,0,0,0.15)]" aria-hidden="true">
+          <path d="M6 21.5V10.5c0-1.1.9-2 2-2h1.4c.6 0 1.1.3 1.4.8l2.4 4.1 2.4-4.1c.3-.5.8-.8 1.4-.8H18v13h-2.7v-8l-2.2 3.7c-.2.4-.6.6-1 .6s-.8-.2-1-.6l-2.2-3.7v8H6Zm20 0h-2.9l-4-6.5 3.5-6.5h3l-3.4 6 3.8 7Z" fill="currentColor" opacity="0.95"/>
+          <path d="M22 24.5c-.9 0-1.7-.2-2.4-.6-.7-.4-1.2-1-1.5-1.8h2.8c.2.4.8.6 1.6.6.5 0 .9-.1 1.2-.3.3-.2.5-.5.5-.8 0-.3-.1-.5-.3-.7-.2-.2-.6-.4-1.3-.5l-1.2-.2c-1.2-.2-2.1-.6-2.7-1.1-.6-.5-.9-1.2-.9-2.1 0-1 .4-1.8 1.2-2.4.8-.6 1.9-.9 3.2-.9 1.3 0 2.3.3 3.1.8.8.5 1.3 1.2 1.5 2h-2.7c-.2-.3-.4-.5-.8-.6-.3-.1-.7-.2-1.2-.2-.5 0-.9.1-1.2.3-.3.2-.5.4-.5.7 0 .2.1.4.3.6.2.2.6.3 1.2.4l1.4.2c1.2.2 2.1.6 2.7 1.1.6.5.9 1.2.9 2.1 0 1.1-.4 2-1.3 2.7-.9.6-2 1-3.4 1Z" fill="currentColor" opacity="0.9"/>
+        </svg>
+      </div>
+      <div className="absolute inset-x-1 bottom-1.5 h-0.5 rounded-full bg-white/40" />
+    </div>
+  );
 }
 
 function ChatVisualization({
@@ -192,6 +212,9 @@ function ChatVisualization({
 }
 
 const KwartaAI = () => {
+  const { user } = useAuth();
+  const userInitials = getInitials(user?.username);
+
   const [inputValue, setInputValue] = useState("");
   const [inputFocused, setInputFocused] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -330,9 +353,7 @@ const KwartaAI = () => {
         <div className="flex items-center justify-between border-b border-slate-100 bg-surface-container-low/30 px-4 py-3">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container">
-              <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1" }}>
-                smart_toy
-              </span>
+              <KwartaAvatar />
             </div>
             <div>
               <h4 className="text-sm font-bold text-primary font-h3">Kwarta AI Elite</h4>
@@ -372,14 +393,7 @@ const KwartaAI = () => {
                   const parsed = parseAssistantContent(msg.content);
                   return (
                     <div key={msg.id} className="flex max-w-[92%] gap-4">
-                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary-container">
-                        <span
-                          className="material-symbols-outlined text-sm text-white"
-                          style={{ fontVariationSettings: "'FILL' 1" }}
-                        >
-                          smart_toy
-                        </span>
-                      </div>
+                      <KwartaAvatar />
                       <div
                         className={`w-full rounded-lg rounded-tl-none border p-4 ${
                           parsed.isRefusal
@@ -428,7 +442,7 @@ const KwartaAI = () => {
                 return (
                   <div key={msg.id} className="ml-auto flex max-w-[85%] flex-row-reverse gap-4">
                     <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
-                      Me
+                      {userInitials}
                     </div>
                     <div className="rounded-lg rounded-tr-none border border-primary-container bg-white p-4">
                       <p className="font-body-sm leading-relaxed text-primary font-medium italic">
