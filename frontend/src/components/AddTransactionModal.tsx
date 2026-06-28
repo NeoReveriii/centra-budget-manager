@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useCreateTransaction, useWallets } from "@/hooks/use-budget-data";
 import { useUiStore } from "@/stores/ui-store";
 import { Button } from "@/components/ui/button";
@@ -44,7 +44,7 @@ function defaultCategoryForType(type: TxType): string {
   return TRANSACTION_CATEGORIES.Expense[0].key;
 }
 
-function getCategoryOptions(type: TxType): CategoryOption[] {
+function getCategoryOptions(type: TxType): readonly CategoryOption[] {
   if (type === "Transfer") return [];
   return TRANSACTION_CATEGORIES[type];
 }
@@ -302,3 +302,4 @@ export function AddTransactionModal() {
     </Dialog>
   );
 }
+
