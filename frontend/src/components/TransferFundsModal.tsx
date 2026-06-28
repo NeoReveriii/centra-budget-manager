@@ -12,10 +12,13 @@ import {
 } from "@/components/ui/dialog";
 
 function formatCurrency(amount: number): string {
-  return "PHP " + amount.toLocaleString("en-PH", {
+  return new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: "PHP",
+    currencyDisplay: "narrowSymbol",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  });
+  }).format(amount);
 }
 
 export function TransferFundsModal() {
@@ -122,7 +125,7 @@ export function TransferFundsModal() {
 
           <div className="space-y-2">
             <label className="block text-label-caps font-label-caps text-slate-500 uppercase">
-              Amount (PHP)
+              Amount (₱)
             </label>
             <input
               type="number"

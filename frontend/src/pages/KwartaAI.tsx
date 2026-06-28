@@ -37,6 +37,12 @@ interface ChartDatum {
   amount: number;
 }
 
+type AiConnectionState = "checking" | "online" | "offline";
+
+interface AiAvailability {
+  state: AiConnectionState;
+  label: string;
+}
 const currencyFormatter = new Intl.NumberFormat(undefined, {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
@@ -261,11 +267,30 @@ const KwartaAI = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [historyHydrated, setHistoryHydrated] = useState(false);
+  const [isBrowserOnline, setIsBrowserOnline] = useState(
+    () => (typeof navigator !== "undefined" ? navigator.onLine : true),
+  );
+  const [aiAvailability, setAiAvailability] = useState<AiAvailability>({
+    state: "checking",
+    label: "Checking AI availability...",
+  });
 
   const { data: transactions = [], isLoading: transactionsLoading } = useTransactions();
   const { data: history, isLoading: historyLoading } = useChatHistory();
   const clearChat = useClearChatHistory();
   const isLoading = transactionsLoading || historyLoading;
+
+  useEffect(() => {
+    const handleOnline = () => setIsBrowserOnline(true);
+    const handleOffline = () => setIsBrowserOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isMenuOpen) return;
@@ -289,6 +314,55 @@ const KwartaAI = () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isMenuOpen]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadAiAvailability() {
+      if (!isBrowserOnline) {
+        if (!cancelled) {
+          setAiAvailability({ state: "offline", label: "Browser offline" });
+        }
+        return;
+      }
+
+      try {
+        const token = await getAccessToken();
+        if (!token) throw new Error("Unauthorized");
+        const res = await fetch("/api/chat?status=1", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!res.ok) throw new Error("Status check failed");
+
+        const payload = (await res.json()) as {
+          availability?: { state?: AiConnectionState };
+        };
+        const online = payload.availability?.state === "online";
+        if (!cancelled) {
+          setAiAvailability({
+            state: online ? "online" : "offline",
+            label: online ? "Provider available" : "Provider fallback active",
+          });
+        }
+      } catch {
+        if (!cancelled) {
+          setAiAvailability({
+            state: "offline",
+            label: "Provider fallback active",
+          });
+        }
+      }
+    }
+
+    setAiAvailability({ state: "checking", label: "Checking AI availability..." });
+    void loadAiAvailability();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isBrowserOnline, user]);
 
   useEffect(() => {
     if (historyLoading) return;
@@ -431,11 +505,34 @@ const KwartaAI = () => {
               <div>
                 <h4 className="text-sm font-bold text-primary font-h3">Kwarta AI Elite</h4>
                 <div className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[10px] font-bold uppercase tracking-tighter text-slate-500">
-                    Secure Financial Intelligence Link
+                  <span
+                    className={`h-2 w-2 rounded-full ${
+                      aiAvailability.state === "online"
+                        ? "bg-emerald-500 animate-pulse"
+                        : aiAvailability.state === "checking"
+                          ? "bg-amber-500 animate-pulse"
+                          : "bg-rose-500"
+                    }`}
+                  />
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-tighter ${
+                      aiAvailability.state === "online"
+                        ? "text-emerald-600"
+                        : aiAvailability.state === "checking"
+                          ? "text-amber-600"
+                          : "text-rose-600"
+                    }`}
+                  >
+                    {aiAvailability.state === "online"
+                      ? "AI online"
+                      : aiAvailability.state === "checking"
+                        ? "Checking AI..."
+                        : "AI offline"}
                   </span>
                 </div>
+                <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  {aiAvailability.label}
+                </p>
               </div>
             </div>
 

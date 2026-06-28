@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useCreateTransaction, useWallets } from "@/hooks/use-budget-data";
 import { useUiStore } from "@/stores/ui-store";
 import { Button } from "@/components/ui/button";
@@ -193,7 +193,7 @@ export function AddTransactionModal() {
 
             <div className="space-y-2">
               <Label htmlFor="tx-amount" className="font-bold text-slate-600">
-                Amount (PHP)
+                Amount (₱)
               </Label>
               <Input
                 id="tx-amount"

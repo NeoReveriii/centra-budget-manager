@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTransactions, useWallets } from "@/hooks/use-budget-data";
 import {
@@ -166,10 +166,19 @@ function getCategoryStyle(category: string | null | undefined, description: stri
 }
 
 function formatCurrency(amount: number): string {
-  return `PHP ${amount.toLocaleString("en-PH", {
+  return new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: "PHP",
+    currencyDisplay: "narrowSymbol",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  })}`;
+  }).format(amount);
+}
+
+function formatDisplayName(username?: string | null): string {
+  if (!username) return "User";
+  const firstName = username.replace(/[_-]+/g, " ").trim().split(/\s+/)[0] || "User";
+  return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
 }
 
 function formatDate(dateStr: string): string {
@@ -372,9 +381,9 @@ const Dashboard = () => {
   const { data: transactions = [], isLoading: transactionsLoading } = useTransactions();
   const [selectedWalletId, setSelectedWalletId] = useState<string>("all");
   const [selectedDateRange, setSelectedDateRange] = useState<DateRangeOption>("Month");
-
+  const [animateTopCategories, setAnimateTopCategories] = useState(false);
   const loading = walletsLoading || transactionsLoading;
-  const displayName = user?.username || "User";
+  const displayName = formatDisplayName(user?.username);
 
   const selectedWallet = useMemo(() => {
     if (selectedWalletId === "all") return null;
@@ -427,33 +436,41 @@ const Dashboard = () => {
     return buildCashflowData(selectedDateRange, filteredTransactions, rangeBounds.start, rangeBounds.end);
   }, [selectedDateRange, filteredTransactions, rangeBounds]);
 
-  const categoryTotals: Record<string, number> = {};
-  filteredTransactions
-    .filter((tx) => tx.type === "Expense")
-    .forEach((tx) => {
-      const key = (tx.category || tx.description.split(" ")[0] || "Other").trim() || "Other";
-      categoryTotals[key] = (categoryTotals[key] || 0) + Number(tx.amount);
-    });
+  const topCategories = useMemo(() => {
+    const categoryTotals: Record<string, number> = {};
+    filteredTransactions
+      .filter((tx) => tx.type === "Expense")
+      .forEach((tx) => {
+        const key = (tx.category || tx.description.split(" ")[0] || "Other").trim() || "Other";
+        categoryTotals[key] = (categoryTotals[key] || 0) + Number(tx.amount);
+      });
 
-  const topCategories = Object.entries(categoryTotals)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 4)
-    .map(([label, amount]) => {
-      const style = getCategoryStyle(label, label, "Expense");
-      const percent = periodExpenses > 0 ? Math.round((amount / periodExpenses) * 100) : 0;
-      return {
-        label,
-        amount: formatCurrency(amount),
-        icon: style.icon,
-        bg: style.iconBg,
-        text: style.iconColor,
-        percent: String(percent) + "%",
-      };
-    });
+    return Object.entries(categoryTotals)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 4)
+      .map(([label, amount]) => {
+        const style = getCategoryStyle(label, label, "Expense");
+        const percent = periodExpenses > 0 ? Math.round((amount / periodExpenses) * 100) : 0;
+        return {
+          label,
+          amount: formatCurrency(amount),
+          icon: style.icon,
+          bg: style.iconBg,
+          text: style.iconColor,
+          percent: String(percent) + "%",
+        };
+      });
+  }, [filteredTransactions, periodExpenses]);
 
   const recentTx = [...filteredTransactions]
     .sort((a, b) => new Date(b.dateoftrans).getTime() - new Date(a.dateoftrans).getTime())
     .slice(0, 5);
+
+  useEffect(() => {
+    setAnimateTopCategories(false);
+    const frame = window.requestAnimationFrame(() => setAnimateTopCategories(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, [topCategories]);
 
   const selectedWalletLabel = selectedWallet ? selectedWallet.name : "All wallets";
   const cashflowDescription = getRangeDescriptor(selectedDateRange);
@@ -529,18 +546,21 @@ const Dashboard = () => {
       </section>
 
       <section className="grid grid-cols-1 gap-gutter sm:grid-cols-2 lg:grid-cols-4">
-        <div className="flex flex-col gap-2 rounded-xl border border-outline-variant bg-white p-lg transition-shadow hover:shadow-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-label-caps font-label-caps uppercase text-on-surface-variant">
-              Current Balance
-            </span>
-            <span className="material-symbols-outlined text-secondary">
-              account_balance_wallet
-            </span>
+        <div className="relative isolate overflow-hidden rounded-[1.75rem] border border-slate-200/70 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.07)] transition-transform duration-300 hover:-translate-y-0.5 hover:shadow-[0_22px_55px_rgba(15,23,42,0.09)] min-h-[180px]">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-12 top-1/2 h-44 w-44 -translate-y-1/2 opacity-35">
+            <div className="absolute inset-0 rounded-[52%_48%_63%_37%/47%_39%_61%_53%] bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.75),transparent_32%),linear-gradient(135deg,rgba(167,243,208,0.95),rgba(110,231,183,0.5))] blur-[1px]" />
+            <div className="absolute inset-x-6 top-8 h-16 rounded-[45%_55%_58%_42%/52%_45%_55%_48%] bg-white/35 blur-2xl" />
           </div>
-          <div>
-            <div className="font-h2 text-h2 text-primary">{formatCurrency(totalBalance)}</div>
-            <div className="mt-1 text-[12px] font-medium text-slate-500">
+          <div className="relative z-10 flex h-full flex-col justify-between gap-8">
+            <div className="space-y-3">
+              <span className="block text-[10px] font-bold uppercase tracking-[0.34em] text-slate-500">
+                CURRENT BALANCE
+              </span>
+              <div className="text-[2.5rem] font-semibold leading-none tracking-[-0.06em] text-slate-900 sm:text-[3rem]">
+                {formatCurrency(totalBalance)}
+              </div>
+            </div>
+            <div className="max-w-[14rem] text-sm leading-relaxed text-slate-500">
               {selectedWallet ? selectedWallet.name : `Across ${wallets.length} wallets`}
             </div>
           </div>
@@ -682,7 +702,7 @@ const Dashboard = () => {
                   axisLine={false}
                   tickLine={false}
                   tick={{ fill: "#94a3b8", fontSize: 12 }}
-                  tickFormatter={(val) => `PHP ${val > 1000 ? `${(val / 1000).toFixed(0)}k` : val}`}
+                  tickFormatter={(val) => `₱${Number(val) > 1000 ? `${(Number(val) / 1000).toFixed(0)}k` : Number(val)}`}
                 />
                 <Tooltip
                   contentStyle={{
@@ -754,18 +774,25 @@ const Dashboard = () => {
                 {emptyExpenseMessage}
               </p>
             ) : (
-              topCategories.map((category) => (
-                <div key={category.label} className="flex items-center gap-4">
+              topCategories.map((category, index) => (
+                <div
+                  key={category.label}
+                  className={`flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50/70 p-3 shadow-[0_8px_24px_rgba(15,23,42,0.04)] transition-all duration-500 ease-out ${animateTopCategories ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"}`}
+                  style={{ transitionDelay: `${index * 90}ms` }}
+                >
                   <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${category.bg} ${category.text}`}>
                     <span className="material-symbols-outlined">{category.icon}</span>
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="mb-1 flex items-end justify-between">
-                      <span className="font-bold text-on-background truncate">{category.label}</span>
+                      <span className="truncate font-bold text-on-background">{category.label}</span>
                       <span className="text-body-sm font-bold text-on-background">{category.amount}</span>
                     </div>
                     <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-                      <div className="h-full rounded-full bg-primary" style={{ width: category.percent }} />
+                      <div
+                        className="h-full rounded-full bg-primary transition-[width] duration-700 ease-out"
+                        style={{ width: animateTopCategories ? category.percent : "0%" }}
+                      />
                     </div>
                   </div>
                 </div>

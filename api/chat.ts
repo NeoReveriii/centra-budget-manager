@@ -54,6 +54,8 @@ interface StreamDelta {
 const sql = neon(process.env.DATABASE_URL!);
 const CHAT_SCHEMA_CACHE_TTL_MS = 5 * 60 * 1000;
 
+type ProviderAvailability = "online" | "offline";
+let latestProviderAvailability: ProviderAvailability = process.env.DEEPSEEK_API_KEY ? "online" : "offline";
 let chatSchemaValidatedAt = 0;
 let chatSchemaValidationPromise: Promise<void> | null = null;
 
@@ -63,10 +65,13 @@ function toNumber(value: number | string | null | undefined): number {
 }
 
 function formatPhp(value: number): string {
-  return `PHP ${value.toLocaleString(undefined, {
+  return new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: "PHP",
+    currencyDisplay: "narrowSymbol",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  })}`;
+  }).format(value);
 }
 
 function normalizePrompt(message: string): string {
@@ -602,8 +607,10 @@ async function attemptProviderResponse(
       await storeChatMessage(accId, 'assistant', fullResponse);
     }
 
+    latestProviderAvailability = 'online';
     return true;
   } catch (error) {
+    latestProviderAvailability = 'offline';
     console.error('Chat API provider failure:', error instanceof Error ? error.message : String(error));
     return false;
   }
@@ -620,6 +627,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await ensureAiChatsSchemaCached();
 
     if (method === 'GET') {
+      if (req.query.status === '1' || req.query.status === 'true') {
+        return res.status(200).json({
+          success: true,
+          availability: {
+            state: latestProviderAvailability,
+          },
+        });
+      }
+
       const history = await sql`
         SELECT role, content, created_at
         FROM ai_chats
@@ -727,7 +743,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (apiKey) {
       const systemPrompt = {
         role: 'system' as const,
-        content: `You are Kwarta AI, a strict financial assistant bot. You must ONLY answer questions related to finance, budgeting, money management, investments, economics, or the user's transaction data. If the user asks about anything else, politely decline and steer the conversation back to finance. Be helpful, concise, and friendly. You MUST use Markdown for formatting (lists, bolding, etc.).
+        content: `You are Kwarta AI, a strict financial assistant bot. You must ONLY answer questions related to finance, budgeting, money management, investments, economics, or the user's transaction data. If the user asks about anything else, politely decline and steer the conversation back to finance. Be helpful, concise, and friendly. Use Markdown formatting. Bold only the most important numbers, labels, warnings, and action items, and keep the rest of the answer readable with normal text.
 
 Here is the user's REAL-TIME wallet data (this is the AUTHORITATIVE source for balances):
 ${JSON.stringify(wallets.map((wallet) => ({
