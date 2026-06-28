@@ -131,6 +131,9 @@ async function ensureTransactionsSchema(): Promise<void> {
       WHERE t.wallet_type = w.name AND t.account_id = w.account_id AND t.wallet_id IS NULL
     `);
   }
+  if (!cols2.has('category')) {
+    await tryExec(sql`ALTER TABLE transactions ADD COLUMN category TEXT`);
+  }
   if (!cols2.has('transfer_from_wallet_id')) {
     await tryExec(sql`ALTER TABLE transactions ADD COLUMN transfer_from_wallet_id INTEGER REFERENCES wallets(wallet_id)`);
   }
@@ -294,6 +297,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             'Transfer',
             ${fromWallet.name},
             ${fromWalletId},
+            ${'transfer'},
             ${fromWalletId},
             ${toWalletId},
             ${amountNum},
@@ -324,7 +328,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       const inserted = await sql`
         INSERT INTO transactions (description, type, wallet_type, wallet_id, category, transfer_from_wallet_id, transfer_to_wallet_id, amount, account_id, dateoftrans)
-        VALUES (${description}, ${type}, ${walletType}, ${walletId}, NULL, NULL, ${amountNum}, ${account.acc_id}, ${now})
+        VALUES (${description}, ${type}, ${walletType}, ${walletId}, ${category}, NULL, NULL, ${amountNum}, ${account.acc_id}, ${now})
         RETURNING trans_id, description, type, wallet_type, wallet_id, category, transfer_from_wallet_id, transfer_to_wallet_id, amount, account_id, dateoftrans
       `;
       return res.status(201).json(inserted[0]);
@@ -349,6 +353,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             type = COALESCE(${patchType}, type),
             wallet_type = COALESCE(${patchWallet}, wallet_type),
             wallet_id = COALESCE(${patchWalletId}, wallet_id),
+            category = COALESCE(${patchCategory}, category),
             amount = COALESCE(${patchAmount}, amount)
         WHERE trans_id = ${id} AND account_id = ${account.acc_id}
         RETURNING trans_id, description, type, wallet_type, wallet_id, category, transfer_from_wallet_id, transfer_to_wallet_id, amount, account_id, dateoftrans

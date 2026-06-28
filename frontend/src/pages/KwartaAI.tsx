@@ -493,13 +493,13 @@ const KwartaAI = () => {
                   if (msg.sender === "ai") {
                     const parsed = parseAssistantContent(msg.content);
                     return (
-                      <div key={msg.id} className="flex w-full justify-start gap-3.5">
+                      <div key={msg.id} className="flex w-full gap-4 pr-4 sm:pr-8">
                         <KwartaAvatar />
                         <div
-                          className={`w-fit max-w-[min(100%,44rem)] rounded-[1.35rem] rounded-tl-md border px-4 py-3.5 shadow-[0_14px_36px_rgba(15,23,42,0.08)] backdrop-blur-sm ${
+                          className={`min-w-0 flex-1 rounded-lg rounded-tl-none border p-4 ${
                             parsed.isRefusal
-                              ? "border-amber-200/80 bg-[linear-gradient(180deg,rgba(255,251,235,0.98),rgba(255,247,214,0.95))] text-amber-950"
-                              : "border-slate-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.94))] text-slate-800"
+                              ? "border-amber-200 bg-amber-50/90 text-amber-950 shadow-sm"
+                              : "border-slate-200 bg-surface-container-low/50"
                           }`}
                         >
                           {msg.content === "" && isTyping ? (
@@ -545,12 +545,14 @@ const KwartaAI = () => {
                   }
 
                   return (
-                    <div key={msg.id} className="ml-auto flex w-full justify-end gap-3.5">
-                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[linear-gradient(180deg,#0f5a5c,#0a4749)] text-sm font-bold text-white shadow-[0_12px_28px_rgba(15,90,92,0.18)]">
+                    <div key={msg.id} className="ml-auto flex w-full flex-row-reverse gap-4 pl-4 sm:pl-8">
+                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
                         {userInitials}
                       </div>
-                      <div className="w-fit max-w-[min(100%,36rem)] rounded-[1.35rem] rounded-tr-md bg-[linear-gradient(180deg,#0f5a5c,#0a4749)] px-4 py-3.5 text-sm font-medium leading-relaxed text-white shadow-[0_14px_36px_rgba(15,90,92,0.22)]">
-                        <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                      <div className="min-w-0 flex-1 rounded-lg rounded-tr-none border border-primary-container bg-white p-4">
+                        <p className="whitespace-pre-wrap break-words font-body-sm font-medium leading-relaxed text-primary">
+                          {msg.content}
+                        </p>
                       </div>
                     </div>
                   );
@@ -561,7 +563,7 @@ const KwartaAI = () => {
           </div>
 
           <form onSubmit={handleSendMessage} className="border-t border-slate-100 bg-white p-4 sm:p-5">
-            <div className={`relative flex items-center rounded-3xl border border-slate-200 bg-slate-50 px-2 py-2 transition-shadow duration-200 ${inputFocused ? "shadow-lg shadow-emerald-900/5" : ""}`}>
+            <div className={`relative flex items-center transition-shadow duration-200 ${inputFocused ? "rounded-xl shadow-lg shadow-emerald-900/5" : ""}`}>
               <button
                 type="button"
                 className="absolute left-4 cursor-pointer text-slate-400 transition-colors hover:text-primary"
@@ -569,7 +571,7 @@ const KwartaAI = () => {
                 <span className="material-symbols-outlined">attach_file</span>
               </button>
               <input
-                className="w-full rounded-3xl border-0 bg-transparent py-3.5 pr-16 pl-12 font-body-sm text-on-surface focus:border-transparent focus:outline-none focus:ring-0"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-4 pr-28 pl-12 font-body-sm text-on-surface focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="Ask about your budget, savings goals, or spending trends..."
                 type="text"
                 value={inputValue}
@@ -578,17 +580,28 @@ const KwartaAI = () => {
                 onBlur={() => setInputFocused(false)}
                 disabled={isTyping}
               />
-                            <div className="absolute right-3 flex items-center gap-2">
+              <div className="absolute right-3 flex items-center gap-2">
                 <button
                   type="submit"
                   disabled={isTyping || !inputValue.trim()}
-                  className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-primary-container text-white shadow-[0_12px_26px_rgba(15,90,92,0.18)] transition-all hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-                  aria-label="Send message"
+                  className="flex cursor-pointer items-center gap-2 rounded-lg bg-primary-container px-4 py-2.5 text-xs font-bold uppercase text-white transition-all hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <span className="material-symbols-outlined text-[18px]">send</span>
+                  <span className="hidden sm:inline">Send</span>
+                  <span className="material-symbols-outlined text-sm">send</span>
                 </button>
               </div>
-            </div>`r`n          </form>
+            </div>
+            <div className="mt-3 flex justify-center gap-6">
+              <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                <span className="material-symbols-outlined text-xs">verified_user</span>
+                Encrypted
+              </span>
+              <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                <span className="material-symbols-outlined text-xs">gavel</span>
+                Compliance Approved
+              </span>
+            </div>
+          </form>
         </div>
       </div>
 
