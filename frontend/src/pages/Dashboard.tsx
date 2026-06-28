@@ -144,7 +144,8 @@ const CATEGORY_STYLES: Record<string, CategoryStyle> = {
   },
 };
 
-const DATE_RANGE_OPTIONS = ["This Week", "This Month", "Quarterly", "Annual"] as const;
+const DATE_RANGE_OPTIONS = ["Today", "Week", "Month", "Quarter", "Year"] as const;
+type DateRangeOption = (typeof DATE_RANGE_OPTIONS)[number];
 
 function getCategoryStyle(category: string | null | undefined, description: string, type: string): CategoryStyle {
   const source = `${category || ""} ${description || ""}`.toLowerCase();
@@ -179,13 +180,198 @@ function formatDate(dateStr: string): string {
   });
 }
 
+function getDateRangeBounds(range: DateRangeOption, reference = new Date()) {
+  const now = new Date(reference);
+  let start = new Date(now);
+  let end = new Date(now);
+
+  if (range === "Today") {
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+    return { start, end };
+  }
+
+  if (range === "Week") {
+    start.setDate(start.getDate() - 6);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+    return { start, end };
+  }
+
+  if (range === "Month") {
+    start = new Date(now.getFullYear(), now.getMonth(), 1);
+    end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    return { start, end };
+  }
+
+  if (range === "Quarter") {
+    const quarterStartMonth = Math.floor(now.getMonth() / 3) * 3;
+    start = new Date(now.getFullYear(), quarterStartMonth, 1);
+    end = new Date(now.getFullYear(), quarterStartMonth + 3, 0, 23, 59, 59, 999);
+    return { start, end };
+  }
+
+  start = new Date(now.getFullYear(), 0, 1);
+  end = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+  return { start, end };
+}
+
+function getRangeDescriptor(range: DateRangeOption): string {
+  if (range === "Today") return "today's";
+  if (range === "Week") return "weekly";
+  if (range === "Month") return "monthly";
+  if (range === "Quarter") return "quarterly";
+  return "yearly";
+}
+
+function getEmptyExpenseMessage(range: DateRangeOption): string {
+  if (range === "Today") return "No expenses today yet";
+  if (range === "Week") return "No expenses this week yet";
+  if (range === "Month") return "No expenses this month yet";
+  if (range === "Quarter") return "No expenses this quarter yet";
+  return "No expenses this year yet";
+}
+
+function buildCashflowData(
+  range: DateRangeOption,
+  transactions: Array<{ dateoftrans: string; amount: string; type: string }>,
+  start: Date,
+  end: Date,
+) {
+  if (range === "Today") {
+    const data = Array.from({ length: 24 }, (_, hour) => ({
+      label: new Date(2024, 0, 1, hour).toLocaleTimeString("en-US", { hour: "numeric" }),
+      fullLabel: new Date(start.getFullYear(), start.getMonth(), start.getDate(), hour).toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+      }),
+      Income: 0,
+      Expenses: 0,
+      Net: 0,
+    }));
+
+    transactions.forEach((tx) => {
+      const txDate = new Date(tx.dateoftrans);
+      if (txDate < start || txDate > end) return;
+      const bucket = data[txDate.getHours()];
+      if (!bucket) return;
+      if (tx.type === "Income") bucket.Income += Number(tx.amount);
+      if (tx.type === "Expense") bucket.Expenses += Number(tx.amount);
+      bucket.Net = bucket.Income - bucket.Expenses;
+    });
+
+    return data;
+  }
+
+  if (range === "Week") {
+    const data = Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(start);
+      date.setDate(start.getDate() + index);
+      return {
+        label: date.toLocaleDateString("en-US", { weekday: "short" }),
+        fullLabel: date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+        Income: 0,
+        Expenses: 0,
+        Net: 0,
+      };
+    });
+
+    transactions.forEach((tx) => {
+      const txDate = new Date(tx.dateoftrans);
+      if (txDate < start || txDate > end) return;
+      const diffDays = Math.floor((txDate.getTime() - start.getTime()) / 86400000);
+      const bucket = data[diffDays];
+      if (!bucket) return;
+      if (tx.type === "Income") bucket.Income += Number(tx.amount);
+      if (tx.type === "Expense") bucket.Expenses += Number(tx.amount);
+      bucket.Net = bucket.Income - bucket.Expenses;
+    });
+
+    return data;
+  }
+
+  if (range === "Month") {
+    const daysInMonth = end.getDate();
+    const data = Array.from({ length: daysInMonth }, (_, index) => {
+      const day = index + 1;
+      const date = new Date(start.getFullYear(), start.getMonth(), day);
+      return {
+        label: String(day),
+        fullLabel: date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+        Income: 0,
+        Expenses: 0,
+        Net: 0,
+      };
+    });
+
+    transactions.forEach((tx) => {
+      const txDate = new Date(tx.dateoftrans);
+      if (txDate < start || txDate > end) return;
+      const bucket = data[txDate.getDate() - 1];
+      if (!bucket) return;
+      if (tx.type === "Income") bucket.Income += Number(tx.amount);
+      if (tx.type === "Expense") bucket.Expenses += Number(tx.amount);
+      bucket.Net = bucket.Income - bucket.Expenses;
+    });
+
+    return data;
+  }
+
+  if (range === "Quarter") {
+    const data = Array.from({ length: 3 }, (_, index) => {
+      const date = new Date(start.getFullYear(), start.getMonth() + index, 1);
+      return {
+        label: date.toLocaleDateString("en-US", { month: "short" }),
+        fullLabel: date.toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+        Income: 0,
+        Expenses: 0,
+        Net: 0,
+      };
+    });
+
+    transactions.forEach((tx) => {
+      const txDate = new Date(tx.dateoftrans);
+      if (txDate < start || txDate > end) return;
+      const bucket = data[txDate.getMonth() - start.getMonth()];
+      if (!bucket) return;
+      if (tx.type === "Income") bucket.Income += Number(tx.amount);
+      if (tx.type === "Expense") bucket.Expenses += Number(tx.amount);
+      bucket.Net = bucket.Income - bucket.Expenses;
+    });
+
+    return data;
+  }
+
+  const data = Array.from({ length: 12 }, (_, index) => {
+    const date = new Date(start.getFullYear(), index, 1);
+    return {
+      label: date.toLocaleDateString("en-US", { month: "short" }),
+      fullLabel: date.toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+      Income: 0,
+      Expenses: 0,
+      Net: 0,
+    };
+  });
+
+  transactions.forEach((tx) => {
+    const txDate = new Date(tx.dateoftrans);
+    if (txDate < start || txDate > end) return;
+    const bucket = data[txDate.getMonth()];
+    if (!bucket) return;
+    if (tx.type === "Income") bucket.Income += Number(tx.amount);
+    if (tx.type === "Expense") bucket.Expenses += Number(tx.amount);
+    bucket.Net = bucket.Income - bucket.Expenses;
+  });
+
+  return data;
+}
+
 const Dashboard = () => {
   const { user } = useAuth();
   const { data: wallets = [], isLoading: walletsLoading } = useWallets();
   const { data: transactions = [], isLoading: transactionsLoading } = useTransactions();
   const [selectedWalletId, setSelectedWalletId] = useState<string>("all");
-  const [selectedDateRange, setSelectedDateRange] =
-    useState<(typeof DATE_RANGE_OPTIONS)[number]>("This Month");
+  const [selectedDateRange, setSelectedDateRange] = useState<DateRangeOption>("Month");
 
   const loading = walletsLoading || transactionsLoading;
   const displayName = user?.username || "User";
@@ -199,22 +385,9 @@ const Dashboard = () => {
     return selectedWallet ? [selectedWallet] : wallets;
   }, [selectedWallet, wallets]);
 
+  const rangeBounds = useMemo(() => getDateRangeBounds(selectedDateRange), [selectedDateRange]);
+
   const filteredTransactions = useMemo(() => {
-    const now = new Date();
-    let start: Date | null = null;
-
-    if (selectedDateRange === "This Week") {
-      start = new Date(now);
-      start.setDate(start.getDate() - 6);
-      start.setHours(0, 0, 0, 0);
-    } else if (selectedDateRange === "This Month") {
-      start = new Date(now.getFullYear(), now.getMonth(), 1);
-    } else if (selectedDateRange === "Quarterly") {
-      start = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-    } else if (selectedDateRange === "Annual") {
-      start = new Date(now.getFullYear(), now.getMonth() - 11, 1);
-    }
-
     return transactions.filter((tx) => {
       const walletId = String(tx.wallet_id ?? "");
       const fromId = String(tx.transfer_from_wallet_id ?? "");
@@ -226,56 +399,36 @@ const Dashboard = () => {
         toId === selectedWalletId;
 
       if (!walletMatch) return false;
-      if (!start) return true;
+
       const txDate = new Date(tx.dateoftrans);
-      return txDate >= start;
+      return txDate >= rangeBounds.start && txDate <= rangeBounds.end;
     });
-  }, [transactions, selectedWalletId, selectedDateRange]);
+  }, [transactions, selectedWalletId, rangeBounds]);
 
   const totalBalance = visibleWallets.reduce(
     (sum, wallet) => sum + Number((wallet as { calculated_balance?: string }).calculated_balance || 0),
     0,
   );
 
-  const periodTransactions = filteredTransactions;
-  const now = new Date();
-  const thisMonthTx = filteredTransactions.filter((tx) => {
-    const d = new Date(tx.dateoftrans);
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  });
-
-  const monthlyIncome = periodTransactions
+  const periodIncome = filteredTransactions
     .filter((tx) => tx.type === "Income")
     .reduce((sum, tx) => sum + Number(tx.amount), 0);
 
-  const monthlyExpenses = periodTransactions
+  const periodExpenses = filteredTransactions
     .filter((tx) => tx.type === "Expense")
     .reduce((sum, tx) => sum + Number(tx.amount), 0);
 
-  const netCashFlow = monthlyIncome - monthlyExpenses;
-  const savingsRate = monthlyIncome > 0 ? (netCashFlow / monthlyIncome) * 100 : 0;
+  const netCashFlow = periodIncome - periodExpenses;
+  const savingsRate = periodIncome > 0 ? (netCashFlow / periodIncome) * 100 : 0;
   const savingsTarget = 40;
-  const savingsCircle = (savingsRate / 100) * 175.9;
+  const savingsCircle = Math.max(0, Math.min((savingsRate / 100) * 175.9, 175.9));
 
-  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-  const cashflowData = Array.from({ length: daysInMonth }, (_, index) => ({
-    date: index + 1,
-    Income: 0,
-    Expenses: 0,
-    Net: 0,
-  }));
-
-  thisMonthTx.forEach((tx) => {
-    const day = new Date(tx.dateoftrans).getDate();
-    if (day < 1 || day > daysInMonth) return;
-
-    if (tx.type === "Income") cashflowData[day - 1].Income += Number(tx.amount);
-    if (tx.type === "Expense") cashflowData[day - 1].Expenses += Number(tx.amount);
-    cashflowData[day - 1].Net = cashflowData[day - 1].Income - cashflowData[day - 1].Expenses;
-  });
+  const cashflowData = useMemo(() => {
+    return buildCashflowData(selectedDateRange, filteredTransactions, rangeBounds.start, rangeBounds.end);
+  }, [selectedDateRange, filteredTransactions, rangeBounds]);
 
   const categoryTotals: Record<string, number> = {};
-  periodTransactions
+  filteredTransactions
     .filter((tx) => tx.type === "Expense")
     .forEach((tx) => {
       const key = (tx.category || tx.description.split(" ")[0] || "Other").trim() || "Other";
@@ -287,20 +440,24 @@ const Dashboard = () => {
     .slice(0, 4)
     .map(([label, amount]) => {
       const style = getCategoryStyle(label, label, "Expense");
-      const percent = monthlyExpenses > 0 ? Math.round((amount / monthlyExpenses) * 100) : 0;
+      const percent = periodExpenses > 0 ? Math.round((amount / periodExpenses) * 100) : 0;
       return {
         label,
         amount: formatCurrency(amount),
         icon: style.icon,
         bg: style.iconBg,
         text: style.iconColor,
-        percent: `${percent}%`,
+        percent: String(percent) + "%",
       };
     });
 
-  const recentTx = periodTransactions.slice(0, 5);
+  const recentTx = [...filteredTransactions]
+    .sort((a, b) => new Date(b.dateoftrans).getTime() - new Date(a.dateoftrans).getTime())
+    .slice(0, 5);
 
-  const selectedWalletLabel = selectedWallet ? selectedWallet.name : `All wallets`;
+  const selectedWalletLabel = selectedWallet ? selectedWallet.name : "All wallets";
+  const cashflowDescription = getRangeDescriptor(selectedDateRange);
+  const emptyExpenseMessage = getEmptyExpenseMessage(selectedDateRange);
 
   if (loading) {
     return (
@@ -330,7 +487,7 @@ const Dashboard = () => {
             <select
               value={selectedDateRange}
               onChange={(e) =>
-                setSelectedDateRange(e.target.value as (typeof DATE_RANGE_OPTIONS)[number])
+                setSelectedDateRange(e.target.value as DateRangeOption)
               }
               className="cursor-pointer appearance-none rounded-lg border border-outline-variant bg-white py-2 pl-10 pr-8 font-bold text-body-sm text-slate-600 transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
@@ -399,7 +556,7 @@ const Dashboard = () => {
             </span>
           </div>
           <div>
-            <div className="font-h2 text-h2 text-on-background">{formatCurrency(monthlyIncome)}</div>
+            <div className="font-h2 text-h2 text-on-background">{formatCurrency(periodIncome)}</div>
             <div className="mt-1 flex items-center gap-1 text-[12px] font-bold text-emerald-600">
               <span className="material-symbols-outlined text-[14px]">arrow_upward</span>
               Selected period
@@ -415,7 +572,7 @@ const Dashboard = () => {
             <span className="material-symbols-outlined text-error">trending_down</span>
           </div>
           <div>
-            <div className="font-h2 text-h2 text-on-background">{formatCurrency(monthlyExpenses)}</div>
+            <div className="font-h2 text-h2 text-on-background">{formatCurrency(periodExpenses)}</div>
             <div className="mt-1 flex items-center gap-1 text-[12px] font-bold text-error">
               <span className="material-symbols-outlined text-[14px]">arrow_downward</span>
               Selected period
@@ -472,7 +629,7 @@ const Dashboard = () => {
           <div className="mb-lg flex items-center justify-between">
             <div>
               <h3 className="font-h3 text-h3 text-primary">Cash Flow</h3>
-              <p className="text-body-sm text-slate-500">Animated monthly movement for {selectedWalletLabel.toLowerCase()}.</p>
+              <p className="text-body-sm text-slate-500">Animated {cashflowDescription} movement for {selectedWalletLabel.toLowerCase()}.</p>
             </div>
             <div className="rounded-full bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
               Net flow live
@@ -482,15 +639,15 @@ const Dashboard = () => {
           <div className="mb-4 grid grid-cols-3 gap-3 rounded-2xl border border-slate-100 bg-slate-50/70 p-3">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Income</p>
-              <p className="mt-1 text-sm font-semibold text-emerald-700">{formatCurrency(monthlyIncome)}</p>
+              <p className="mt-1 text-sm font-semibold text-emerald-700">{formatCurrency(periodIncome)}</p>
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Expenses</p>
-              <p className="mt-1 text-sm font-semibold text-rose-700">{formatCurrency(monthlyExpenses)}</p>
+              <p className="mt-1 text-sm font-semibold text-rose-700">{formatCurrency(periodExpenses)}</p>
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Net</p>
-              <p className={`mt-1 text-sm font-semibold ${netCashFlow >= 0 ? "text-teal-700" : "text-rose-700"}`}>
+              <p className={"mt-1 text-sm font-semibold " + (netCashFlow >= 0 ? "text-teal-700" : "text-rose-700")}>
                 {formatCurrency(netCashFlow)}
               </p>
             </div>
@@ -515,11 +672,11 @@ const Dashboard = () => {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis
-                  dataKey="date"
+                  dataKey="label"
                   axisLine={false}
                   tickLine={false}
                   tick={{ fill: "#94a3b8", fontSize: 12 }}
-                  tickFormatter={(val) => `${val}`}
+                  
                 />
                 <YAxis
                   axisLine={false}
@@ -537,7 +694,12 @@ const Dashboard = () => {
                     const label = name === "Income" ? "Income" : name === "Expenses" ? "Expenses" : "Net";
                     return [formatCurrency(Number(value)), label];
                   }}
-                  labelFormatter={(label) => `Day ${label}`}
+                  labelFormatter={(_, payload) => {
+                    if (Array.isArray(payload) && payload[0] && payload[0].payload) {
+                      return payload[0].payload.fullLabel;
+                    }
+                    return "";
+                  }}
                 />
                 <Area
                   type="monotone"
@@ -589,7 +751,7 @@ const Dashboard = () => {
           <div className="space-y-5">
             {topCategories.length === 0 ? (
               <p className="py-8 text-center text-body-sm text-slate-400">
-                No expenses this month yet
+                {emptyExpenseMessage}
               </p>
             ) : (
               topCategories.map((category) => (

@@ -40,12 +40,10 @@ type CategoryOption = (typeof TRANSACTION_CATEGORIES)[keyof typeof TRANSACTION_C
 
 function defaultCategoryForType(type: TxType): string {
   if (type === "Income") return TRANSACTION_CATEGORIES.Income[0].key;
-  if (type === "Transfer") return "transfer";
   return TRANSACTION_CATEGORIES.Expense[0].key;
 }
 
 function getCategoryOptions(type: TxType): readonly CategoryOption[] {
-  if (type === "Transfer") return [];
   return TRANSACTION_CATEGORIES[type];
 }
 
@@ -211,47 +209,41 @@ export function AddTransactionModal() {
             </div>
           </div>
 
-          {newTx.type !== "Transfer" ? (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between gap-3">
-                <Label className="font-bold text-slate-600">Category</Label>
-                <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-                  Pick one
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {categoryOptions.map((option) => {
-                  const selected = newTx.category === option.key;
-                  return (
-                    <button
-                      key={option.key}
-                      type="button"
-                      onClick={() => setNewTx({ ...newTx, category: option.key })}
-                      className={`flex flex-col items-start gap-2 rounded-2xl border p-3 text-left transition-all ${selected ? "border-primary bg-primary/5 shadow-sm" : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"}`}
-                    >
-                      <div className={`flex h-10 w-10 items-center justify-center rounded-xl border ${option.accent}`}>
-                        <span className="material-symbols-outlined text-[20px]">
-                          {option.icon}
-                        </span>
-                      </div>
-                      <div>
-                        <div className="text-sm font-bold text-slate-900">
-                          {option.label}
-                        </div>
-                        <div className="text-[11px] text-slate-500">
-                          {selected ? "Selected" : "Tap to apply"}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <Label className="font-bold text-slate-600">Category</Label>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                Pick one
+              </span>
             </div>
-          ) : (
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-              Transfers keep the category set to <span className="font-semibold text-slate-900">Transfer</span> automatically.
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {categoryOptions.map((option) => {
+                const selected = newTx.category === option.key;
+                return (
+                  <button
+                    key={option.key}
+                    type="button"
+                    onClick={() => setNewTx({ ...newTx, category: option.key })}
+                    className={`flex flex-col items-start gap-2 rounded-2xl border p-3 text-left transition-all ${selected ? "border-primary bg-primary/5 shadow-sm" : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"}`}
+                  >
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-xl border ${option.accent}`}>
+                      <span className="material-symbols-outlined text-[20px]">
+                        {option.icon}
+                      </span>
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-slate-900">
+                        {option.label}
+                      </div>
+                      <div className="text-[11px] text-slate-500">
+                        {selected ? "Selected" : "Tap to apply"}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
-          )}
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="tx-wallet" className="font-bold text-slate-600">

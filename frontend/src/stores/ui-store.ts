@@ -27,6 +27,8 @@ interface UiState {
   setAddModalOpen: (open: boolean) => void;
   addModalDefaultType: string;
   setAddModalDefaultType: (type: string) => void;
+  transferModalOpen: boolean;
+  setTransferModalOpen: (open: boolean) => void;
 }
 
 export const useUiStore = create<UiState>()(
@@ -65,6 +67,8 @@ export const useUiStore = create<UiState>()(
       setAddModalOpen: (addModalOpen) => set({ addModalOpen }),
       addModalDefaultType: "Expense",
       setAddModalDefaultType: (addModalDefaultType) => set({ addModalDefaultType }),
+      transferModalOpen: false,
+      setTransferModalOpen: (transferModalOpen) => set({ transferModalOpen }),
     }),
     {
       name: "centra-ui",
