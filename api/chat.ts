@@ -54,6 +54,58 @@ const FINANCE_ONLY_RESPONSE = 'I can only help with finance-related topics like 
 let chatSchemaValidatedAt = 0;
 let chatSchemaValidationPromise: Promise<void> | null = null;
 
+function toNumber(value: number | string | null | undefined): number {
+  const numeric = Number(value ?? 0);
+  return Number.isFinite(numeric) ? numeric : 0;
+}
+
+function formatPhp(value: number): string {
+  return `PHP ${value.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+function normalizePrompt(message: string): string {
+  return message.toLowerCase().replace(/[^a-z0-9\s]/g, ' ');
+}
+
+function shouldRefusePrompt(message: string): boolean {
+  const normalized = normalizePrompt(message);
+  const financePattern = /\b(finance|financial|budget|budgeting|money|expense|expenses|income|spending|spend|transaction|transactions|wallet|wallets|balance|balances|saving|savings|goal|goals|invest|investment|investments|stock|stocks|crypto|debt|loan|loans|cash\s?flow|net\s?worth|economy|economic|economics|retirement|emergency\s?fund|summary|summarize|monthly\s+summary)\b/;
+  if (financePattern.test(normalized)) {
+    return false;
+  }
+
+  const clearlyOffTopicPattern = /\b(weather|temperature|forecast|sports|game|score|movie|movies|song|songs|music|lyrics|poem|poetry|joke|funny|recipe|cook|cooking|travel|flight|hotel|translate|translation|code|programming|javascript|typescript|python|bug|debug|homework|essay|history|biology|chemistry|physics)\b/;
+  return clearlyOffTopicPattern.test(normalized);
+}
+
+function getChartType(message: string): 'income' | 'expense' | null {
+  const normalized = normalizePrompt(message);
+  if (normalized.includes('income')) return 'income';
+  if (normalized.includes('expense') || normalized.includes('spending') || normalized.includes('summary') || normalized.includes('spend')) return 'expense';
+  if (normalized.includes('chart') || normalized.includes('graph') || normalized.includes('visual') || normalized.includes('breakdown')) {
+    return 'expense';
+  }
+  return null;
+}
+
+function wantsRecentTransactions(message: string): boolean {
+  const normalized = normalizePrompt(message);
+  return normalized.includes('recent transaction') || normalized.includes('recent transactions') || normalized.includes('latest transaction') || normalized.includes('latest transactions');
+}
+
+function wantsWalletSummary(message: string): boolean {
+  const normalized = normalizePrompt(message);
+  return normalized.includes('wallet') || normalized.includes('balance') || normalized.includes('balances') || normalized.includes('net worth');
+}
+
+function wantsGoalsSummary(message: string): boolean {
+  const normalized = normalizePrompt(message);
+  return normalized.includes('goal') || normalized.includes('goals') || normalized.includes('savings goal') || normalized.includes('savings goals');
+}
+
 async function getAiChatColumns(): Promise<Set<string>> {
   const rows = await sql`
     SELECT column_name
@@ -144,22 +196,6 @@ async function ensureAiChatsSchemaCached(): Promise<void> {
   }
 }
 
-function normalizePrompt(message: string): string {
-  return message.toLowerCase().replace(/[^a-z0-9\s]/g, ' ');
-}
-
-function shouldRefusePrompt(message: string): boolean {
-  const normalized = normalizePrompt(message);
-
-  const financePattern = /\b(finance|financial|budget|budgeting|money|expense|expenses|income|spending|spend|transaction|transactions|wallet|wallets|balance|balances|saving|savings|goal|goals|invest|investment|investments|stock|stocks|crypto|debt|loan|loans|cash\s?flow|net\s?worth|economy|economic|economics|retirement|emergency\s?fund|summary|summarize|monthly\s+summary)\b/;
-  if (financePattern.test(normalized)) {
-    return false;
-  }
-
-  const clearlyOffTopicPattern = /\b(weather|temperature|forecast|sports|game|score|movie|movies|song|songs|music|lyrics|poem|poetry|joke|funny|recipe|cook|cooking|travel|flight|hotel|translate|translation|code|programming|javascript|typescript|python|bug|debug|homework|essay|history|biology|chemistry|physics)\b/;
-  return clearlyOffTopicPattern.test(normalized);
-}
-
 function writeSseHeaders(res: VercelResponse): void {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
@@ -189,6 +225,223 @@ async function storeChatMessage(accId: number, role: 'user' | 'assistant', conte
     INSERT INTO ai_chats (acc_id, role, content)
     VALUES (${accId}, ${role}, ${content})
   `;
+}
+
+function summarizeTransactions(transactions: TransactionContextRow[]): {
+  income: number;
+  expense: number;
+  net: number;
+  topExpenses: Array<{ label: string; amount: number }>;
+  recent: Array<{ label: string; amount: number; type: string; wallet: string; date: string }>;
+} {
+  let income = 0;
+  let expense = 0;
+  const expenseTotals = new Map<string, number>();
+
+  for (const transaction of transactions) {
+    const amount = toNumber(transaction.amount);
+    const type = String(transaction.type || '').toLowerCase();
+    const label = String(transaction.description || 'Other').trim() || 'Other';
+
+    if (type === 'income') {
+      income += amount;
+    } else if (type === 'expense') {
+      expense += amount;
+      expenseTotals.set(label, (expenseTotals.get(label) || 0) + amount);
+    }
+  }
+
+  const topExpenses = Array.from(expenseTotals.entries())
+    .map(([label, amount]) => ({ label, amount }))
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 3);
+
+  const recent = transactions.slice(0, 5).map((transaction) => ({
+    label: String(transaction.description || 'Other').trim() || 'Other',
+    amount: toNumber(transaction.amount),
+    type: String(transaction.type || ''),
+    wallet: String(transaction.wallet_type || 'Unknown'),
+    date: String(transaction.dateoftrans || ''),
+  }));
+
+  return {
+    income,
+    expense,
+    net: income - expense,
+    topExpenses,
+    recent,
+  };
+}
+
+function buildWalletSummary(wallets: WalletContextRow[]): string {
+  if (wallets.length === 0) {
+    return 'I could not find any wallets for this account.';
+  }
+
+  const lines = wallets.slice(0, 5).map((wallet) => {
+    const balance = toNumber(wallet.current_balance);
+    return `- ${wallet.name} (${wallet.type}): ${formatPhp(balance)}`;
+  });
+
+  return [`Your wallet balances:`, ...lines].join('\n');
+}
+
+function buildGoalsSummary(goals: GoalContextRow[]): string {
+  if (goals.length === 0) {
+    return 'I could not find any savings goals for this account.';
+  }
+
+  const lines = goals.slice(0, 5).map((goal) => {
+    const target = toNumber(goal.target_amount);
+    const saved = toNumber(goal.current_amount);
+    const progress = target > 0 ? `${((saved / target) * 100).toFixed(1)}%` : '0.0%';
+    return `- ${goal.title}: ${formatPhp(saved)} saved of ${formatPhp(target)} (${progress})`;
+  });
+
+  return [`Your savings goals:`, ...lines].join('\n');
+}
+
+function buildRecentSummary(transactions: TransactionContextRow[]): string {
+  if (transactions.length === 0) {
+    return 'No recent transactions were found.';
+  }
+
+  const lines = transactions.slice(0, 5).map((transaction) => {
+    return `- ${transaction.dateoftrans}: ${transaction.type} ${formatPhp(toNumber(transaction.amount))} for ${transaction.description} (${transaction.wallet_type})`;
+  });
+
+  return [`Recent transactions:`, ...lines].join('\n');
+}
+
+function buildLocalFinanceResponse(
+  message: string,
+  transactions: TransactionContextRow[],
+  wallets: WalletContextRow[],
+  goals: GoalContextRow[]
+): string {
+  if (shouldRefusePrompt(message)) {
+    return FINANCE_ONLY_RESPONSE;
+  }
+
+  const chartType = getChartType(message);
+  const summary = summarizeTransactions(transactions);
+
+  if (wantsGoalsSummary(message)) {
+    return buildGoalsSummary(goals);
+  }
+
+  if (wantsWalletSummary(message)) {
+    return `${buildWalletSummary(wallets)}\n\nRecent cash flow: ${formatPhp(summary.income)} income, ${formatPhp(summary.expense)} expenses, net ${formatPhp(summary.net)}.`;
+  }
+
+  if (wantsRecentTransactions(message)) {
+    return buildRecentSummary(transactions);
+  }
+
+  if (chartType === 'income') {
+    return [
+      `Here is a quick income summary based on your recent transactions.`,
+      `- Total income: ${formatPhp(summary.income)}`,
+      `- Total expenses: ${formatPhp(summary.expense)}`,
+      `- Net cash flow: ${formatPhp(summary.net)}`,
+      summary.topExpenses.length > 0 ? `- Largest expense items are still: ${summary.topExpenses.map((item) => `${item.label} (${formatPhp(item.amount)})`).join(', ')}` : '- No expense categories were found in the recent data.',
+      '[CHART:INCOME]',
+    ].join('\n');
+  }
+
+  if (chartType === 'expense') {
+    return [
+      `Here is a quick expense summary based on your recent transactions.`,
+      `- Total income: ${formatPhp(summary.income)}`,
+      `- Total expenses: ${formatPhp(summary.expense)}`,
+      `- Net cash flow: ${formatPhp(summary.net)}`,
+      summary.topExpenses.length > 0 ? `- Largest expense items: ${summary.topExpenses.map((item) => `${item.label} (${formatPhp(item.amount)})`).join(', ')}` : '- No expense categories were found in the recent data.',
+      '[CHART:EXPENSE]',
+    ].join('\n');
+  }
+
+  return [
+    `I could not reach the external AI provider, so here is a live finance snapshot from your account.`,
+    `- Income: ${formatPhp(summary.income)}`,
+    `- Expenses: ${formatPhp(summary.expense)}`,
+    `- Net cash flow: ${formatPhp(summary.net)}`,
+    summary.topExpenses.length > 0 ? `- Top spending items: ${summary.topExpenses.map((item) => `${item.label} (${formatPhp(item.amount)})`).join(', ')}` : '- No recent expense categories were found.',
+    '[CHART:EXPENSE]',
+  ].join('\n');
+}
+
+async function streamFinalResponse(res: VercelResponse, content: string): Promise<void> {
+  writeSseHeaders(res);
+  writeSseMessage(res, content);
+}
+
+async function attemptProviderResponse(
+  apiKey: string,
+  systemPrompt: { role: 'system'; content: string },
+  message: string,
+  accId: number,
+  res: VercelResponse
+): Promise<boolean> {
+  try {
+    const fetchRes = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [systemPrompt, { role: 'user' as const, content: message }],
+        temperature: 0.7,
+        stream: true,
+      }),
+    });
+
+    if (!fetchRes.ok || !fetchRes.body) {
+      return false;
+    }
+
+    writeSseHeaders(res);
+
+    const reader = fetchRes.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let fullResponse = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunkStr = decoder.decode(value, { stream: true });
+      res.write(chunkStr);
+
+      const lines = chunkStr.split('\n');
+      for (const line of lines) {
+        if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+          try {
+            const parsed = JSON.parse(line.slice(6)) as StreamDelta;
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              fullResponse += content;
+            }
+          } catch {
+            // Ignore malformed stream chunks.
+          }
+        }
+      }
+    }
+
+    res.write('data: [DONE]\n\n');
+    res.end();
+
+    if (fullResponse) {
+      await storeChatMessage(accId, 'assistant', fullResponse);
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Chat API provider failure:', error instanceof Error ? error.message : String(error));
+    return false;
+  }
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -227,41 +480,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { message } = payload;
     await storeChatMessage(accId, 'user', message);
 
-    if (shouldRefusePrompt(message)) {
-      await storeChatMessage(accId, 'assistant', FINANCE_ONLY_RESPONSE);
-      writeSseHeaders(res);
-      writeSseMessage(res, FINANCE_ONLY_RESPONSE);
-      return;
-    }
-
-    let transactionsText = 'No recent transactions found.';
+    let transactions: TransactionContextRow[] = [];
     try {
-      const transactions = await sql`
+      transactions = await sql`
         SELECT type, amount, description, wallet_type, dateoftrans
         FROM transactions
         WHERE account_id = ${accId}
         ORDER BY dateoftrans DESC
         LIMIT 30
       ` as TransactionContextRow[];
-
-      if (transactions.length > 0) {
-        transactionsText = JSON.stringify(
-          transactions.map((transaction) => ({
-            date: transaction.dateoftrans,
-            type: transaction.type,
-            amount: transaction.amount,
-            desc: transaction.description,
-            wallet: transaction.wallet_type,
-          })),
-        );
-      }
     } catch (error: unknown) {
       console.error('Chat API: error fetching transactions:', error instanceof Error ? error.message : String(error));
     }
 
-    let walletsText = 'No wallets found.';
+    let wallets: WalletContextRow[] = [];
     try {
-      const wallets = await sql`
+      wallets = await sql`
         SELECT
           w.name,
           w.type,
@@ -295,47 +529,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         GROUP BY w.wallet_id
         ORDER BY w.created_at ASC
       ` as WalletContextRow[];
-
-      if (wallets.length > 0) {
-        walletsText = JSON.stringify(
-          wallets.map((wallet) => ({
-            name: wallet.name,
-            type: wallet.type,
-            initial_balance: wallet.initial_balance,
-            current_balance: wallet.current_balance,
-            status: wallet.status,
-          })),
-        );
-      }
     } catch (error: unknown) {
       console.error('Chat API: error fetching wallets:', error instanceof Error ? error.message : String(error));
     }
 
-    let goalsText = 'No savings goals found.';
+    let goals: GoalContextRow[] = [];
     try {
-      const goals = await sql`
+      goals = await sql`
         SELECT title, target_amount, current_amount, deadline, category, priority
         FROM goals
         WHERE account_id = ${accId}
         ORDER BY created_at DESC
       ` as GoalContextRow[];
-
-      if (goals.length > 0) {
-        goalsText = JSON.stringify(
-          goals.map((goal) => ({
-            title: goal.title,
-            target: goal.target_amount,
-            saved: goal.current_amount,
-            progress:
-              Number(goal.target_amount) > 0
-                ? `${((Number(goal.current_amount) / Number(goal.target_amount)) * 100).toFixed(1)}%`
-                : '0%',
-            deadline: goal.deadline,
-            category: goal.category,
-            priority: goal.priority,
-          })),
-        );
-      }
     } catch (error: unknown) {
       console.error('Chat API: error fetching goals:', error instanceof Error ? error.message : String(error));
     }
@@ -345,12 +550,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       content: `You are Kwarta AI, a strict financial assistant bot. You must ONLY answer questions related to finance, budgeting, money management, investments, economics, or the user's transaction data. If the user asks about anything else, politely decline and steer the conversation back to finance. Be helpful, concise, and friendly. You MUST use Markdown for formatting (lists, bolding, etc.).
 
 Here is the user's REAL-TIME wallet data (this is the AUTHORITATIVE source for balances):
-${walletsText}
+${JSON.stringify(wallets.map((wallet) => ({
+        name: wallet.name,
+        type: wallet.type,
+        initial_balance: wallet.initial_balance,
+        current_balance: wallet.current_balance,
+        status: wallet.status,
+      })))}
 
 IMPORTANT: Each wallet has an "initial_balance" (the starting amount when created) and a "current_balance" (initial + all income/transfers in - all expenses/transfers out). When the user asks "what is my balance for X wallet?", ALWAYS use the "current_balance" field from the wallet data above. Do NOT try to manually calculate it from transactions; the current_balance already includes the initial balance and all transactions.
 
 Here is the user's REAL-TIME transaction data (recent activity):
-${transactionsText}
+${JSON.stringify(transactions.map((transaction) => ({
+        date: transaction.dateoftrans,
+        type: transaction.type,
+        amount: transaction.amount,
+        desc: transaction.description,
+        wallet: transaction.wallet_type,
+      })))}
 
 CRITICAL DATA OVERRIDE:
 Users frequently edit, delete, or wipe their transactions. ALWAYS base your calculations strictly on the JSON data provided above.
@@ -363,7 +580,15 @@ If the user explicitly asks for a visual summary, graph, chart, or visual breakd
 - If they ask for a general summary without specifying, default to outputting "[CHART:EXPENSE]".
 
 Here is the user's SAVINGS GOALS data (SECONDARY context - only use when goals are explicitly asked about):
-${goalsText}
+${JSON.stringify(goals.map((goal) => ({
+        title: goal.title,
+        target: goal.target_amount,
+        saved: goal.current_amount,
+        progress: toNumber(goal.target_amount) > 0 ? `${((toNumber(goal.current_amount) / toNumber(goal.target_amount)) * 100).toFixed(1)}%` : '0%',
+        deadline: goal.deadline,
+        category: goal.category,
+        priority: goal.priority,
+      })))}
 
 QUERY TYPE ROUTING - follow these rules strictly:
 1. "Monthly Summary" or "summary" -> Focus ONLY on TRANSACTION data: total income, total expenses, net cash flow, spending categories, and wallet balances. Do NOT talk about savings goals unless the user specifically mentions them.
@@ -376,68 +601,17 @@ QUERY TYPE ROUTING - follow these rules strictly:
     };
 
     const apiKey = process.env.DEEPSEEK_API_KEY?.replace(/^"|"$/g, '') || null;
-    if (!apiKey) {
-      return res.status(500).json({ error: 'API key missing' });
-    }
+    const localFallback = buildLocalFinanceResponse(message, transactions, wallets, goals);
 
-    const fetchRes = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [systemPrompt, { role: 'user' as const, content: message }],
-        temperature: 0.7,
-        stream: true,
-      }),
-    });
-
-    if (!fetchRes.ok) {
-      return res.status(502).json({ error: 'AI provider error' });
-    }
-
-    const streamBody = fetchRes.body;
-    if (!streamBody) {
-      return res.status(502).json({ error: 'AI provider error' });
-    }
-
-    writeSseHeaders(res);
-
-    const reader = streamBody.getReader();
-    const decoder = new TextDecoder('utf-8');
-    let fullResponse = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunkStr = decoder.decode(value, { stream: true });
-      res.write(chunkStr);
-
-      const lines = chunkStr.split('\n');
-      for (const line of lines) {
-        if (line.startsWith('data: ') && line !== 'data: [DONE]') {
-          try {
-            const parsed = JSON.parse(line.slice(6)) as StreamDelta;
-            const content = parsed.choices?.[0]?.delta?.content;
-            if (content) {
-              fullResponse += content;
-            }
-          } catch {
-            // Ignore malformed stream chunks.
-          }
-        }
+    if (apiKey) {
+      const providerOk = await attemptProviderResponse(apiKey, systemPrompt, message, accId, res);
+      if (providerOk) {
+        return;
       }
     }
 
-    res.write('data: [DONE]\n\n');
-    res.end();
-
-    if (fullResponse) {
-      await storeChatMessage(accId, 'assistant', fullResponse);
-    }
+    await storeChatMessage(accId, 'assistant', localFallback);
+    await streamFinalResponse(res, localFallback);
   } catch (error: unknown) {
     console.error('Chat error:', error);
     if (!res.headersSent) {

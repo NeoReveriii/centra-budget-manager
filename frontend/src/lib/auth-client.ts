@@ -10,12 +10,25 @@ if (!authUrl) {
 
 export const authClient = createAuthClient(authUrl || "http://localhost");
 
+function getPersistedToken(): string | null {
+  try {
+    return localStorage.getItem("centra_token");
+  } catch {
+    return null;
+  }
+}
+
 export async function resetAuthSession(): Promise<void> {
   clearPersistedSession();
   await authClient.signOut().catch(() => undefined);
 }
 
 export async function getAccessToken(): Promise<string | null> {
+  const persistedToken = getPersistedToken();
+  if (persistedToken) {
+    return persistedToken;
+  }
+
   try {
     // getSession exchanges OAuth verifiers, sets cookies, and injects the JWT via set-auth-jwt.
     const sessionResult = await authClient.getSession();

@@ -5,7 +5,6 @@ import {
   useChatHistory,
   useClearChatHistory,
   useTransactions,
-  useWallets,
   type Transaction,
 } from "@/hooks/use-budget-data";
 import { getAccessToken } from "../lib/auth-client";
@@ -91,16 +90,8 @@ function ChatVisualization({
   chartType: ChartType;
   transactions: Transaction[];
 }) {
-  const data = useMemo(
-    () => buildChartData(transactions, chartType),
-    [transactions, chartType],
-  );
-
-  const total = useMemo(
-    () => data.reduce((sum, item) => sum + item.amount, 0),
-    [data],
-  );
-
+  const data = useMemo(() => buildChartData(transactions, chartType), [transactions, chartType]);
+  const total = useMemo(() => data.reduce((sum, item) => sum + item.amount, 0), [data]);
   const palette = ["#0f766e", "#14b8a6", "#f59e0b", "#ef4444", "#334155", "#84cc16"];
   const title = chartType === "income" ? "Income Visual" : "Expense Visual";
 
@@ -150,20 +141,10 @@ function ChatVisualization({
               );
             })}
             <circle cx="50" cy="50" r="24" fill="white" />
-            <text
-              x="50"
-              y="47"
-              textAnchor="middle"
-              className="fill-slate-500 text-[6px] uppercase tracking-[0.2em]"
-            >
+            <text x="50" y="47" textAnchor="middle" className="fill-slate-500 text-[6px] uppercase tracking-[0.2em]">
               {chartType}
             </text>
-            <text
-              x="50"
-              y="56"
-              textAnchor="middle"
-              className="fill-slate-900 text-[8px] font-semibold"
-            >
+            <text x="50" y="56" textAnchor="middle" className="fill-slate-900 text-[8px] font-semibold">
               {data.length}
             </text>
           </svg>
@@ -213,56 +194,10 @@ const KwartaAI = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [historyHydrated, setHistoryHydrated] = useState(false);
 
-  const { data: wallets = [], isLoading: walletsLoading } = useWallets();
   const { data: transactions = [], isLoading: transactionsLoading } = useTransactions();
   const { data: history, isLoading: historyLoading } = useChatHistory();
   const clearChat = useClearChatHistory();
-  const isLoading = walletsLoading || transactionsLoading || historyLoading;
-
-  const totalBalance = useMemo(
-    () =>
-      wallets.reduce(
-        (sum, wallet) => sum + parseFloat(wallet.calculated_balance || "0"),
-        0,
-      ),
-    [wallets],
-  );
-
-  const assetDistribution = useMemo(() => {
-    if (totalBalance <= 0) {
-      return [{ label: "No Funds", percent: 100, color: "bg-slate-200" }];
-    }
-    let savingsTotal = 0;
-    let eWalletTotal = 0;
-    let cashTotal = 0;
-    wallets.forEach((wallet) => {
-      const balance = parseFloat(wallet.calculated_balance || "0");
-      if (wallet.type === "Bank Account" || wallet.type === "Investment") {
-        savingsTotal += balance;
-      } else if (wallet.type === "E-Wallet") {
-        eWalletTotal += balance;
-      } else {
-        cashTotal += balance;
-      }
-    });
-    return [
-      {
-        label: "Bank & Investments",
-        percent: Math.round((savingsTotal / totalBalance) * 100) || 0,
-        color: "bg-primary-container",
-      },
-      {
-        label: "E-Wallets",
-        percent: Math.round((eWalletTotal / totalBalance) * 100) || 0,
-        color: "bg-secondary",
-      },
-      {
-        label: "Cash / Others",
-        percent: Math.round((cashTotal / totalBalance) * 100) || 0,
-        color: "bg-on-primary-container",
-      },
-    ];
-  }, [wallets, totalBalance]);
+  const isLoading = transactionsLoading || historyLoading;
 
   useEffect(() => {
     if (historyLoading) return;
@@ -270,7 +205,7 @@ const KwartaAI = () => {
       setMessages(
         history.map((msg, index) => ({
           id: msg.created_at || `hist-${index}`,
-          sender: (msg.role === "user" ? "user" : "ai") as "user" | "ai",
+          sender: msg.role === "user" ? "user" : "ai",
           content: msg.content,
         })),
       );
@@ -359,9 +294,7 @@ const KwartaAI = () => {
                 aiText += content;
                 setMessages((prev) =>
                   prev.map((message) =>
-                    message.id === newAiMsgId
-                      ? { ...message, content: aiText }
-                      : message,
+                    message.id === newAiMsgId ? { ...message, content: aiText } : message,
                   ),
                 );
               }
@@ -376,10 +309,7 @@ const KwartaAI = () => {
       setMessages((prev) =>
         prev.map((message) =>
           message.id === newAiMsgId
-            ? {
-                ...message,
-                content: "Error communicating with Kwarta AI. Please try again.",
-              }
+            ? { ...message, content: "Error communicating with Kwarta AI. Please try again." }
             : message,
         ),
       );
@@ -389,124 +319,17 @@ const KwartaAI = () => {
   }
 
   return (
-    <div className="grid grid-cols-12 gap-gutter animate-fade-in pb-10">
-      <section className="col-span-12 mb-4">
-        <div className="flex items-end justify-between border-b-2 border-primary-container pb-4">
-          <div>
-            <span className="mb-1 block font-label-caps uppercase text-secondary">
-              AI Financial Advisor
-            </span>
-            <h2 className="font-h1 text-h1 text-primary">Strategy Overview</h2>
-          </div>
-          <div className="text-right">
-            <p className="font-label-caps text-slate-500">LIVE SYNC</p>
-            <p className="font-numeric-data flex items-center justify-end gap-1 text-on-surface">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              Connected
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <div className="col-span-12 space-y-gutter lg:col-span-4">
-        <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-4 flex items-start justify-between">
-            <span className="font-label-caps uppercase text-slate-500">
-              Total Balance
-            </span>
-            <span className="material-symbols-outlined text-emerald-600">
-              account_balance_wallet
-            </span>
-          </div>
-          {isLoading ? (
-            <div className="mb-4 h-12 w-3/4 rounded-lg bg-slate-100 animate-pulse" />
-          ) : (
-            <p className="font-display text-display tracking-tighter text-primary">
-              PHP
-              {totalBalance.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </p>
-          )}
-          <div className="mt-4 flex items-center gap-2">
-            <span className="rounded-full bg-secondary-container px-2 py-0.5 text-[10px] font-bold text-on-secondary-container">
-              Secure Data
-            </span>
-            <span className="text-xs font-body-sm text-slate-400">
-              Across all active wallets
-            </span>
-          </div>
-        </div>
-
-        <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="mb-4 font-h3 text-h3 text-on-surface">
-            Budget Allocation
-          </h3>
-          <div className="space-y-4">
-            {isLoading ? (
-              <div className="space-y-4">
-                {[1, 2, 3].map((index) => (
-                  <div
-                    key={index}
-                    className="h-6 w-full rounded bg-slate-100 animate-pulse"
-                  />
-                ))}
-              </div>
-            ) : (
-              assetDistribution.map((item) => (
-                <div key={item.label} className="space-y-1">
-                  <div className="flex justify-between text-xs font-bold uppercase text-slate-500">
-                    <span>{item.label}</span>
-                    <span>{item.percent}%</span>
-                  </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                    <div
-                      className={`h-full rounded-full transition-all duration-500 ${item.color}`}
-                      style={{ width: `${item.percent}%` }}
-                    />
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <button className="group flex cursor-pointer flex-col items-center justify-center rounded-lg border border-slate-200 bg-white p-4 transition-all hover:border-primary-container hover:bg-emerald-50">
-            <span className="material-symbols-outlined mb-2 text-emerald-900">
-              account_balance
-            </span>
-            <span className="text-xs font-bold uppercase text-slate-600 group-hover:text-emerald-900">
-              Transfer
-            </span>
-          </button>
-          <button className="group flex cursor-pointer flex-col items-center justify-center rounded-lg border border-slate-200 bg-white p-4 transition-all hover:border-primary-container hover:bg-emerald-50">
-            <span className="material-symbols-outlined mb-2 text-emerald-900">
-              description
-            </span>
-            <span className="text-xs font-bold uppercase text-slate-600 group-hover:text-emerald-900">
-              Statements
-            </span>
-          </button>
-        </div>
-      </div>
-
-      <div className="col-span-12 flex h-[700px] flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm lg:col-span-8">
-        <div className="flex items-center justify-between border-b border-slate-100 bg-surface-container-low/30 p-4">
+    <div className="animate-fade-in pb-10">
+      <div className="flex h-[calc(100dvh-8rem)] min-h-[640px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-slate-100 bg-surface-container-low/30 px-4 py-3">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container">
-              <span
-                className="material-symbols-outlined text-white"
-                style={{ fontVariationSettings: "'FILL' 1" }}
-              >
+              <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1" }}>
                 smart_toy
               </span>
             </div>
             <div>
-              <h4 className="text-sm font-bold text-primary font-h3">
-                Kwarta AI Elite
-              </h4>
+              <h4 className="text-sm font-bold text-primary font-h3">Kwarta AI Elite</h4>
               <div className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-[10px] font-bold uppercase tracking-tighter text-slate-500">
@@ -529,7 +352,7 @@ const KwartaAI = () => {
           </div>
         </div>
 
-        <div className="flex-1 space-y-6 overflow-y-auto bg-slate-50/20 p-6">
+        <div className="flex-1 overflow-y-auto bg-slate-50/20 px-4 py-5 sm:px-6">
           {isLoading ? (
             <div className="flex h-full items-center justify-center">
               <span className="material-symbols-outlined text-[32px] text-primary animate-spin">
@@ -537,86 +360,62 @@ const KwartaAI = () => {
               </span>
             </div>
           ) : (
-            messages.map((msg) => {
-              if (msg.sender === "ai") {
-                const parsed = parseAssistantContent(msg.content);
-                return (
-                  <div key={msg.id} className="flex max-w-[90%] gap-4">
-                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary-container">
-                      <span
-                        className="material-symbols-outlined text-sm text-white"
-                        style={{ fontVariationSettings: "'FILL' 1" }}
-                      >
-                        smart_toy
-                      </span>
+            <div className="space-y-6">
+              {messages.map((msg) => {
+                if (msg.sender === "ai") {
+                  const parsed = parseAssistantContent(msg.content);
+                  return (
+                    <div key={msg.id} className="flex max-w-[92%] gap-4">
+                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary-container">
+                        <span
+                          className="material-symbols-outlined text-sm text-white"
+                          style={{ fontVariationSettings: "'FILL' 1" }}
+                        >
+                          smart_toy
+                        </span>
+                      </div>
+                      <div className="w-full rounded-lg rounded-tl-none border border-slate-200 bg-surface-container-low/50 p-4">
+                        {msg.content === "" && isTyping ? (
+                          <div className="flex h-6 items-center gap-1">
+                            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
+                            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
+                            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
+                          </div>
+                        ) : (
+                          <>
+                            {parsed.displayContent ? (
+                              <div className="prose prose-sm max-w-none prose-slate prose-p:leading-relaxed prose-table:overflow-hidden prose-table:rounded-lg prose-table:border prose-table:border-slate-200 prose-td:p-3 prose-th:bg-slate-50 prose-th:p-3 prose-th:text-xs prose-th:uppercase prose-th:tracking-wider">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{parsed.displayContent}</ReactMarkdown>
+                              </div>
+                            ) : null}
+                            {parsed.chartType ? <ChatVisualization chartType={parsed.chartType} transactions={transactions} /> : null}
+                          </>
+                        )}
+                      </div>
                     </div>
-                    <div className="w-full rounded-lg rounded-tl-none border border-slate-200 bg-surface-container-low/50 p-4">
-                      {msg.content === "" && isTyping ? (
-                        <div className="flex h-6 items-center gap-1">
-                          <span
-                            className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce"
-                            style={{ animationDelay: "0ms" }}
-                          />
-                          <span
-                            className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce"
-                            style={{ animationDelay: "150ms" }}
-                          />
-                          <span
-                            className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce"
-                            style={{ animationDelay: "300ms" }}
-                          />
-                        </div>
-                      ) : (
-                        <>
-                          {parsed.displayContent ? (
-                            <div className="prose prose-sm max-w-none prose-slate prose-p:leading-relaxed prose-table:overflow-hidden prose-table:rounded-lg prose-table:border prose-table:border-slate-200 prose-td:p-3 prose-th:bg-slate-50 prose-th:p-3 prose-th:text-xs prose-th:uppercase prose-th:tracking-wider">
-                              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                {parsed.displayContent}
-                              </ReactMarkdown>
-                            </div>
-                          ) : null}
-                          {parsed.chartType ? (
-                            <ChatVisualization
-                              chartType={parsed.chartType}
-                              transactions={transactions}
-                            />
-                          ) : null}
-                        </>
-                      )}
+                  );
+                }
+
+                return (
+                  <div key={msg.id} className="ml-auto flex max-w-[85%] flex-row-reverse gap-4">
+                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
+                      Me
+                    </div>
+                    <div className="rounded-lg rounded-tr-none border border-primary-container bg-white p-4">
+                      <p className="font-body-sm leading-relaxed text-primary font-medium italic">
+                        "{msg.content}"
+                      </p>
                     </div>
                   </div>
                 );
-              }
-
-              return (
-                <div
-                  key={msg.id}
-                  className="ml-auto flex max-w-[85%] flex-row-reverse gap-4"
-                >
-                  <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
-                    Me
-                  </div>
-                  <div className="rounded-lg rounded-tr-none border border-primary-container bg-white p-4">
-                    <p className="font-body-sm leading-relaxed text-primary font-medium italic">
-                      "{msg.content}"
-                    </p>
-                  </div>
-                </div>
-              );
-            })
+              })}
+            </div>
           )}
           <div ref={chatEndRef} />
         </div>
 
-        <form
-          onSubmit={handleSendMessage}
-          className="border-t border-slate-100 bg-white p-6"
-        >
-          <div
-            className={`relative flex items-center transition-shadow duration-200 ${
-              inputFocused ? "rounded-xl shadow-lg shadow-emerald-900/5" : ""
-            }`}
-          >
+        <form onSubmit={handleSendMessage} className="border-t border-slate-100 bg-white p-4 sm:p-5">
+          <div className={`relative flex items-center transition-shadow duration-200 ${inputFocused ? "rounded-xl shadow-lg shadow-emerald-900/5" : ""}`}>
             <button
               type="button"
               className="absolute left-4 cursor-pointer text-slate-400 transition-colors hover:text-primary"
@@ -646,13 +445,11 @@ const KwartaAI = () => {
           </div>
           <div className="mt-3 flex justify-center gap-6">
             <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-              <span className="material-symbols-outlined text-xs">
-                verified_user
-              </span>{" "}
+              <span className="material-symbols-outlined text-xs">verified_user</span>
               Encrypted
             </span>
             <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-              <span className="material-symbols-outlined text-xs">gavel</span>{" "}
+              <span className="material-symbols-outlined text-xs">gavel</span>
               Compliance Approved
             </span>
           </div>
