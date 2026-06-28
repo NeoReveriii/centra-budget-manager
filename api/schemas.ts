@@ -25,6 +25,7 @@ export const createTransactionSchema = z
     wallet_type: z.string().trim().min(1).optional(),
     wallet: z.string().trim().min(1).optional(),
     wallet_id: z.coerce.number().int().positive().optional(),
+    category: z.string().trim().optional(),
     amount: positiveAmount,
   })
   .refine((data) => Boolean(data.description || data.title), {
@@ -54,6 +55,7 @@ export const updateTransactionSchema = z.object({
   wallet_type: z.string().trim().min(1).optional(),
   wallet: z.string().trim().min(1).optional(),
   wallet_id: z.coerce.number().int().positive().optional(),
+  category: z.string().trim().optional(),
   amount: positiveAmount.optional(),
 }).refine((data) => data.trans_id != null || data.id != null, {
   message: 'Transaction ID required',
@@ -108,3 +110,4 @@ export const deleteGoalSchema = z.object({
 export const chatMessageSchema = z.object({
   message: z.string().trim().min(1, 'Message is required'),
 });
+

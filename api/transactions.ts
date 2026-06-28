@@ -39,6 +39,7 @@ const EXPECTED_TRANSACTION_COLUMNS = [
   'type',
   'wallet_type',
   'wallet_id',
+  'category',
   'transfer_from_wallet_id',
   'transfer_to_wallet_id',
   'amount',
@@ -67,6 +68,7 @@ async function ensureTransactionsSchema(): Promise<void> {
         type TEXT NOT NULL,
         wallet_type TEXT NOT NULL,
         wallet_id INTEGER REFERENCES wallets(wallet_id),
+        category TEXT,
         transfer_from_wallet_id INTEGER REFERENCES wallets(wallet_id),
         transfer_to_wallet_id INTEGER REFERENCES wallets(wallet_id),
         amount NUMERIC(12,2) NOT NULL,
@@ -189,7 +191,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (method === 'GET') {
       const rows = await sql`
-        SELECT trans_id, description, type, wallet_type, wallet_id, transfer_from_wallet_id, transfer_to_wallet_id, amount, account_id, dateoftrans
+        SELECT trans_id, description, type, wallet_type, wallet_id, category, transfer_from_wallet_id, transfer_to_wallet_id, amount, account_id, dateoftrans
         FROM transactions
         WHERE account_id = ${account.acc_id}
         ORDER BY dateoftrans DESC
@@ -280,6 +282,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             type,
             wallet_type,
             wallet_id,
+            category,
             transfer_from_wallet_id,
             transfer_to_wallet_id,
             amount,
@@ -297,7 +300,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ${account.acc_id},
             ${now}
           )
-          RETURNING trans_id, description, type, wallet_type, wallet_id, transfer_from_wallet_id, transfer_to_wallet_id, amount, account_id, dateoftrans
+          RETURNING trans_id, description, type, wallet_type, wallet_id, category, transfer_from_wallet_id, transfer_to_wallet_id, amount, account_id, dateoftrans
         `;
 
         return res.status(201).json({
@@ -314,14 +317,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const type = normalizeType(postBody.type);
       const walletType = String(postBody.wallet_type ?? postBody.wallet ?? '').trim();
       const walletId = postBody.wallet_id ?? null;
+      const category = String(postBody.category ?? '').trim() || null;
       const amountNum = postBody.amount;
 
       const now = new Date();
 
       const inserted = await sql`
-        INSERT INTO transactions (description, type, wallet_type, wallet_id, transfer_from_wallet_id, transfer_to_wallet_id, amount, account_id, dateoftrans)
+        INSERT INTO transactions (description, type, wallet_type, wallet_id, category, transfer_from_wallet_id, transfer_to_wallet_id, amount, account_id, dateoftrans)
         VALUES (${description}, ${type}, ${walletType}, ${walletId}, NULL, NULL, ${amountNum}, ${account.acc_id}, ${now})
-        RETURNING trans_id, description, type, wallet_type, wallet_id, transfer_from_wallet_id, transfer_to_wallet_id, amount, account_id, dateoftrans
+        RETURNING trans_id, description, type, wallet_type, wallet_id, category, transfer_from_wallet_id, transfer_to_wallet_id, amount, account_id, dateoftrans
       `;
       return res.status(201).json(inserted[0]);
 
@@ -336,6 +340,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const patchType = putBody.type ?? null;
       const patchWallet = putBody.wallet_type ?? putBody.wallet ?? null;
       const patchWalletId = putBody.wallet_id ?? null;
+      const patchCategory = putBody.category ?? null;
       const patchAmount = putBody.amount ?? null;
 
       const updated = await sql`
@@ -346,7 +351,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             wallet_id = COALESCE(${patchWalletId}, wallet_id),
             amount = COALESCE(${patchAmount}, amount)
         WHERE trans_id = ${id} AND account_id = ${account.acc_id}
-        RETURNING trans_id, description, type, wallet_type, wallet_id, transfer_from_wallet_id, transfer_to_wallet_id, amount, account_id, dateoftrans
+        RETURNING trans_id, description, type, wallet_type, wallet_id, category, transfer_from_wallet_id, transfer_to_wallet_id, amount, account_id, dateoftrans
       `;
       return res.status(200).json(updated[0] || null);
 
@@ -360,7 +365,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const deleted = await sql`
         DELETE FROM transactions
         WHERE trans_id = ${id} AND account_id = ${account.acc_id}
-        RETURNING trans_id, description, type, wallet_type, wallet_id, transfer_from_wallet_id, transfer_to_wallet_id, amount, account_id, dateoftrans
+        RETURNING trans_id, description, type, wallet_type, wallet_id, category, transfer_from_wallet_id, transfer_to_wallet_id, amount, account_id, dateoftrans
       `;
       return res.status(200).json(deleted[0] || null);
 
@@ -378,3 +383,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(500).json({ error: 'Database error', details });
   }
 }
+
+

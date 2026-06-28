@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useAuth } from "@/context/AuthContext";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   useChatHistory,
   useClearChatHistory,
@@ -33,6 +41,35 @@ const currencyFormatter = new Intl.NumberFormat(undefined, {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
+
+const markdownComponents: Components = {
+  p: ({ children }) => (
+    <p className="mb-3 last:mb-0 text-sm leading-relaxed text-slate-700">{children}</p>
+  ),
+  strong: ({ children }) => (
+    <strong className="rounded-md bg-amber-100/90 px-1.5 py-0.5 font-semibold text-slate-950 shadow-[inset_0_-1px_0_rgba(255,255,255,0.55)]">
+      {children}
+    </strong>
+  ),
+  ul: ({ children }) => <ul className="my-3 space-y-1 pl-5 text-sm text-slate-700">{children}</ul>,
+  ol: ({ children }) => <ol className="my-3 list-decimal space-y-1 pl-5 text-sm text-slate-700">{children}</ol>,
+  li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+  a: ({ children, href }) => (
+    <a
+      href={href}
+      className="font-medium text-teal-700 underline decoration-teal-300 underline-offset-4 transition-colors hover:text-teal-900"
+      target="_blank"
+      rel="noreferrer"
+    >
+      {children}
+    </a>
+  ),
+  code: ({ children }) => (
+    <code className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[0.85em] text-slate-900">
+      {children}
+    </code>
+  ),
+};
 
 function getInitials(name?: string | null): string {
   return name?.trim().slice(0, 2).toUpperCase() || "U";
@@ -123,7 +160,7 @@ function ChatVisualization({
 
   if (data.length === 0 || total <= 0) {
     return (
-      <div className="mt-4 rounded-xl border border-dashed border-slate-300 bg-white/70 p-4 text-sm text-slate-500">
+      <div className="mt-4 rounded-[1.25rem] border border-dashed border-slate-300 bg-white/70 p-4 text-sm text-slate-500">
         No transaction data to visualize yet.
       </div>
     );
@@ -132,7 +169,7 @@ function ChatVisualization({
   let runningAngle = 0;
 
   return (
-    <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="mt-4 rounded-[1.25rem] border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
       <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-3">
         <div>
           <p className="font-label-caps text-[10px] uppercase tracking-[0.25em] text-slate-500">
@@ -217,7 +254,12 @@ const KwartaAI = () => {
 
   const [inputValue, setInputValue] = useState("");
   const [inputFocused, setInputFocused] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isClearingHistory, setIsClearingHistory] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -227,6 +269,29 @@ const KwartaAI = () => {
   const { data: history, isLoading: historyLoading } = useChatHistory();
   const clearChat = useClearChatHistory();
   const isLoading = transactionsLoading || historyLoading;
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+
+    function handlePointerDown(event: PointerEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMenuOpen]);
 
   useEffect(() => {
     if (historyLoading) return;
@@ -256,7 +321,8 @@ const KwartaAI = () => {
   }, [messages, isTyping]);
 
   async function handleClearHistory() {
-    if (!confirm("Are you sure you want to clear your chat history?")) return;
+    setDeleteError(null);
+    setIsClearingHistory(true);
     try {
       await clearChat.mutateAsync();
       setMessages([
@@ -266,9 +332,18 @@ const KwartaAI = () => {
           content: "History cleared. How can I help you today?",
         },
       ]);
+      setIsDeleteDialogOpen(false);
+      setIsMenuOpen(false);
     } catch {
-      alert("Failed to clear history");
+      setDeleteError("I could not clear the conversation right now. Please try again.");
+    } finally {
+      setIsClearingHistory(false);
     }
+  }
+
+  function handleJumpToLatest() {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    setIsMenuOpen(false);
   }
 
   async function handleSendMessage(e?: React.FormEvent) {
@@ -348,158 +423,219 @@ const KwartaAI = () => {
   }
 
   return (
-    <div className="animate-fade-in pb-10">
-      <div className="flex h-[calc(100dvh-8rem)] min-h-[640px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-slate-100 bg-surface-container-low/30 px-4 py-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container">
-              <KwartaAvatar />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-primary font-h3">Kwarta AI Elite</h4>
-              <div className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-bold uppercase tracking-tighter text-slate-500">
-                  Secure Financial Intelligence Link
-                </span>
+    <>
+      <div className="animate-fade-in pb-10">
+        <div className="flex h-[calc(100dvh-8rem)] min-h-[640px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-100 bg-surface-container-low/30 px-4 py-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container">
+                <KwartaAvatar />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-primary font-h3">Kwarta AI Elite</h4>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[10px] font-bold uppercase tracking-tighter text-slate-500">
+                    Secure Financial Intelligence Link
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={handleClearHistory}
-              title="Clear History"
-              className="flex cursor-pointer items-center rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100"
-            >
-              <span className="material-symbols-outlined">delete_sweep</span>
-            </button>
-            <button className="cursor-pointer rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100">
-              <span className="material-symbols-outlined">more_vert</span>
-            </button>
-          </div>
-        </div>
 
-        <div className="flex-1 overflow-y-auto bg-slate-50/20 px-4 py-5 sm:px-6">
-          {isLoading ? (
-            <div className="flex h-full items-center justify-center">
-              <span className="material-symbols-outlined text-[32px] text-primary animate-spin">
-                progress_activity
-              </span>
+            <div className="relative flex items-center gap-2" ref={menuRef}>
+              <button
+                type="button"
+                onClick={() => setIsMenuOpen((open) => !open)}
+                aria-haspopup="menu"
+                aria-expanded={isMenuOpen}
+                title="More actions"
+                className="flex cursor-pointer items-center rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+              >
+                <span className="material-symbols-outlined">more_vert</span>
+              </button>
+
+              {isMenuOpen ? (
+                <div className="absolute right-0 top-full z-20 mt-2 w-56 overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsDeleteDialogOpen(true);
+                      setIsMenuOpen(false);
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-700"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">delete_sweep</span>
+                    Clear conversation
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleJumpToLatest}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">south</span>
+                    Jump to latest
+                  </button>
+                </div>
+              ) : null}
             </div>
-          ) : (
-            <div className="space-y-6">
-              {messages.map((msg) => {
-                if (msg.sender === "ai") {
-                  const parsed = parseAssistantContent(msg.content);
-                  return (
-                    <div key={msg.id} className="flex max-w-[92%] gap-4">
-                      <KwartaAvatar />
-                      <div
-                        className={`w-full rounded-lg rounded-tl-none border p-4 ${
-                          parsed.isRefusal
-                            ? "border-amber-200 bg-amber-50/90 text-amber-950 shadow-sm"
-                            : "border-slate-200 bg-surface-container-low/50"
-                        }`}
-                      >
-                        {msg.content === "" && isTyping ? (
-                          <div className="flex h-6 items-center gap-1">
-                            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
-                            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
-                            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
-                          </div>
-                        ) : parsed.isRefusal ? (
-                          <div className="space-y-3">
-                            <div className="flex items-center gap-2">
-                              <span className="inline-flex items-center rounded-full border border-amber-200 bg-white/80 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-amber-800">
-                                Finance only
-                              </span>
-                              <span className="text-xs font-semibold text-amber-800/80">
-                                Kwarta policy
-                              </span>
+          </div>
+
+          <div className="flex-1 overflow-y-auto bg-slate-50/20 px-4 py-5 sm:px-6">
+            {isLoading ? (
+              <div className="flex h-full items-center justify-center">
+                <span className="material-symbols-outlined text-[32px] text-primary animate-spin">
+                  progress_activity
+                </span>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {messages.map((msg) => {
+                  if (msg.sender === "ai") {
+                    const parsed = parseAssistantContent(msg.content);
+                    return (
+                      <div key={msg.id} className="flex w-full justify-start gap-3.5">
+                        <KwartaAvatar />
+                        <div
+                          className={`w-fit max-w-[min(100%,44rem)] rounded-[1.35rem] rounded-tl-md border px-4 py-3.5 shadow-[0_14px_36px_rgba(15,23,42,0.08)] backdrop-blur-sm ${
+                            parsed.isRefusal
+                              ? "border-amber-200/80 bg-[linear-gradient(180deg,rgba(255,251,235,0.98),rgba(255,247,214,0.95))] text-amber-950"
+                              : "border-slate-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.94))] text-slate-800"
+                          }`}
+                        >
+                          {msg.content === "" && isTyping ? (
+                            <div className="flex h-6 items-center gap-1">
+                              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
+                              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
+                              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
                             </div>
-                            <p className="text-sm leading-relaxed text-amber-950">
-                              {parsed.displayContent}
-                            </p>
-                            <div className="rounded-lg border border-amber-200 bg-white/70 p-3 text-xs text-amber-900">
-                              I can help with budgets, spending, wallet balances, transactions, savings goals, investments, and economics.
-                            </div>
-                          </div>
-                        ) : (
-                          <>
-                            {parsed.displayContent ? (
-                              <div className="prose prose-sm max-w-none prose-slate prose-p:leading-relaxed prose-table:overflow-hidden prose-table:rounded-lg prose-table:border prose-table:border-slate-200 prose-td:p-3 prose-th:bg-slate-50 prose-th:p-3 prose-th:text-xs prose-th:uppercase prose-th:tracking-wider">
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{parsed.displayContent}</ReactMarkdown>
+                          ) : parsed.isRefusal ? (
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center rounded-full border border-amber-200 bg-white/80 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-amber-800">
+                                  Finance only
+                                </span>
+                                <span className="text-xs font-semibold text-amber-800/80">
+                                  Kwarta policy
+                                </span>
                               </div>
-                            ) : null}
-                            {parsed.chartType ? <ChatVisualization chartType={parsed.chartType} transactions={transactions} /> : null}
-                          </>
-                        )}
+                              <div className="prose prose-sm max-w-none prose-slate prose-p:leading-relaxed prose-strong:text-slate-950 prose-strong:bg-amber-100/90 prose-strong:px-1.5 prose-strong:py-0.5 prose-strong:rounded-md">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                                  {parsed.displayContent}
+                                </ReactMarkdown>
+                              </div>
+                              <div className="rounded-xl border border-amber-200/80 bg-white/70 p-3 text-xs text-amber-900">
+                                I can help with budgets, spending, wallet balances, transactions, savings goals, investments, and economics.
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              {parsed.displayContent ? (
+                                <div className="prose prose-sm max-w-none prose-slate prose-p:leading-relaxed prose-table:overflow-hidden prose-table:rounded-lg prose-table:border prose-table:border-slate-200 prose-td:p-3 prose-th:bg-slate-50 prose-th:p-3 prose-th:text-xs prose-th:uppercase prose-th:tracking-wider prose-strong:text-slate-950 prose-strong:bg-amber-100/90 prose-strong:px-1.5 prose-strong:py-0.5 prose-strong:rounded-md prose-code:rounded-md prose-code:bg-slate-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:font-mono prose-code:text-[0.85em] prose-code:text-slate-900">
+                                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                                    {parsed.displayContent}
+                                  </ReactMarkdown>
+                                </div>
+                              ) : null}
+                              {parsed.chartType ? <ChatVisualization chartType={parsed.chartType} transactions={transactions} /> : null}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div key={msg.id} className="ml-auto flex w-full justify-end gap-3.5">
+                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[linear-gradient(180deg,#0f5a5c,#0a4749)] text-sm font-bold text-white shadow-[0_12px_28px_rgba(15,90,92,0.18)]">
+                        {userInitials}
+                      </div>
+                      <div className="w-fit max-w-[min(100%,36rem)] rounded-[1.35rem] rounded-tr-md bg-[linear-gradient(180deg,#0f5a5c,#0a4749)] px-4 py-3.5 text-sm font-medium leading-relaxed text-white shadow-[0_14px_36px_rgba(15,90,92,0.22)]">
+                        <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                       </div>
                     </div>
                   );
-                }
+                })}
+              </div>
+            )}
+            <div ref={chatEndRef} />
+          </div>
 
-                return (
-                  <div key={msg.id} className="ml-auto flex max-w-[85%] flex-row-reverse gap-4">
-                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
-                      {userInitials}
-                    </div>
-                    <div className="rounded-lg rounded-tr-none border border-primary-container bg-white p-4">
-                      <p className="font-body-sm leading-relaxed text-primary font-medium italic">
-                        "{msg.content}"
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-          <div ref={chatEndRef} />
+          <form onSubmit={handleSendMessage} className="border-t border-slate-100 bg-white p-4 sm:p-5">
+            <div className={`relative flex items-center rounded-3xl border border-slate-200 bg-slate-50 px-2 py-2 transition-shadow duration-200 ${inputFocused ? "shadow-lg shadow-emerald-900/5" : ""}`}>
+              <button
+                type="button"
+                className="absolute left-4 cursor-pointer text-slate-400 transition-colors hover:text-primary"
+              >
+                <span className="material-symbols-outlined">attach_file</span>
+              </button>
+              <input
+                className="w-full rounded-3xl border-0 bg-transparent py-3.5 pr-16 pl-12 font-body-sm text-on-surface focus:border-transparent focus:outline-none focus:ring-0"
+                placeholder="Ask about your budget, savings goals, or spending trends..."
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onFocus={() => setInputFocused(true)}
+                onBlur={() => setInputFocused(false)}
+                disabled={isTyping}
+              />
+                            <div className="absolute right-3 flex items-center gap-2">
+                <button
+                  type="submit"
+                  disabled={isTyping || !inputValue.trim()}
+                  className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-primary-container text-white shadow-[0_12px_26px_rgba(15,90,92,0.18)] transition-all hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-label="Send message"
+                >
+                  <span className="material-symbols-outlined text-[18px]">send</span>
+                </button>
+              </div>
+            </div>`r`n          </form>
         </div>
+      </div>
 
-        <form onSubmit={handleSendMessage} className="border-t border-slate-100 bg-white p-4 sm:p-5">
-          <div className={`relative flex items-center transition-shadow duration-200 ${inputFocused ? "rounded-xl shadow-lg shadow-emerald-900/5" : ""}`}>
+      <Dialog open={isDeleteDialogOpen} onOpenChange={(open) => {
+        setIsDeleteDialogOpen(open);
+        if (!open) {
+          setDeleteError(null);
+        }
+      }}>
+        <DialogContent className="border border-slate-200 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.18)] sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Clear conversation?</DialogTitle>
+            <DialogDescription>
+              This removes the current chat thread from your account and starts a fresh session.
+            </DialogDescription>
+          </DialogHeader>
+
+          {deleteError ? (
+            <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              {deleteError}
+            </div>
+          ) : null}
+
+          <DialogFooter>
             <button
               type="button"
-              className="absolute left-4 cursor-pointer text-slate-400 transition-colors hover:text-primary"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
             >
-              <span className="material-symbols-outlined">attach_file</span>
+              Cancel
             </button>
-            <input
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-4 pr-28 pl-12 font-body-sm text-on-surface focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Ask about your budget, savings goals, or spending trends..."
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onFocus={() => setInputFocused(true)}
-              onBlur={() => setInputFocused(false)}
-              disabled={isTyping}
-            />
-            <div className="absolute right-3 flex items-center gap-2">
-              <button
-                type="submit"
-                disabled={isTyping || !inputValue.trim()}
-                className="flex cursor-pointer items-center gap-2 rounded-lg bg-primary-container px-4 py-2.5 text-xs font-bold uppercase text-white transition-all hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <span className="hidden sm:inline">Send</span>
-                <span className="material-symbols-outlined text-sm">send</span>
-              </button>
-            </div>
-          </div>
-          <div className="mt-3 flex justify-center gap-6">
-            <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-              <span className="material-symbols-outlined text-xs">verified_user</span>
-              Encrypted
-            </span>
-            <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-              <span className="material-symbols-outlined text-xs">gavel</span>
-              Compliance Approved
-            </span>
-          </div>
-        </form>
-      </div>
-    </div>
+            <button
+              type="button"
+              onClick={handleClearHistory}
+              disabled={isClearingHistory}
+              className="inline-flex items-center justify-center rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isClearingHistory ? "Clearing..." : "Clear conversation"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
 export default KwartaAI;
+
+
+

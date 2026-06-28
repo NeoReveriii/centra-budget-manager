@@ -442,7 +442,7 @@ function buildWalletSummary(wallets: WalletContextRow[]): string {
     return `- ${wallet.name} (${wallet.type}): ${formatPhp(balance)}`;
   });
 
-  return [`Your wallet balances:`, ...lines].join('\n');
+  return [`**Your wallet balances:**`, ...lines.map((line) => `- **${line.slice(2)}**`)].join('\n');
 }
 
 function buildGoalsSummary(goals: GoalContextRow[]): string {
@@ -457,7 +457,7 @@ function buildGoalsSummary(goals: GoalContextRow[]): string {
     return `- ${goal.title}: ${formatPhp(saved)} saved of ${formatPhp(target)} (${progress})`;
   });
 
-  return [`Your savings goals:`, ...lines].join('\n');
+  return [`**Your savings goals:**`, ...lines.map((line) => `- **${line.slice(2)}**`)].join('\n');
 }
 
 function buildRecentSummary(transactions: TransactionContextRow[]): string {
@@ -505,32 +505,32 @@ function buildLocalFinanceResponse(
 
   if (chartType === 'income') {
     return [
-      `Here is a quick income summary based on your recent transactions.`,
-      `- Total income: ${formatPhp(summary.income)}`,
-      `- Total expenses: ${formatPhp(summary.expense)}`,
-      `- Net cash flow: ${formatPhp(summary.net)}`,
-      summary.topExpenses.length > 0 ? `- Largest expense items are still: ${summary.topExpenses.map((item) => `${item.label} (${formatPhp(item.amount)})`).join(', ')}` : '- No expense categories were found in the recent data.',
+      `**Here is a quick income summary based on your recent transactions.**`,
+      `- **Total income:** ${formatPhp(summary.income)}`,
+      `- **Total expenses:** ${formatPhp(summary.expense)}`,
+      `- **Net cash flow:** ${formatPhp(summary.net)}`,
+      summary.topExpenses.length > 0 ? `- **Largest expense items:** ${summary.topExpenses.map((item) => `${item.label} (${formatPhp(item.amount)})`).join(', ')}` : '- No expense categories were found in the recent data.',
       '[CHART:INCOME]',
     ].join('\n');
   }
 
   if (chartType === 'expense') {
     return [
-      `Here is a quick expense summary based on your recent transactions.`,
-      `- Total income: ${formatPhp(summary.income)}`,
-      `- Total expenses: ${formatPhp(summary.expense)}`,
-      `- Net cash flow: ${formatPhp(summary.net)}`,
-      summary.topExpenses.length > 0 ? `- Largest expense items: ${summary.topExpenses.map((item) => `${item.label} (${formatPhp(item.amount)})`).join(', ')}` : '- No expense categories were found in the recent data.',
+      `**Here is a quick expense summary based on your recent transactions.**`,
+      `- **Total income:** ${formatPhp(summary.income)}`,
+      `- **Total expenses:** ${formatPhp(summary.expense)}`,
+      `- **Net cash flow:** ${formatPhp(summary.net)}`,
+      summary.topExpenses.length > 0 ? `- **Largest expense items:** ${summary.topExpenses.map((item) => `${item.label} (${formatPhp(item.amount)})`).join(', ')}` : '- No expense categories were found in the recent data.',
       '[CHART:EXPENSE]',
     ].join('\n');
   }
 
   return [
     `I could not reach the external AI provider, so here is a live finance snapshot from your account.`,
-    `- Income: ${formatPhp(summary.income)}`,
-    `- Expenses: ${formatPhp(summary.expense)}`,
-    `- Net cash flow: ${formatPhp(summary.net)}`,
-    summary.topExpenses.length > 0 ? `- Top spending items: ${summary.topExpenses.map((item) => `${item.label} (${formatPhp(item.amount)})`).join(', ')}` : '- No recent expense categories were found.',
+    `- **Income:** ${formatPhp(summary.income)}`,
+    `- **Expenses:** ${formatPhp(summary.expense)}`,
+    `- **Net cash flow:** ${formatPhp(summary.net)}`,
+    summary.topExpenses.length > 0 ? `- **Top spending items:** ${summary.topExpenses.map((item) => `${item.label} (${formatPhp(item.amount)})`).join(', ')}` : '- No recent expense categories were found.',
     '[CHART:EXPENSE]',
   ].join('\n');
 }

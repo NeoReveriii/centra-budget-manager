@@ -70,6 +70,7 @@ export interface Transaction {
   type: string; // 'Income' | 'Expense' | 'Transfer'
   wallet_type: string;
   wallet_id: number | null;
+  category: string | null;
   transfer_from_wallet_id: number | null;
   transfer_to_wallet_id: number | null;
   amount: string; // comes as string from NUMERIC
@@ -86,6 +87,7 @@ export async function createTransaction(data: {
   type: string;
   wallet_type: string;
   wallet_id?: number;
+  category?: string;
   amount: number;
 }): Promise<Transaction> {
   return request<Transaction>("/transactions", {
@@ -244,3 +246,5 @@ export async function clearChatHistory(): Promise<{
     method: "DELETE",
   });
 }
+
+
