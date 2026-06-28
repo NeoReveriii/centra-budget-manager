@@ -32,7 +32,7 @@ const TRANSACTION_CATEGORIES = {
   ],
 } as const;
 
-const TYPE_OPTIONS = ["Expense", "Income", "Transfer"] as const;
+const TYPE_OPTIONS = ["Expense", "Income"] as const;
 
 type TxType = (typeof TYPE_OPTIONS)[number];
 

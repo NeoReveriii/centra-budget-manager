@@ -2,6 +2,7 @@ import React from "react";
 import Sidebar from "./Sidebar";
 import { useUiStore } from "@/stores/ui-store";
 import { AddTransactionModal } from "./AddTransactionModal";
+import { TransferFundsModal } from "./TransferFundsModal";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -52,7 +53,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           aria-hidden={!isFabOpen}
         >
           <button
-            onClick={() => openAddModal("Income")}
+            onClick={() => openFabAction("Income")}
             className="group flex items-center gap-3 bg-white border border-outline-variant px-4 py-3 rounded-2xl shadow-xl hover:bg-slate-50 transition-all cursor-pointer whitespace-nowrap"
           >
             <span className="font-bold text-sm text-emerald-700">
@@ -65,7 +66,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
           </button>
           <button
-            onClick={() => openAddModal("Expense")}
+            onClick={() => openFabAction("Expense")}
             className="group flex items-center gap-3 bg-white border border-outline-variant px-4 py-3 rounded-2xl shadow-xl hover:bg-slate-50 transition-all cursor-pointer whitespace-nowrap"
           >
             <span className="font-bold text-sm text-rose-700">Add Expense</span>
@@ -76,7 +77,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
           </button>
           <button
-            onClick={() => openAddModal("Transfer")}
+            onClick={() => openFabAction("Transfer")}
             className="group flex items-center gap-3 bg-white border border-outline-variant px-4 py-3 rounded-2xl shadow-xl hover:bg-slate-50 transition-all cursor-pointer whitespace-nowrap"
           >
             <span className="font-bold text-sm text-blue-700">
@@ -104,6 +105,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </div>
 
       <AddTransactionModal />
+      <TransferFundsModal />
     </div>
   );
 };

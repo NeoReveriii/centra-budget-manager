@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTransactions, useWallets } from "@/hooks/use-budget-data";
 import {
@@ -196,37 +196,56 @@ const Dashboard = () => {
   }, [selectedWallet, wallets]);
 
   const filteredTransactions = useMemo(() => {
-    if (!selectedWallet) return transactions;
+    const now = new Date();
+    let start: Date | null = null;
+
+    if (selectedDateRange === "This Week") {
+      start = new Date(now);
+      start.setDate(start.getDate() - 6);
+      start.setHours(0, 0, 0, 0);
+    } else if (selectedDateRange === "This Month") {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+    } else if (selectedDateRange === "Quarterly") {
+      start = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+    } else if (selectedDateRange === "Annual") {
+      start = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+    }
 
     return transactions.filter((tx) => {
       const walletId = String(tx.wallet_id ?? "");
       const fromId = String(tx.transfer_from_wallet_id ?? "");
       const toId = String(tx.transfer_to_wallet_id ?? "");
-      return (
+      const walletMatch =
+        selectedWalletId === "all" ||
         walletId === selectedWalletId ||
         fromId === selectedWalletId ||
         toId === selectedWalletId ||
-        tx.wallet_type === selectedWallet.name
-      );
+        true;
+
+      if (!walletMatch) return false;
+      if (!start) return true;
+      const txDate = new Date(tx.dateoftrans);
+      return txDate >= start;
     });
-  }, [transactions, selectedWallet, selectedWalletId]);
+  }, [transactions, selectedWallet, selectedWalletId, selectedDateRange]);
 
   const totalBalance = visibleWallets.reduce(
     (sum, wallet) => sum + Number((wallet as { calculated_balance?: string }).calculated_balance || 0),
     0,
   );
 
+  const periodTransactions = filteredTransactions;
   const now = new Date();
   const thisMonthTx = filteredTransactions.filter((tx) => {
     const d = new Date(tx.dateoftrans);
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   });
 
-  const monthlyIncome = thisMonthTx
+  const monthlyIncome = periodTransactions
     .filter((tx) => tx.type === "Income")
     .reduce((sum, tx) => sum + Number(tx.amount), 0);
 
-  const monthlyExpenses = thisMonthTx
+  const monthlyExpenses = periodTransactions
     .filter((tx) => tx.type === "Expense")
     .reduce((sum, tx) => sum + Number(tx.amount), 0);
 
@@ -253,7 +272,7 @@ const Dashboard = () => {
   });
 
   const categoryTotals: Record<string, number> = {};
-  thisMonthTx
+  periodTransactions
     .filter((tx) => tx.type === "Expense")
     .forEach((tx) => {
       const key = (tx.category || tx.description.split(" ")[0] || "Other").trim() || "Other";
@@ -276,7 +295,7 @@ const Dashboard = () => {
       };
     });
 
-  const recentTx = filteredTransactions.slice(0, 5);
+  const recentTx = periodTransactions.slice(0, 5);
 
   const selectedWalletLabel = selectedWallet ? selectedWallet.name : `All wallets`;
 
@@ -348,7 +367,7 @@ const Dashboard = () => {
         <div className="flex flex-col gap-2 rounded-xl border border-outline-variant bg-white p-lg transition-shadow hover:shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-label-caps font-label-caps uppercase text-on-surface-variant">
-              Monthly Income
+              Income
             </span>
             <span className="material-symbols-outlined text-emerald-600">
               trending_up
@@ -358,7 +377,7 @@ const Dashboard = () => {
             <div className="font-h2 text-h2 text-on-background">{formatCurrency(monthlyIncome)}</div>
             <div className="mt-1 flex items-center gap-1 text-[12px] font-bold text-emerald-600">
               <span className="material-symbols-outlined text-[14px]">arrow_upward</span>
-              This month
+              Selected period
             </div>
           </div>
         </div>
@@ -366,7 +385,7 @@ const Dashboard = () => {
         <div className="flex flex-col gap-2 rounded-xl border border-outline-variant bg-white p-lg transition-shadow hover:shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-label-caps font-label-caps uppercase text-on-surface-variant">
-              Monthly Expenses
+              Expenses
             </span>
             <span className="material-symbols-outlined text-error">trending_down</span>
           </div>
@@ -374,7 +393,7 @@ const Dashboard = () => {
             <div className="font-h2 text-h2 text-on-background">{formatCurrency(monthlyExpenses)}</div>
             <div className="mt-1 flex items-center gap-1 text-[12px] font-bold text-error">
               <span className="material-symbols-outlined text-[14px]">arrow_downward</span>
-              This month
+              Selected period
             </div>
           </div>
         </div>
@@ -667,3 +686,5 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
+
