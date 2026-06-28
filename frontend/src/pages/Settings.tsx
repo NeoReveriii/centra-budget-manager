@@ -5,7 +5,7 @@ const Settings = () => {
   const setTheme = useUiStore((s) => s.setTheme);
 
   return (
-    <div className="max-w-[800px] w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="max-w-[800px] w-full mx-auto animate-fade-in">
       <header className="mb-lg">
         <h2 className="font-h1 text-h1 text-primary">Settings</h2>
         <p className="font-body-md text-on-surface-variant mt-2">

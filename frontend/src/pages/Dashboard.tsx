@@ -1,5 +1,14 @@
 import { useAuth } from "../context/AuthContext";
 import { useTransactions, useWallets } from "@/hooks/use-budget-data";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
+} from "recharts";
 
 // Icon/color mapping for transaction categories
 const CATEGORY_MAP: Record<
@@ -178,6 +187,26 @@ const Dashboard = () => {
       : 0;
   const savingsTarget = 40;
   const savingsCircle = (savingsRate / 100) * 175.9;
+
+  // Compute daily cashflow for the chart
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const cashflowData = Array.from({ length: daysInMonth }, (_, i) => {
+    const day = i + 1;
+    return {
+      date: day,
+      Income: 0,
+      Expenses: 0,
+    };
+  });
+
+  thisMonthTx.forEach((t) => {
+    const d = new Date(t.dateoftrans);
+    const day = d.getDate();
+    if (day >= 1 && day <= daysInMonth) {
+      if (t.type === "Income") cashflowData[day - 1].Income += Number(t.amount);
+      if (t.type === "Expense") cashflowData[day - 1].Expenses += Number(t.amount);
+    }
+  });
 
   // Top categories (group expenses by first word of description)
   const categoryTotals: Record<string, number> = {};
@@ -377,60 +406,45 @@ const Dashboard = () => {
             <h3 className="font-h3 text-h3 text-primary">Cash Flow</h3>
             <span className="text-body-sm text-slate-400">This month</span>
           </div>
-          <div className="h-64 flex items-center justify-center">
-            <div className="text-center space-y-3">
-              <div className="flex items-center justify-center gap-8">
-                <div className="text-center">
-                  <div className="text-[12px] font-bold text-slate-400 uppercase mb-1">
-                    Income
-                  </div>
-                  <div className="text-xl font-bold text-emerald-600">
-                    {formatCurrency(monthlyIncome)}
-                  </div>
-                </div>
-                <div className="w-px h-12 bg-slate-200" />
-                <div className="text-center">
-                  <div className="text-[12px] font-bold text-slate-400 uppercase mb-1">
-                    Expenses
-                  </div>
-                  <div className="text-xl font-bold text-error">
-                    {formatCurrency(monthlyExpenses)}
-                  </div>
-                </div>
-                <div className="w-px h-12 bg-slate-200" />
-                <div className="text-center">
-                  <div className="text-[12px] font-bold text-slate-400 uppercase mb-1">
-                    Net
-                  </div>
-                  <div
-                    className={`text-xl font-bold ${monthlyIncome - monthlyExpenses >= 0 ? "text-emerald-600" : "text-error"}`}
-                  >
-                    {formatCurrency(monthlyIncome - monthlyExpenses)}
-                  </div>
-                </div>
-              </div>
-              {/* Progress bar showing income vs expense ratio */}
-              <div className="w-full max-w-[448px] mx-auto mt-4">
-                <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden flex">
-                  {monthlyIncome > 0 && (
-                    <>
-                      <div
-                        className="h-full bg-emerald-500 rounded-l-full"
-                        style={{
-                          width: `${Math.min((monthlyIncome / (monthlyIncome + monthlyExpenses)) * 100, 100)}%`,
-                        }}
-                      />
-                      <div
-                        className="h-full bg-rose-400 rounded-r-full"
-                        style={{
-                          width: `${Math.min((monthlyExpenses / (monthlyIncome + monthlyExpenses)) * 100, 100)}%`,
-                        }}
-                      />
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
+          <div className="h-64 mt-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={cashflowData}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              >
+                <defs>
+                  <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis 
+                  dataKey="date" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: '#94a3b8', fontSize: 12 }}
+                  tickFormatter={(val) => `${val}`}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: '#94a3b8', fontSize: 12 }}
+                  tickFormatter={(val) => `₱${val > 1000 ? (val/1000).toFixed(0) + 'k' : val}`}
+                />
+                <Tooltip 
+                  contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                  formatter={(value: any) => [`₱${Number(value).toLocaleString()}`, undefined]}
+                  labelFormatter={(label) => `Day ${label}`}
+                />
+                <Area type="monotone" dataKey="Income" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" />
+                <Area type="monotone" dataKey="Expenses" stroke="#f43f5e" strokeWidth={3} fillOpacity={1} fill="url(#colorExpense)" />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
         </div>
 

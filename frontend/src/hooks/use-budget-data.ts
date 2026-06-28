@@ -7,11 +7,15 @@ import {
   deleteWallet,
   fetchChatHistory,
   fetchGoals,
+  createGoal,
+  updateGoal,
+  deleteGoal,
   fetchTransactions,
   fetchWallets,
   transferFunds,
   type Transaction,
   type Wallet,
+  type Goal,
 } from "@/lib/api";
 
 export const budgetQueryKeys = {
@@ -114,4 +118,34 @@ export function useClearChatHistory() {
   });
 }
 
-export type { Transaction, Wallet };
+export function useCreateGoal() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createGoal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: budgetQueryKeys.goals });
+    },
+  });
+}
+
+export function useUpdateGoal() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateGoal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: budgetQueryKeys.goals });
+    },
+  });
+}
+
+export function useDeleteGoal() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteGoal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: budgetQueryKeys.goals });
+    },
+  });
+}
+
+export type { Transaction, Wallet, Goal };

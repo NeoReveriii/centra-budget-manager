@@ -189,6 +189,38 @@ export async function fetchGoals(): Promise<Goal[]> {
   return res.goals;
 }
 
+export async function createGoal(data: {
+  title: string;
+  target_amount: number;
+  deadline?: string;
+  category?: string;
+  priority?: number;
+  allow_expense?: boolean;
+}): Promise<{ goal: Goal }> {
+  return request("/goals", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateGoal(data: {
+  goal_id: number;
+  add_amount: number;
+  note?: string;
+}): Promise<{ goal: Goal }> {
+  return request("/goals", {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteGoal(goal_id: number): Promise<{ success: boolean }> {
+  return request("/goals", {
+    method: "DELETE",
+    body: JSON.stringify({ goal_id }),
+  });
+}
+
 // ──────────────────────────────────────────────
 // Chat History
 // ──────────────────────────────────────────────
