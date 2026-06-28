@@ -120,12 +120,24 @@ function wantsGoalAdvice(message: string): boolean {
     normalized.includes('goal') ||
     normalized.includes('goals') ||
     normalized.includes('savings goal') ||
-    normalized.includes('savings goals');
+    normalized.includes('savings goals') ||
+    normalized.includes('that') ||
+    normalized.includes('this') ||
+    normalized.includes('it') ||
+    normalized.includes('for that') ||
+    normalized.includes('for this') ||
+    normalized.includes('for it');
   const hasAdviceIntent =
     normalized.includes('how can i save') ||
     normalized.includes('how do i save') ||
+    normalized.includes('how to save') ||
+    normalized.includes('save up') ||
     normalized.includes('save for that') ||
     normalized.includes('save for it') ||
+    normalized.includes('save for this') ||
+    normalized.includes('save for') ||
+    normalized.includes('save more') ||
+    normalized.includes('set aside') ||
     normalized.includes('reach') ||
     normalized.includes('achieve') ||
     normalized.includes('plan') ||
@@ -139,6 +151,144 @@ function wantsGoalAdvice(message: string): boolean {
     normalized.includes('budget');
 
   return hasGoalContext && hasAdviceIntent;
+}
+
+
+type DateScope = 'today' | 'yesterday' | 'week' | 'month' | 'year';
+
+function getDateScope(message: string): DateScope | null {
+  const normalized = normalizePrompt(message);
+
+  if (normalized.includes('yesterday')) return 'yesterday';
+  if (normalized.includes('today')) return 'today';
+  if (normalized.includes('this week') || normalized.includes('weekly') || normalized.includes('last 7 days') || normalized.includes('past week')) {
+    return 'week';
+  }
+  if (normalized.includes('this month') || normalized.includes('monthly')) return 'month';
+  if (normalized.includes('this year') || normalized.includes('yearly') || normalized.includes('annual')) return 'year';
+  return null;
+}
+
+function getScopeLabel(scope: DateScope): string {
+  switch (scope) {
+    case 'today':
+      return 'today';
+    case 'yesterday':
+      return 'yesterday';
+    case 'week':
+      return 'this week';
+    case 'month':
+      return 'this month';
+    case 'year':
+      return 'this year';
+  }
+}
+
+function getScopeBounds(scope: DateScope, reference = new Date()): { start: Date; end: Date } {
+  const now = new Date(reference);
+
+  if (scope === 'today') {
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    return { start, end };
+  }
+
+  if (scope === 'yesterday') {
+    const day = new Date(now);
+    day.setDate(day.getDate() - 1);
+    const start = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, 0, 0, 0);
+    const end = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 23, 59, 59, 999);
+    return { start, end };
+  }
+
+  if (scope === 'week') {
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6, 0, 0, 0, 0);
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    return { start, end };
+  }
+
+  if (scope === 'month') {
+    const start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    return { start, end };
+  }
+
+  const start = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0);
+  const end = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+  return { start, end };
+}
+
+function parseTransactionDate(value: string): Date | null {
+  const trimmed = String(value || '').trim();
+  if (!trimmed) return null;
+
+  const isoMatch = /^(\d{4})-(\d{2})-(\d{2})/.exec(trimmed);
+  if (isoMatch) {
+    const year = Number(isoMatch[1]);
+    const month = Number(isoMatch[2]) - 1;
+    const day = Number(isoMatch[3]);
+    return new Date(year, month, day);
+  }
+
+  const parsed = new Date(trimmed);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function filterTransactionsByScope(transactions: TransactionContextRow[], scope: DateScope): TransactionContextRow[] {
+  const { start, end } = getScopeBounds(scope);
+  return transactions.filter((transaction) => {
+    const transactionDate = parseTransactionDate(String(transaction.dateoftrans || ''));
+    if (!transactionDate) return false;
+    return transactionDate >= start && transactionDate <= end;
+  });
+}
+
+function buildScopedFinanceResponse(message: string, transactions: TransactionContextRow[]): string | null {
+  const scope = getDateScope(message);
+  if (!scope) return null;
+
+  const normalized = normalizePrompt(message);
+  const scopeLabel = getScopeLabel(scope);
+  const scopedTransactions = filterTransactionsByScope(transactions, scope);
+  const summary = summarizeTransactions(scopedTransactions);
+  const asksIncome = /\bincome\b|\bearned\b|\bearnings\b|\bsalary\b/.test(normalized);
+  const asksExpense = /\bexpense\b|\bexpenses\b|\bspend\b|\bspent\b|\bspending\b/.test(normalized);
+  const lines: string[] = [];
+
+  if (scopedTransactions.length === 0) {
+    lines.push('I found no transactions for ' + scopeLabel + '.');
+  }
+
+  if (asksIncome && !asksExpense) {
+    lines.push('**Here is your income summary for ' + scopeLabel + '.**');
+    lines.push('- **Total income:** ' + formatPhp(summary.income));
+    lines.push('- **Total expenses:** ' + formatPhp(summary.expense));
+    lines.push('- **Net cash flow:** ' + formatPhp(summary.net));
+  } else if (asksExpense && !asksIncome) {
+    lines.push('**Here is your expense summary for ' + scopeLabel + '.**');
+    lines.push('- **Total expense:** ' + formatPhp(summary.expense));
+
+    if (summary.topExpenses.length > 0) {
+      lines.push('- **Top expense categories:** ' + summary.topExpenses.map((item) => item.label + ' (' + formatPhp(item.amount) + ')').join(', '));
+    } else {
+      lines.push('- No expense categories were found for ' + scopeLabel + '.');
+    }
+
+    lines.push('- **Income:** ' + formatPhp(summary.income));
+    lines.push('- **Net cash flow:** ' + formatPhp(summary.net));
+  } else {
+    lines.push('**Here is your financial summary for ' + scopeLabel + '.**');
+    lines.push('- **Total income:** ' + formatPhp(summary.income));
+    lines.push('- **Total expenses:** ' + formatPhp(summary.expense));
+    lines.push('- **Net cash flow:** ' + formatPhp(summary.net));
+
+    if (summary.topExpenses.length > 0) {
+      lines.push('- **Top spending items:** ' + summary.topExpenses.map((item) => item.label + ' (' + formatPhp(item.amount) + ')').join(', '));
+    }
+  }
+
+  return lines.join('\n');
+
 }
 
 function monthsUntil(deadline: string | null): number | null {
@@ -739,6 +889,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
+    const scopedResponse = buildScopedFinanceResponse(message, transactions);
+    const deterministicResponse = scopedResponse
+      || (wantsGoalAdvice(message) ? buildGoalAdviceResponse(message, goals, summarizeTransactions(transactions)) : null)
+      || (wantsGoalsSummary(message) ? buildGoalsSummary(goals) : null)
+      || (wantsWalletSummary(message) ? buildWalletSummary(wallets) + '\n\nRecent cash flow: ' + formatPhp(summarizeTransactions(transactions).income) + ' income, ' + formatPhp(summarizeTransactions(transactions).expense) + ' expenses, net ' + formatPhp(summarizeTransactions(transactions).net) + '.' : null)
+
+      || (wantsRecentTransactions(message) ? buildRecentSummary(transactions) : null);
+
+    if (deterministicResponse) {
+      await storeChatMessage(accId, 'assistant', deterministicResponse);
+      await streamFinalResponse(res, deterministicResponse);
+      return;
+    }
+
     const apiKey = process.env.DEEPSEEK_API_KEY?.replace(/^"|"$/g, '') || null;
     if (apiKey) {
       const systemPrompt = {
@@ -814,3 +978,5 @@ QUERY TYPE ROUTING - follow these rules strictly:
     }
   }
 }
+
+
