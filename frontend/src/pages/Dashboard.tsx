@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTransactions, useWallets } from "@/hooks/use-budget-data";
 import {
@@ -144,6 +144,8 @@ const CATEGORY_STYLES: Record<string, CategoryStyle> = {
   },
 };
 
+const DATE_RANGE_OPTIONS = ["This Week", "This Month", "Quarterly", "Annual"] as const;
+
 function getCategoryStyle(category: string | null | undefined, description: string, type: string): CategoryStyle {
   const source = `${category || ""} ${description || ""}`.toLowerCase();
 
@@ -182,6 +184,8 @@ const Dashboard = () => {
   const { data: wallets = [], isLoading: walletsLoading } = useWallets();
   const { data: transactions = [], isLoading: transactionsLoading } = useTransactions();
   const [selectedWalletId, setSelectedWalletId] = useState<string>("all");
+  const [selectedDateRange, setSelectedDateRange] =
+    useState<(typeof DATE_RANGE_OPTIONS)[number]>("This Month");
 
   const loading = walletsLoading || transactionsLoading;
   const displayName = user?.username || "User";
@@ -219,15 +223,14 @@ const Dashboard = () => {
         selectedWalletId === "all" ||
         walletId === selectedWalletId ||
         fromId === selectedWalletId ||
-        toId === selectedWalletId ||
-        true;
+        toId === selectedWalletId;
 
       if (!walletMatch) return false;
       if (!start) return true;
       const txDate = new Date(tx.dateoftrans);
       return txDate >= start;
     });
-  }, [transactions, selectedWallet, selectedWalletId, selectedDateRange]);
+  }, [transactions, selectedWalletId, selectedDateRange]);
 
   const totalBalance = visibleWallets.reduce(
     (sum, wallet) => sum + Number((wallet as { calculated_balance?: string }).calculated_balance || 0),
@@ -323,6 +326,28 @@ const Dashboard = () => {
         </div>
 
         <div className="flex w-full flex-wrap items-center gap-3 md:w-auto">
+          <div className="relative">
+            <select
+              value={selectedDateRange}
+              onChange={(e) =>
+                setSelectedDateRange(e.target.value as (typeof DATE_RANGE_OPTIONS)[number])
+              }
+              className="cursor-pointer appearance-none rounded-lg border border-outline-variant bg-white py-2 pl-10 pr-8 font-bold text-body-sm text-slate-600 transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              {DATE_RANGE_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+            <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">
+              calendar_month
+            </span>
+            <span className="material-symbols-outlined pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">
+              expand_more
+            </span>
+          </div>
+
           <div className="relative">
             <select
               value={selectedWalletId}
@@ -686,5 +711,6 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
 
 
