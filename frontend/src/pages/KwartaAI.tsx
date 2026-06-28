@@ -133,15 +133,12 @@ function buildArcPath(startAngle: number, endAngle: number, radius: number) {
 
 function KwartaAvatar() {
   return (
-    <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-[#0f5a5c] shadow-sm ring-1 ring-[#0f5a5c]/20">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.35),transparent_45%),linear-gradient(145deg,#134e4a,#0f5a5c_55%,#083344)]" />
-      <div className="relative flex h-full w-full items-center justify-center">
-        <svg viewBox="0 0 32 32" className="h-6 w-6 text-white drop-shadow-[0_1px_0_rgba(0,0,0,0.15)]" aria-hidden="true">
-          <path d="M6 21.5V10.5c0-1.1.9-2 2-2h1.4c.6 0 1.1.3 1.4.8l2.4 4.1 2.4-4.1c.3-.5.8-.8 1.4-.8H18v13h-2.7v-8l-2.2 3.7c-.2.4-.6.6-1 .6s-.8-.2-1-.6l-2.2-3.7v8H6Zm20 0h-2.9l-4-6.5 3.5-6.5h3l-3.4 6 3.8 7Z" fill="currentColor" opacity="0.95"/>
-          <path d="M22 24.5c-.9 0-1.7-.2-2.4-.6-.7-.4-1.2-1-1.5-1.8h2.8c.2.4.8.6 1.6.6.5 0 .9-.1 1.2-.3.3-.2.5-.5.5-.8 0-.3-.1-.5-.3-.7-.2-.2-.6-.4-1.3-.5l-1.2-.2c-1.2-.2-2.1-.6-2.7-1.1-.6-.5-.9-1.2-.9-2.1 0-1 .4-1.8 1.2-2.4.8-.6 1.9-.9 3.2-.9 1.3 0 2.3.3 3.1.8.8.5 1.3 1.2 1.5 2h-2.7c-.2-.3-.4-.5-.8-.6-.3-.1-.7-.2-1.2-.2-.5 0-.9.1-1.2.3-.3.2-.5.4-.5.7 0 .2.1.4.3.6.2.2.6.3 1.2.4l1.4.2c1.2.2 2.1.6 2.7 1.1.6.5.9 1.2.9 2.1 0 1.1-.4 2-1.3 2.7-.9.6-2 1-3.4 1Z" fill="currentColor" opacity="0.9"/>
-        </svg>
-      </div>
-      <div className="absolute inset-x-1 bottom-1.5 h-0.5 rounded-full bg-white/40" />
+    <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-black/5">
+      <img
+        src="/assets/images/KwartaIcon.png"
+        alt="Kwarta AI"
+        className="h-full w-full object-cover"
+      />
     </div>
   );
 }
@@ -488,18 +485,18 @@ const KwartaAI = () => {
                 </span>
               </div>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {messages.map((msg) => {
                   if (msg.sender === "ai") {
                     const parsed = parseAssistantContent(msg.content);
                     return (
-                      <div key={msg.id} className="flex w-full gap-4 pr-4 sm:pr-8">
+                      <div key={msg.id} className="flex w-full items-end gap-3 pr-4 sm:pr-8">
                         <KwartaAvatar />
                         <div
-                          className={`min-w-0 flex-1 rounded-lg rounded-tl-none border p-4 ${
+                          className={`min-w-0 w-fit max-w-[80%] rounded-[1.35rem] rounded-tl-md border px-4 py-3 shadow-sm ${
                             parsed.isRefusal
-                              ? "border-amber-200 bg-amber-50/90 text-amber-950 shadow-sm"
-                              : "border-slate-200 bg-surface-container-low/50"
+                              ? "border-amber-200 bg-amber-50/90 text-amber-950"
+                              : "border-slate-200 bg-white/90 text-slate-900 backdrop-blur"
                           }`}
                         >
                           {msg.content === "" && isTyping ? (
@@ -545,14 +542,14 @@ const KwartaAI = () => {
                   }
 
                   return (
-                    <div key={msg.id} className="ml-auto flex w-full flex-row-reverse gap-4 pl-4 sm:pl-8">
-                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
-                        {userInitials}
-                      </div>
-                      <div className="min-w-0 flex-1 rounded-lg rounded-tr-none border border-primary-container bg-white p-4">
-                        <p className="whitespace-pre-wrap break-words font-body-sm font-medium leading-relaxed text-primary">
+                    <div key={msg.id} className="flex w-full justify-end gap-3 pl-4 sm:pl-8">
+                      <div className="min-w-0 w-fit max-w-[80%] rounded-[1.35rem] rounded-tr-md border border-primary/10 bg-primary px-4 py-3 shadow-sm shadow-slate-900/5">
+                        <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-white">
                           {msg.content}
                         </p>
+                      </div>
+                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white shadow-sm">
+                        {userInitials}
                       </div>
                     </div>
                   );
@@ -580,13 +577,13 @@ const KwartaAI = () => {
                 onBlur={() => setInputFocused(false)}
                 disabled={isTyping}
               />
-              <div className="absolute right-3 flex items-center gap-2">
+              <div className="absolute right-3 flex items-center">
                 <button
                   type="submit"
                   disabled={isTyping || !inputValue.trim()}
-                  className="flex cursor-pointer items-center gap-2 rounded-lg bg-primary-container px-4 py-2.5 text-xs font-bold uppercase text-white transition-all hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-label="Send message"
+                  className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-primary-container text-white transition-all hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <span className="hidden sm:inline">Send</span>
                   <span className="material-symbols-outlined text-sm">send</span>
                 </button>
               </div>
