@@ -62,22 +62,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     async function restoreSession() {
-      if (import.meta.env.DEV) {
-        setToken("mock-token-123");
-        setUser({
-          acc_id: 1,
-          username: "Local Dev",
-          email: "dev@local.com",
-          pnumber: null,
-          bio: null,
-          avatar_seed: null,
-          avatar_url: null,
-          createdat: new Date().toISOString()
-        });
-        setIsLoading(false);
-        return;
-      }
-
       try {
         const savedUser = localStorage.getItem("centra_user");
         const synced = await syncLocalProfile();
@@ -177,12 +161,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function loginWithSocial(
     provider: "google" | "apple",
   ): Promise<AuthResult> {
-    // Clear any existing Neon session so OAuth always runs instead of silently reusing it.
     await resetAuthSession();
     setToken(null);
     setUser(null);
 
-    // Callback to / so Vercel always serves the SPA; AppRoutes redirects to /dashboard once session is ready.
     const { error } = await authClient.signIn.social({
       provider,
       callbackURL: `${window.location.origin}/`,

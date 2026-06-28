@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "../context/AuthContext";
 import {
   clearChatHistory,
   createTransaction,
@@ -25,10 +26,16 @@ export const budgetQueryKeys = {
   chatHistory: ["chatHistory"] as const,
 };
 
+function useDataQueryEnabled(enabled = true): boolean {
+  const { isAuthenticated, isLoading } = useAuth();
+  return enabled && isAuthenticated && !isLoading;
+}
+
 export function useWallets() {
   return useQuery({
     queryKey: budgetQueryKeys.wallets,
     queryFn: fetchWallets,
+    enabled: useDataQueryEnabled(),
   });
 }
 
@@ -36,6 +43,7 @@ export function useTransactions() {
   return useQuery({
     queryKey: budgetQueryKeys.transactions,
     queryFn: fetchTransactions,
+    enabled: useDataQueryEnabled(),
   });
 }
 
@@ -43,6 +51,7 @@ export function useGoals() {
   return useQuery({
     queryKey: budgetQueryKeys.goals,
     queryFn: fetchGoals,
+    enabled: useDataQueryEnabled(),
   });
 }
 
@@ -50,7 +59,7 @@ export function useChatHistory(enabled = true) {
   return useQuery({
     queryKey: budgetQueryKeys.chatHistory,
     queryFn: fetchChatHistory,
-    enabled,
+    enabled: useDataQueryEnabled(enabled),
   });
 }
 
