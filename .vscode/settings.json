@@ -1,3 +1,5 @@
 {
-    "livePreview.defaultPreviewPath": "/.stitch/designs/goals-v2.html"
+    "livePreview.defaultPreviewPath": "/.stitch/designs/goals-v2.html",
+    "typescript.tsdk": "frontend/node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true
 }
