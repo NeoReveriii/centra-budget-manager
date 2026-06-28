@@ -546,21 +546,18 @@ const Dashboard = () => {
       </section>
 
       <section className="grid grid-cols-1 gap-gutter sm:grid-cols-2 lg:grid-cols-4">
-        <div className="relative isolate overflow-hidden rounded-[1.75rem] border border-slate-200/70 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.07)] transition-transform duration-300 hover:-translate-y-0.5 hover:shadow-[0_22px_55px_rgba(15,23,42,0.09)] min-h-[180px]">
-          <div aria-hidden="true" className="pointer-events-none absolute -right-12 top-1/2 h-44 w-44 -translate-y-1/2 opacity-35">
-            <div className="absolute inset-0 rounded-[52%_48%_63%_37%/47%_39%_61%_53%] bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.75),transparent_32%),linear-gradient(135deg,rgba(167,243,208,0.95),rgba(110,231,183,0.5))] blur-[1px]" />
-            <div className="absolute inset-x-6 top-8 h-16 rounded-[45%_55%_58%_42%/52%_45%_55%_48%] bg-white/35 blur-2xl" />
+        <div className="flex flex-col gap-2 rounded-xl border border-outline-variant bg-white p-lg transition-shadow hover:shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-label-caps font-label-caps uppercase text-on-surface-variant">
+              Current Balance
+            </span>
+            <span className="material-symbols-outlined text-secondary">
+              account_balance_wallet
+            </span>
           </div>
-          <div className="relative z-10 flex h-full flex-col justify-between gap-8">
-            <div className="space-y-3">
-              <span className="block text-[10px] font-bold uppercase tracking-[0.34em] text-slate-500">
-                CURRENT BALANCE
-              </span>
-              <div className="text-[2.5rem] font-semibold leading-none tracking-[-0.06em] text-slate-900 sm:text-[3rem]">
-                {formatCurrency(totalBalance)}
-              </div>
-            </div>
-            <div className="max-w-[14rem] text-sm leading-relaxed text-slate-500">
+          <div>
+            <div className="font-h2 text-h2 text-primary">{formatCurrency(totalBalance)}</div>
+            <div className="mt-1 text-[12px] font-medium text-slate-500">
               {selectedWallet ? selectedWallet.name : `Across ${wallets.length} wallets`}
             </div>
           </div>
@@ -790,7 +787,7 @@ const Dashboard = () => {
                     </div>
                     <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
                       <div
-                        className="h-full rounded-full bg-primary transition-[width] duration-700 ease-out"
+                        className="h-full rounded-full bg-gradient-to-r from-primary/70 via-primary to-secondary transition-[width] duration-900 ease-out"
                         style={{ width: animateTopCategories ? category.percent : "0%" }}
                       />
                     </div>
