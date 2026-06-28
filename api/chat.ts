@@ -109,6 +109,148 @@ function wantsGoalsSummary(message: string): boolean {
   return normalized.includes('goal') || normalized.includes('goals') || normalized.includes('savings goal') || normalized.includes('savings goals');
 }
 
+function wantsGoalAdvice(message: string): boolean {
+  const normalized = normalizePrompt(message);
+  const hasGoalContext =
+    normalized.includes('goal') ||
+    normalized.includes('goals') ||
+    normalized.includes('savings goal') ||
+    normalized.includes('savings goals');
+  const hasAdviceIntent =
+    normalized.includes('how can i save') ||
+    normalized.includes('how do i save') ||
+    normalized.includes('save for that') ||
+    normalized.includes('save for it') ||
+    normalized.includes('reach') ||
+    normalized.includes('achieve') ||
+    normalized.includes('plan') ||
+    normalized.includes('strategy') ||
+    normalized.includes('tips') ||
+    normalized.includes('advice') ||
+    normalized.includes('monthly') ||
+    normalized.includes('weekly') ||
+    normalized.includes('per month') ||
+    normalized.includes('per week') ||
+    normalized.includes('budget');
+
+  return hasGoalContext && hasAdviceIntent;
+}
+
+function monthsUntil(deadline: string | null): number | null {
+  if (!deadline) return null;
+
+  const target = new Date(deadline);
+  if (Number.isNaN(target.getTime())) return null;
+
+  const now = new Date();
+  const yearMonths = (target.getFullYear() - now.getFullYear()) * 12;
+  const monthDiff = target.getMonth() - now.getMonth();
+  const dayAdjustment = target.getDate() >= now.getDate() ? 1 : 0;
+  const totalMonths = yearMonths + monthDiff + dayAdjustment;
+  return totalMonths > 0 ? totalMonths : null;
+}
+
+function pickRelevantGoal(message: string, goals: GoalContextRow[]): GoalContextRow | null {
+  if (goals.length === 0) return null;
+
+  const normalizedMessage = normalizePrompt(message);
+  const messageTokens = normalizedMessage
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter((token) => token.length > 2);
+
+  let bestGoal: GoalContextRow | null = null;
+  let bestScore = -1;
+
+  for (const goal of goals) {
+    const title = normalizePrompt(goal.title || '');
+    let score = 0;
+
+    for (const token of messageTokens) {
+      if (title.includes(token) || token.includes(title)) {
+        score += 2;
+      } else if (title.split(/\s+/).includes(token)) {
+        score += 1;
+      }
+    }
+
+    const priorityScore = goal.priority ? Number(goal.priority) : 0;
+    const combinedScore = score + priorityScore * 0.01;
+    if (combinedScore > bestScore) {
+      bestScore = combinedScore;
+      bestGoal = goal;
+    }
+  }
+
+  return bestGoal ?? goals[0] ?? null;
+}
+
+function buildGoalAdviceResponse(
+  message: string,
+  goals: GoalContextRow[],
+  summary: ReturnType<typeof summarizeTransactions>
+): string {
+  if (goals.length === 0) {
+    return 'I could not find any savings goals for this account.';
+  }
+
+  const goal = pickRelevantGoal(message, goals);
+  if (!goal) {
+    return 'I could not find any savings goals for this account.';
+  }
+
+  const target = toNumber(goal.target_amount);
+  const saved = toNumber(goal.current_amount);
+  const remaining = Math.max(target - saved, 0);
+  const months = monthsUntil(goal.deadline);
+  const deadlineLabel = goal.deadline ? new Date(goal.deadline).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : null;
+  const monthlyTarget = remaining > 0 ? Math.ceil(remaining / Math.max(months ?? 6, 1)) : 0;
+  const weeklyTarget = monthlyTarget > 0 ? Math.ceil(monthlyTarget / 4.33) : 0;
+  const topExpense = summary.topExpenses[0];
+  const buffer = Math.max(Math.ceil(remaining * 0.1), 100);
+  const surplus = summary.net > 0 ? summary.net : 0;
+  const canCoverWithSurplus = surplus >= monthlyTarget && monthlyTarget > 0;
+
+  const lines = [
+    `Your goal is **${goal.title}**.`,
+    `You have saved ${formatPhp(saved)} of ${formatPhp(target)}${remaining > 0 ? `, so you still need ${formatPhp(remaining)}.` : '.'}`,
+  ];
+
+  if (deadlineLabel && months) {
+    lines.push(`To reach it by ${deadlineLabel}, save about **${formatPhp(monthlyTarget)} per month** or **${formatPhp(weeklyTarget)} per week**.`);
+  } else if (remaining > 0) {
+    lines.push(`A realistic pace is about **${formatPhp(monthlyTarget)} per month** over the next 6 months.`);
+  }
+
+  if (topExpense) {
+    lines.push(`Your biggest recent spending item is **${topExpense.label}** at ${formatPhp(topExpense.amount)}. Cutting that category even a little would help this goal.`);
+  }
+
+  if (summary.net !== 0) {
+    lines.push(
+      summary.net > 0
+        ? `Your recent cash flow is positive, so you can likely fund this goal from surplus if you automate it.`
+        : `Your recent cash flow is negative, so this goal will need either lower spending or a longer timeline.`,
+    );
+  }
+
+  if (remaining > 0) {
+    lines.push(`Try automating a transfer of ${formatPhp(Math.max(monthlyTarget, buffer))} right after payday.`);
+  }
+
+  if (canCoverWithSurplus) {
+    lines.push(`Your current surplus is enough to cover the monthly target if you keep spending steady.`);
+  }
+
+  return [
+    lines.join('\n'),
+    'Best next steps:',
+    `- Save ${formatPhp(Math.max(weeklyTarget, 1))} each week.`,
+    topExpense ? `- Trim ${topExpense.label} first, then move that amount into the goal.` : '- Move any extra income or windfalls directly into the goal.',
+    `- Check progress weekly so you can adjust before the deadline slips.`,
+  ].join('\n');
+}
+
 async function getAiChatColumns(): Promise<Set<string>> {
   const rows = await sql`
     SELECT column_name
@@ -344,6 +486,10 @@ function buildLocalFinanceResponse(
 
   const chartType = getChartType(message);
   const summary = summarizeTransactions(transactions);
+
+  if (wantsGoalAdvice(message)) {
+    return buildGoalAdviceResponse(message, goals, summary);
+  }
 
   if (wantsGoalsSummary(message)) {
     return buildGoalsSummary(goals);
@@ -606,6 +752,8 @@ ${JSON.stringify(transactions.map((transaction) => ({
 CRITICAL DATA OVERRIDE:
 Users frequently edit, delete, or wipe their transactions. ALWAYS base your calculations strictly on the JSON data provided above.
 If the data above says "No recent transactions found.", it means the user has DELETED everything. You MUST proudly state that they have ZERO transactions and ZERO expenses/income. You are FORBIDDEN from quoting, repeating, or remembering any numbers, totals, or data from previous chat history messages. The chat history is a lie if it conflicts with the JSON data above.
+
+If the user asks how to save toward a goal, do not stop at a summary. You MUST calculate the remaining amount, estimate a monthly or weekly savings target if a deadline exists, and give at least one concrete step based on the user's spending pattern.
 
 IMPORTANT INSTRUCTION FOR UI VISUALS:
 If the user explicitly asks for a visual summary, graph, chart, or visual breakdown:
