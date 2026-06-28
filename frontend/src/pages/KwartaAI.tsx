@@ -20,6 +20,7 @@ type ChartType = "income" | "expense";
 interface ParsedAssistantContent {
   chartType: ChartType | null;
   displayContent: string;
+  isRefusal: boolean;
 }
 
 interface ChartDatum {
@@ -40,13 +41,18 @@ function parseAssistantContent(content: string): ParsedAssistantContent {
     chartType = "expense";
   }
 
+  const isRefusal =
+    /can only answer finance-related questions/i.test(content) ||
+    /can only help with finance-related topics/i.test(content) ||
+    /i can only answer finance-related questions/i.test(content);
+
   const displayContent = content
     .replace(/\[CHART:(INCOME|EXPENSE)\]/g, "")
     .replace(/\[CHART\]/g, "")
     .replace(/\s*\[CHART(?::[A-Z]*)?$/g, "")
     .trim();
 
-  return { chartType, displayContent };
+  return { chartType, displayContent, isRefusal };
 }
 
 function buildChartData(transactions: Transaction[], chartType: ChartType): ChartDatum[] {
@@ -374,12 +380,35 @@ const KwartaAI = () => {
                           smart_toy
                         </span>
                       </div>
-                      <div className="w-full rounded-lg rounded-tl-none border border-slate-200 bg-surface-container-low/50 p-4">
+                      <div
+                        className={`w-full rounded-lg rounded-tl-none border p-4 ${
+                          parsed.isRefusal
+                            ? "border-amber-200 bg-amber-50/90 text-amber-950 shadow-sm"
+                            : "border-slate-200 bg-surface-container-low/50"
+                        }`}
+                      >
                         {msg.content === "" && isTyping ? (
                           <div className="flex h-6 items-center gap-1">
                             <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
                             <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
                             <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
+                          </div>
+                        ) : parsed.isRefusal ? (
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <span className="inline-flex items-center rounded-full border border-amber-200 bg-white/80 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-amber-800">
+                                Finance only
+                              </span>
+                              <span className="text-xs font-semibold text-amber-800/80">
+                                Kwarta policy
+                              </span>
+                            </div>
+                            <p className="text-sm leading-relaxed text-amber-950">
+                              {parsed.displayContent}
+                            </p>
+                            <div className="rounded-lg border border-amber-200 bg-white/70 p-3 text-xs text-amber-900">
+                              I can help with budgets, spending, wallet balances, transactions, savings goals, investments, and economics.
+                            </div>
                           </div>
                         ) : (
                           <>

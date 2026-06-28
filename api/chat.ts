@@ -35,6 +35,10 @@ interface GoalContextRow {
   priority: number | null;
 }
 
+interface AccountNameRow {
+  username: string;
+}
+
 interface ColumnRow {
   column_name: string;
 }
@@ -49,7 +53,6 @@ interface StreamDelta {
 
 const sql = neon(process.env.DATABASE_URL!);
 const CHAT_SCHEMA_CACHE_TTL_MS = 5 * 60 * 1000;
-const FINANCE_ONLY_RESPONSE = 'I can only help with finance-related topics like budgeting, expenses, wallet balances, savings goals, investments, and economic questions.';
 
 let chatSchemaValidatedAt = 0;
 let chatSchemaValidationPromise: Promise<void> | null = null;
@@ -70,15 +73,15 @@ function normalizePrompt(message: string): string {
   return message.toLowerCase().replace(/[^a-z0-9\s]/g, ' ');
 }
 
-function shouldRefusePrompt(message: string): boolean {
+function isFinancePrompt(message: string): boolean {
   const normalized = normalizePrompt(message);
-  const financePattern = /\b(finance|financial|budget|budgeting|money|expense|expenses|income|spending|spend|transaction|transactions|wallet|wallets|balance|balances|saving|savings|goal|goals|invest|investment|investments|stock|stocks|crypto|debt|loan|loans|cash\s?flow|net\s?worth|economy|economic|economics|retirement|emergency\s?fund|summary|summarize|monthly\s+summary)\b/;
-  if (financePattern.test(normalized)) {
-    return false;
-  }
+  const financePattern = /\b(finance|financial|budget|budgeting|money|expense|expenses|income|spending|spend|transaction|transactions|wallet|wallets|balance|balances|saving|savings|goal|goals|invest|investment|investments|stock|stocks|crypto|debt|loan|loans|cash\s?flow|net\s?worth|economy|economic|economics|retirement|emergency\s?fund|summary|summarize|monthly\s+summary|inflation|interest|market|markets|asset|assets|liability|liabilities)\b/;
+  return financePattern.test(normalized);
+}
 
-  const clearlyOffTopicPattern = /\b(weather|temperature|forecast|sports|game|score|movie|movies|song|songs|music|lyrics|poem|poetry|joke|funny|recipe|cook|cooking|travel|flight|hotel|translate|translation|code|programming|javascript|typescript|python|bug|debug|homework|essay|history|biology|chemistry|physics)\b/;
-  return clearlyOffTopicPattern.test(normalized);
+function getRefusalMessage(username: string): string {
+  const safeName = username.trim() || 'there';
+  return `Sorry ${safeName}, I can only answer finance-related questions. Ask me about budgets, spending, balances, transactions, savings goals, investments, or economics.`;
 }
 
 function getChartType(message: string): 'income' | 'expense' | null {
@@ -227,6 +230,20 @@ async function storeChatMessage(accId: number, role: 'user' | 'assistant', conte
   `;
 }
 
+async function getAccountUsername(accId: number): Promise<string> {
+  try {
+    const rows = await sql`
+      SELECT username
+      FROM accounts
+      WHERE acc_id = ${accId}
+      LIMIT 1
+    ` as AccountNameRow[];
+    return rows[0]?.username?.trim() || 'there';
+  } catch {
+    return 'there';
+  }
+}
+
 function summarizeTransactions(transactions: TransactionContextRow[]): {
   income: number;
   expense: number;
@@ -315,12 +332,14 @@ function buildRecentSummary(transactions: TransactionContextRow[]): string {
 
 function buildLocalFinanceResponse(
   message: string,
+  username: string,
   transactions: TransactionContextRow[],
   wallets: WalletContextRow[],
   goals: GoalContextRow[]
 ): string {
-  if (shouldRefusePrompt(message)) {
-    return FINANCE_ONLY_RESPONSE;
+  const financePrompt = isFinancePrompt(message);
+  if (!financePrompt) {
+    return getRefusalMessage(username);
   }
 
   const chartType = getChartType(message);
@@ -545,29 +564,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.error('Chat API: error fetching goals:', error instanceof Error ? error.message : String(error));
     }
 
-    const systemPrompt = {
-      role: 'system' as const,
-      content: `You are Kwarta AI, a strict financial assistant bot. You must ONLY answer questions related to finance, budgeting, money management, investments, economics, or the user's transaction data. If the user asks about anything else, politely decline and steer the conversation back to finance. Be helpful, concise, and friendly. You MUST use Markdown for formatting (lists, bolding, etc.).
+    const username = await getAccountUsername(accId);
+    const refusalRequested = !isFinancePrompt(message);
+    const refusalResponse = getRefusalMessage(username);
+    const localFallback = refusalRequested
+      ? refusalResponse
+      : buildLocalFinanceResponse(message, username, transactions, wallets, goals);
+
+    if (refusalRequested) {
+      await storeChatMessage(accId, 'assistant', refusalResponse);
+      await streamFinalResponse(res, refusalResponse);
+      return;
+    }
+
+    const apiKey = process.env.DEEPSEEK_API_KEY?.replace(/^"|"$/g, '') || null;
+    if (apiKey) {
+      const systemPrompt = {
+        role: 'system' as const,
+        content: `You are Kwarta AI, a strict financial assistant bot. You must ONLY answer questions related to finance, budgeting, money management, investments, economics, or the user's transaction data. If the user asks about anything else, politely decline and steer the conversation back to finance. Be helpful, concise, and friendly. You MUST use Markdown for formatting (lists, bolding, etc.).
 
 Here is the user's REAL-TIME wallet data (this is the AUTHORITATIVE source for balances):
 ${JSON.stringify(wallets.map((wallet) => ({
-        name: wallet.name,
-        type: wallet.type,
-        initial_balance: wallet.initial_balance,
-        current_balance: wallet.current_balance,
-        status: wallet.status,
-      })))}
+          name: wallet.name,
+          type: wallet.type,
+          initial_balance: wallet.initial_balance,
+          current_balance: wallet.current_balance,
+          status: wallet.status,
+        })))}
 
 IMPORTANT: Each wallet has an "initial_balance" (the starting amount when created) and a "current_balance" (initial + all income/transfers in - all expenses/transfers out). When the user asks "what is my balance for X wallet?", ALWAYS use the "current_balance" field from the wallet data above. Do NOT try to manually calculate it from transactions; the current_balance already includes the initial balance and all transactions.
 
 Here is the user's REAL-TIME transaction data (recent activity):
 ${JSON.stringify(transactions.map((transaction) => ({
-        date: transaction.dateoftrans,
-        type: transaction.type,
-        amount: transaction.amount,
-        desc: transaction.description,
-        wallet: transaction.wallet_type,
-      })))}
+          date: transaction.dateoftrans,
+          type: transaction.type,
+          amount: transaction.amount,
+          desc: transaction.description,
+          wallet: transaction.wallet_type,
+        })))}
 
 CRITICAL DATA OVERRIDE:
 Users frequently edit, delete, or wipe their transactions. ALWAYS base your calculations strictly on the JSON data provided above.
@@ -581,14 +615,14 @@ If the user explicitly asks for a visual summary, graph, chart, or visual breakd
 
 Here is the user's SAVINGS GOALS data (SECONDARY context - only use when goals are explicitly asked about):
 ${JSON.stringify(goals.map((goal) => ({
-        title: goal.title,
-        target: goal.target_amount,
-        saved: goal.current_amount,
-        progress: toNumber(goal.target_amount) > 0 ? `${((toNumber(goal.current_amount) / toNumber(goal.target_amount)) * 100).toFixed(1)}%` : '0%',
-        deadline: goal.deadline,
-        category: goal.category,
-        priority: goal.priority,
-      })))}
+          title: goal.title,
+          target: goal.target_amount,
+          saved: goal.current_amount,
+          progress: toNumber(goal.target_amount) > 0 ? `${((toNumber(goal.current_amount) / toNumber(goal.target_amount)) * 100).toFixed(1)}%` : '0%',
+          deadline: goal.deadline,
+          category: goal.category,
+          priority: goal.priority,
+        })))}
 
 QUERY TYPE ROUTING - follow these rules strictly:
 1. "Monthly Summary" or "summary" -> Focus ONLY on TRANSACTION data: total income, total expenses, net cash flow, spending categories, and wallet balances. Do NOT talk about savings goals unless the user specifically mentions them.
@@ -598,12 +632,8 @@ QUERY TYPE ROUTING - follow these rules strictly:
 5. "Budget Advice" or "Savings Tips" -> Give general budgeting advice. You may briefly reference goals if relevant, but focus on transaction patterns.
 6. "My goals" or "goals" or "savings goals" -> ONLY THEN provide a detailed goals breakdown with progress, deadlines, and savings advice.
 7. Any other finance question -> Use the most relevant data source (transactions, wallets, or goals) based on context.`,
-    };
+      };
 
-    const apiKey = process.env.DEEPSEEK_API_KEY?.replace(/^"|"$/g, '') || null;
-    const localFallback = buildLocalFinanceResponse(message, transactions, wallets, goals);
-
-    if (apiKey) {
       const providerOk = await attemptProviderResponse(apiKey, systemPrompt, message, accId, res);
       if (providerOk) {
         return;
