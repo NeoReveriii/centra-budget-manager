@@ -1,10 +1,12 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
   useChatHistory,
   useClearChatHistory,
+  useTransactions,
   useWallets,
+  type Transaction,
 } from "@/hooks/use-budget-data";
 import { getAccessToken } from "../lib/auth-client";
 
@@ -12,6 +14,194 @@ interface ChatMessage {
   id: string;
   sender: "ai" | "user";
   content: string;
+}
+
+type ChartType = "income" | "expense";
+
+interface ParsedAssistantContent {
+  chartType: ChartType | null;
+  displayContent: string;
+}
+
+interface ChartDatum {
+  label: string;
+  amount: number;
+}
+
+const currencyFormatter = new Intl.NumberFormat(undefined, {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+function parseAssistantContent(content: string): ParsedAssistantContent {
+  let chartType: ChartType | null = null;
+  if (content.includes("[CHART:INCOME]")) {
+    chartType = "income";
+  } else if (content.includes("[CHART:EXPENSE]") || content.includes("[CHART]")) {
+    chartType = "expense";
+  }
+
+  const displayContent = content
+    .replace(/\[CHART:(INCOME|EXPENSE)\]/g, "")
+    .replace(/\[CHART\]/g, "")
+    .replace(/\s*\[CHART(?::[A-Z]*)?$/g, "")
+    .trim();
+
+  return { chartType, displayContent };
+}
+
+function buildChartData(transactions: Transaction[], chartType: ChartType): ChartDatum[] {
+  const filtered = transactions.filter(
+    (transaction) => transaction.type.toLowerCase() === chartType,
+  );
+  const source = filtered.length > 0 ? filtered : transactions;
+  const totals = new Map<string, number>();
+
+  source.forEach((transaction) => {
+    const label = transaction.description?.trim() || "Other";
+    const amount = Number(transaction.amount || 0);
+    totals.set(label, (totals.get(label) || 0) + amount);
+  });
+
+  return Array.from(totals.entries())
+    .map(([label, amount]) => ({ label, amount }))
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 6);
+}
+
+function polarToCartesian(cx: number, cy: number, radius: number, angle: number) {
+  const radians = ((angle - 90) * Math.PI) / 180;
+  return {
+    x: cx + radius * Math.cos(radians),
+    y: cy + radius * Math.sin(radians),
+  };
+}
+
+function buildArcPath(startAngle: number, endAngle: number, radius: number) {
+  const start = polarToCartesian(50, 50, radius, endAngle);
+  const end = polarToCartesian(50, 50, radius, startAngle);
+  const largeArcFlag = endAngle - startAngle > 180 ? 1 : 0;
+  return `M 50 50 L ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 0 ${end.x} ${end.y} Z`;
+}
+
+function ChatVisualization({
+  chartType,
+  transactions,
+}: {
+  chartType: ChartType;
+  transactions: Transaction[];
+}) {
+  const data = useMemo(
+    () => buildChartData(transactions, chartType),
+    [transactions, chartType],
+  );
+
+  const total = useMemo(
+    () => data.reduce((sum, item) => sum + item.amount, 0),
+    [data],
+  );
+
+  const palette = ["#0f766e", "#14b8a6", "#f59e0b", "#ef4444", "#334155", "#84cc16"];
+  const title = chartType === "income" ? "Income Visual" : "Expense Visual";
+
+  if (data.length === 0 || total <= 0) {
+    return (
+      <div className="mt-4 rounded-xl border border-dashed border-slate-300 bg-white/70 p-4 text-sm text-slate-500">
+        No transaction data to visualize yet.
+      </div>
+    );
+  }
+
+  let runningAngle = 0;
+
+  return (
+    <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-3">
+        <div>
+          <p className="font-label-caps text-[10px] uppercase tracking-[0.25em] text-slate-500">
+            {title}
+          </p>
+          <p className="text-sm font-semibold text-primary">
+            Total {chartType}: {currencyFormatter.format(total)}
+          </p>
+        </div>
+        <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+          Live data
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-4 md:grid-cols-[180px_minmax(0,1fr)] md:items-center">
+        <div className="mx-auto h-40 w-40">
+          <svg viewBox="0 0 100 100" className="h-full w-full drop-shadow-sm">
+            {data.map((item, index) => {
+              const sliceAngle = total > 0 ? (item.amount / total) * 360 : 0;
+              const startAngle = runningAngle;
+              const endAngle = runningAngle + sliceAngle;
+              runningAngle = endAngle;
+
+              return (
+                <path
+                  key={`${item.label}-${index}`}
+                  d={buildArcPath(startAngle, endAngle, 46)}
+                  fill={palette[index % palette.length]}
+                  stroke="#ffffff"
+                  strokeWidth="1.5"
+                />
+              );
+            })}
+            <circle cx="50" cy="50" r="24" fill="white" />
+            <text
+              x="50"
+              y="47"
+              textAnchor="middle"
+              className="fill-slate-500 text-[6px] uppercase tracking-[0.2em]"
+            >
+              {chartType}
+            </text>
+            <text
+              x="50"
+              y="56"
+              textAnchor="middle"
+              className="fill-slate-900 text-[8px] font-semibold"
+            >
+              {data.length}
+            </text>
+          </svg>
+        </div>
+
+        <div className="space-y-3">
+          {data.map((item, index) => {
+            const percent = total > 0 ? Math.round((item.amount / total) * 100) : 0;
+            return (
+              <div key={`${item.label}-${index}`} className="space-y-1.5">
+                <div className="flex items-center justify-between gap-3 text-xs">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span
+                      className="h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: palette[index % palette.length] }}
+                    />
+                    <span className="truncate font-semibold text-slate-700">{item.label}</span>
+                  </div>
+                  <span className="shrink-0 font-mono text-slate-500">
+                    {currencyFormatter.format(item.amount)}
+                  </span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${percent}%`,
+                      backgroundColor: palette[index % palette.length],
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 const KwartaAI = () => {
@@ -24,14 +214,15 @@ const KwartaAI = () => {
   const [historyHydrated, setHistoryHydrated] = useState(false);
 
   const { data: wallets = [], isLoading: walletsLoading } = useWallets();
+  const { data: transactions = [], isLoading: transactionsLoading } = useTransactions();
   const { data: history, isLoading: historyLoading } = useChatHistory();
   const clearChat = useClearChatHistory();
-  const isLoading = walletsLoading || historyLoading;
+  const isLoading = walletsLoading || transactionsLoading || historyLoading;
 
   const totalBalance = useMemo(
     () =>
       wallets.reduce(
-        (sum, w) => sum + parseFloat(w.calculated_balance || "0"),
+        (sum, wallet) => sum + parseFloat(wallet.calculated_balance || "0"),
         0,
       ),
     [wallets],
@@ -44,12 +235,15 @@ const KwartaAI = () => {
     let savingsTotal = 0;
     let eWalletTotal = 0;
     let cashTotal = 0;
-    wallets.forEach((w) => {
-      const bal = parseFloat(w.calculated_balance || "0");
-      if (w.type === "Bank Account" || w.type === "Investment")
-        savingsTotal += bal;
-      else if (w.type === "E-Wallet") eWalletTotal += bal;
-      else cashTotal += bal;
+    wallets.forEach((wallet) => {
+      const balance = parseFloat(wallet.calculated_balance || "0");
+      if (wallet.type === "Bank Account" || wallet.type === "Investment") {
+        savingsTotal += balance;
+      } else if (wallet.type === "E-Wallet") {
+        eWalletTotal += balance;
+      } else {
+        cashTotal += balance;
+      }
     });
     return [
       {
@@ -74,8 +268,8 @@ const KwartaAI = () => {
     if (historyLoading) return;
     if (history && history.length > 0) {
       setMessages(
-        history.map((msg, i) => ({
-          id: msg.created_at || `hist-${i}`,
+        history.map((msg, index) => ({
+          id: msg.created_at || `hist-${index}`,
           sender: (msg.role === "user" ? "user" : "ai") as "user" | "ai",
           content: msg.content,
         })),
@@ -108,7 +302,7 @@ const KwartaAI = () => {
           content: "History cleared. How can I help you today?",
         },
       ]);
-    } catch (e) {
+    } catch {
       alert("Failed to clear history");
     }
   }
@@ -120,14 +314,13 @@ const KwartaAI = () => {
     const userMsg = inputValue.trim();
     setInputValue("");
 
-    // Optimistic UI
     const newUserMsgId = Date.now().toString();
     const newAiMsgId = (Date.now() + 1).toString();
 
     setMessages((prev) => [
       ...prev,
       { id: newUserMsgId, sender: "user", content: userMsg },
-      { id: newAiMsgId, sender: "ai", content: "" }, // Placeholder for streaming
+      { id: newAiMsgId, sender: "ai", content: "" },
     ]);
 
     setIsTyping(true);
@@ -161,32 +354,33 @@ const KwartaAI = () => {
           if (line.startsWith("data: ") && line !== "data: [DONE]") {
             try {
               const parsed = JSON.parse(line.slice(6));
-              if (parsed.choices[0].delta.content) {
-                aiText += parsed.choices[0].delta.content;
-                // Update the placeholder AI message
+              const content = parsed.choices?.[0]?.delta?.content;
+              if (content) {
+                aiText += content;
                 setMessages((prev) =>
-                  prev.map((m) =>
-                    m.id === newAiMsgId ? { ...m, content: aiText } : m,
+                  prev.map((message) =>
+                    message.id === newAiMsgId
+                      ? { ...message, content: aiText }
+                      : message,
                   ),
                 );
               }
-            } catch (err) {
-              // Ignore parse errors from partial chunks
+            } catch {
+              // Ignore parse errors from partial chunks.
             }
           }
         }
       }
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       setMessages((prev) =>
-        prev.map((m) =>
-          m.id === newAiMsgId
+        prev.map((message) =>
+          message.id === newAiMsgId
             ? {
-                ...m,
-                content:
-                  "Error communicating with Kwarta AI. Please try again.",
+                ...message,
+                content: "Error communicating with Kwarta AI. Please try again.",
               }
-            : m,
+            : message,
         ),
       );
     } finally {
@@ -196,31 +390,28 @@ const KwartaAI = () => {
 
   return (
     <div className="grid grid-cols-12 gap-gutter animate-fade-in pb-10">
-      {/* Strategy Overview Header */}
       <section className="col-span-12 mb-4">
         <div className="flex items-end justify-between border-b-2 border-primary-container pb-4">
           <div>
-            <span className="font-label-caps text-secondary uppercase mb-1 block">
+            <span className="mb-1 block font-label-caps uppercase text-secondary">
               AI Financial Advisor
             </span>
             <h2 className="font-h1 text-h1 text-primary">Strategy Overview</h2>
           </div>
           <div className="text-right">
             <p className="font-label-caps text-slate-500">LIVE SYNC</p>
-            <p className="font-numeric-data text-on-surface flex items-center justify-end gap-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <p className="font-numeric-data flex items-center justify-end gap-1 text-on-surface">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               Connected
             </p>
           </div>
         </div>
       </section>
 
-      {/* Column 1: Financial Vitals */}
-      <div className="col-span-12 lg:col-span-4 space-y-gutter">
-        {/* Net Worth Card */}
-        <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
-          <div className="flex justify-between items-start mb-4">
-            <span className="font-label-caps text-slate-500 uppercase">
+      <div className="col-span-12 space-y-gutter lg:col-span-4">
+        <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mb-4 flex items-start justify-between">
+            <span className="font-label-caps uppercase text-slate-500">
               Total Balance
             </span>
             <span className="material-symbols-outlined text-emerald-600">
@@ -228,10 +419,10 @@ const KwartaAI = () => {
             </span>
           </div>
           {isLoading ? (
-            <div className="h-12 bg-slate-100 animate-pulse rounded-lg w-3/4 mb-4" />
+            <div className="mb-4 h-12 w-3/4 rounded-lg bg-slate-100 animate-pulse" />
           ) : (
-            <p className="text-display font-display text-primary tracking-tighter">
-              ₱
+            <p className="font-display text-display tracking-tighter text-primary">
+              PHP
               {totalBalance.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
@@ -239,27 +430,26 @@ const KwartaAI = () => {
             </p>
           )}
           <div className="mt-4 flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold">
+            <span className="rounded-full bg-secondary-container px-2 py-0.5 text-[10px] font-bold text-on-secondary-container">
               Secure Data
             </span>
-            <span className="text-slate-400 text-xs font-body-sm">
+            <span className="text-xs font-body-sm text-slate-400">
               Across all active wallets
             </span>
           </div>
         </div>
 
-        {/* Asset Distribution */}
-        <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
-          <h3 className="font-h3 text-h3 text-on-surface mb-4">
+        <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+          <h3 className="mb-4 font-h3 text-h3 text-on-surface">
             Budget Allocation
           </h3>
           <div className="space-y-4">
             {isLoading ? (
               <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
+                {[1, 2, 3].map((index) => (
                   <div
-                    key={i}
-                    className="h-6 bg-slate-100 animate-pulse rounded w-full"
+                    key={index}
+                    className="h-6 w-full rounded bg-slate-100 animate-pulse"
                   />
                 ))}
               </div>
@@ -270,9 +460,9 @@ const KwartaAI = () => {
                     <span>{item.label}</span>
                     <span>{item.percent}%</span>
                   </div>
-                  <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                     <div
-                      className={`h-full ${item.color} rounded-full transition-all duration-500`}
+                      className={`h-full rounded-full transition-all duration-500 ${item.color}`}
                       style={{ width: `${item.percent}%` }}
                     />
                   </div>
@@ -282,18 +472,17 @@ const KwartaAI = () => {
           </div>
         </div>
 
-        {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-4">
-          <button className="flex flex-col items-center justify-center p-4 bg-white border border-slate-200 rounded-lg hover:border-primary-container hover:bg-emerald-50 transition-all group cursor-pointer">
-            <span className="material-symbols-outlined text-emerald-900 mb-2">
+          <button className="group flex cursor-pointer flex-col items-center justify-center rounded-lg border border-slate-200 bg-white p-4 transition-all hover:border-primary-container hover:bg-emerald-50">
+            <span className="material-symbols-outlined mb-2 text-emerald-900">
               account_balance
             </span>
             <span className="text-xs font-bold uppercase text-slate-600 group-hover:text-emerald-900">
               Transfer
             </span>
           </button>
-          <button className="flex flex-col items-center justify-center p-4 bg-white border border-slate-200 rounded-lg hover:border-primary-container hover:bg-emerald-50 transition-all group cursor-pointer">
-            <span className="material-symbols-outlined text-emerald-900 mb-2">
+          <button className="group flex cursor-pointer flex-col items-center justify-center rounded-lg border border-slate-200 bg-white p-4 transition-all hover:border-primary-container hover:bg-emerald-50">
+            <span className="material-symbols-outlined mb-2 text-emerald-900">
               description
             </span>
             <span className="text-xs font-bold uppercase text-slate-600 group-hover:text-emerald-900">
@@ -303,12 +492,10 @@ const KwartaAI = () => {
         </div>
       </div>
 
-      {/* Column 2: Kwarta AI Chat */}
-      <div className="col-span-12 lg:col-span-8 flex flex-col h-[700px] bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-        {/* Chat Header */}
-        <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-surface-container-low/30">
+      <div className="col-span-12 flex h-[700px] flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm lg:col-span-8">
+        <div className="flex items-center justify-between border-b border-slate-100 bg-surface-container-low/30 p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container">
               <span
                 className="material-symbols-outlined text-white"
                 style={{ fontVariationSettings: "'FILL' 1" }}
@@ -317,12 +504,12 @@ const KwartaAI = () => {
               </span>
             </div>
             <div>
-              <h4 className="font-h3 text-sm text-primary font-bold">
+              <h4 className="text-sm font-bold text-primary font-h3">
                 Kwarta AI Elite
               </h4>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] font-bold uppercase tracking-tighter text-slate-500">
                   Secure Financial Intelligence Link
                 </span>
               </div>
@@ -332,99 +519,112 @@ const KwartaAI = () => {
             <button
               onClick={handleClearHistory}
               title="Clear History"
-              className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 cursor-pointer flex items-center"
+              className="flex cursor-pointer items-center rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100"
             >
               <span className="material-symbols-outlined">delete_sweep</span>
             </button>
-            <button className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 cursor-pointer">
+            <button className="cursor-pointer rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100">
               <span className="material-symbols-outlined">more_vert</span>
             </button>
           </div>
         </div>
 
-        {/* Chat Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/20">
+        <div className="flex-1 space-y-6 overflow-y-auto bg-slate-50/20 p-6">
           {isLoading ? (
-            <div className="flex items-center justify-center h-full">
-              <span className="material-symbols-outlined animate-spin text-[32px] text-primary">
+            <div className="flex h-full items-center justify-center">
+              <span className="material-symbols-outlined text-[32px] text-primary animate-spin">
                 progress_activity
               </span>
             </div>
           ) : (
-            messages.map((msg) =>
-              msg.sender === "ai" ? (
-                <div key={msg.id} className="flex gap-4 max-w-[90%]">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
-                    <span
-                      className="material-symbols-outlined text-white text-sm"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      smart_toy
-                    </span>
+            messages.map((msg) => {
+              if (msg.sender === "ai") {
+                const parsed = parseAssistantContent(msg.content);
+                return (
+                  <div key={msg.id} className="flex max-w-[90%] gap-4">
+                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary-container">
+                      <span
+                        className="material-symbols-outlined text-sm text-white"
+                        style={{ fontVariationSettings: "'FILL' 1" }}
+                      >
+                        smart_toy
+                      </span>
+                    </div>
+                    <div className="w-full rounded-lg rounded-tl-none border border-slate-200 bg-surface-container-low/50 p-4">
+                      {msg.content === "" && isTyping ? (
+                        <div className="flex h-6 items-center gap-1">
+                          <span
+                            className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce"
+                            style={{ animationDelay: "0ms" }}
+                          />
+                          <span
+                            className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce"
+                            style={{ animationDelay: "150ms" }}
+                          />
+                          <span
+                            className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce"
+                            style={{ animationDelay: "300ms" }}
+                          />
+                        </div>
+                      ) : (
+                        <>
+                          {parsed.displayContent ? (
+                            <div className="prose prose-sm max-w-none prose-slate prose-p:leading-relaxed prose-table:overflow-hidden prose-table:rounded-lg prose-table:border prose-table:border-slate-200 prose-td:p-3 prose-th:bg-slate-50 prose-th:p-3 prose-th:text-xs prose-th:uppercase prose-th:tracking-wider">
+                              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                {parsed.displayContent}
+                              </ReactMarkdown>
+                            </div>
+                          ) : null}
+                          {parsed.chartType ? (
+                            <ChatVisualization
+                              chartType={parsed.chartType}
+                              transactions={transactions}
+                            />
+                          ) : null}
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <div className="bg-surface-container-low/50 border border-slate-200 p-4 rounded-lg rounded-tl-none w-full">
-                    {msg.content === "" && isTyping ? (
-                      <div className="flex items-center gap-1 h-6">
-                        <span
-                          className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce"
-                          style={{ animationDelay: "0ms" }}
-                        />
-                        <span
-                          className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce"
-                          style={{ animationDelay: "150ms" }}
-                        />
-                        <span
-                          className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce"
-                          style={{ animationDelay: "300ms" }}
-                        />
-                      </div>
-                    ) : (
-                      <div className="prose prose-sm prose-slate max-w-none prose-p:leading-relaxed prose-th:bg-slate-50 prose-th:p-3 prose-th:text-xs prose-th:uppercase prose-th:tracking-wider prose-td:p-3 prose-table:overflow-hidden prose-table:rounded-lg prose-table:border prose-table:border-slate-200">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {msg.content}
-                        </ReactMarkdown>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : (
+                );
+              }
+
+              return (
                 <div
                   key={msg.id}
-                  className="flex gap-4 max-w-[85%] ml-auto flex-row-reverse"
+                  className="ml-auto flex max-w-[85%] flex-row-reverse gap-4"
                 >
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
+                  <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
                     Me
                   </div>
-                  <div className="border border-primary-container bg-white p-4 rounded-lg rounded-tr-none">
+                  <div className="rounded-lg rounded-tr-none border border-primary-container bg-white p-4">
                     <p className="font-body-sm leading-relaxed text-primary font-medium italic">
                       "{msg.content}"
                     </p>
                   </div>
                 </div>
-              ),
-            )
+              );
+            })
           )}
           <div ref={chatEndRef} />
         </div>
 
-        {/* Chat Input */}
         <form
           onSubmit={handleSendMessage}
-          className="p-6 border-t border-slate-100 bg-white"
+          className="border-t border-slate-100 bg-white p-6"
         >
           <div
             className={`relative flex items-center transition-shadow duration-200 ${
-              inputFocused ? "shadow-lg shadow-emerald-900/5 rounded-xl" : ""
+              inputFocused ? "rounded-xl shadow-lg shadow-emerald-900/5" : ""
             }`}
           >
             <button
               type="button"
-              className="absolute left-4 text-slate-400 hover:text-primary transition-colors cursor-pointer"
+              className="absolute left-4 cursor-pointer text-slate-400 transition-colors hover:text-primary"
             >
               <span className="material-symbols-outlined">attach_file</span>
             </button>
             <input
-              className="w-full pl-12 pr-28 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent focus:outline-none font-body-sm text-on-surface"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-4 pr-28 pl-12 font-body-sm text-on-surface focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Ask about your budget, savings goals, or spending trends..."
               type="text"
               value={inputValue}
@@ -437,7 +637,7 @@ const KwartaAI = () => {
               <button
                 type="submit"
                 disabled={isTyping || !inputValue.trim()}
-                className="bg-primary-container text-white px-4 py-2.5 rounded-lg font-bold text-xs uppercase flex items-center gap-2 hover:opacity-90 transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex cursor-pointer items-center gap-2 rounded-lg bg-primary-container px-4 py-2.5 text-xs font-bold uppercase text-white transition-all hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <span className="hidden sm:inline">Send</span>
                 <span className="material-symbols-outlined text-sm">send</span>
@@ -445,13 +645,13 @@ const KwartaAI = () => {
             </div>
           </div>
           <div className="mt-3 flex justify-center gap-6">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+            <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
               <span className="material-symbols-outlined text-xs">
                 verified_user
               </span>{" "}
               Encrypted
             </span>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+            <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
               <span className="material-symbols-outlined text-xs">gavel</span>{" "}
               Compliance Approved
             </span>
