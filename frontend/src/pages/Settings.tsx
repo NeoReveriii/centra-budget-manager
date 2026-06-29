@@ -7,7 +7,7 @@ const Settings = () => {
   return (
     <div className="max-w-[800px] w-full mx-auto animate-fade-in">
       <header className="mb-lg">
-        <h2 className="font-h1 text-h1 text-primary">Settings</h2>
+        <h2 className="font-h1 text-h1 text-on-surface">Settings</h2>
         <p className="font-body-md text-on-surface-variant mt-2">
           Manage your account preferences and system configurations.
         </p>

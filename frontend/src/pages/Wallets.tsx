@@ -151,16 +151,16 @@ const Wallets = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowTransferModal(true)}
-            className="flex items-center gap-2 border border-outline-variant text-primary px-6 py-3 rounded-xl font-bold text-body-sm hover:bg-slate-50 active:scale-[0.98] transition-all shadow-sm cursor-pointer whitespace-nowrap"
+            className="flex items-center gap-2 border border-outline-variant text-primary px-6 py-3 rounded-xl font-bold text-body-sm hover:bg-slate-50 hover:opacity-80 active:scale-[0.98] transition-all shadow-sm cursor-pointer whitespace-nowrap"
           >
             <span className="material-symbols-outlined text-lg">sync_alt</span>
             Transfer
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="bg-primary text-white font-body-sm font-bold px-6 py-3 rounded-xl flex items-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-sm cursor-pointer whitespace-nowrap"
+            className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-body-sm hover:opacity-90 active:scale-[0.98] transition-all shadow-sm flex items-center gap-2 cursor-pointer whitespace-nowrap"
           >
-            <span className="material-symbols-outlined text-sm">add</span>
+            <span className="material-symbols-outlined text-[20px]">add_circle</span>
             Add Wallet
           </button>
         </div>
@@ -345,19 +345,24 @@ const Wallets = () => {
                   <label className="block text-label-caps font-label-caps text-slate-500 uppercase mb-2">
                     Type
                   </label>
-                  <select
-                    value={newWallet.type}
-                    onChange={(e) =>
-                      setNewWallet({ ...newWallet, type: e.target.value })
-                    }
-                    className="w-full px-4 py-3 bg-slate-50 border border-outline-variant rounded-xl text-body-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer"
-                  >
-                    <option>E-Wallet</option>
-                    <option>Bank Account</option>
-                    <option>Cash</option>
-                    <option>Credit Card</option>
-                    <option>Investment</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={newWallet.type}
+                      onChange={(e) =>
+                        setNewWallet({ ...newWallet, type: e.target.value })
+                      }
+                      className="w-full px-4 py-3 bg-slate-50 border border-outline-variant rounded-xl text-body-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer appearance-none pr-10"
+                    >
+                      <option>E-Wallet</option>
+                      <option>Bank Account</option>
+                      <option>Cash</option>
+                      <option>Credit Card</option>
+                      <option>Investment</option>
+                    </select>
+                    <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[20px]">
+                      expand_more
+                    </span>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-label-caps font-label-caps text-slate-500 uppercase mb-2">
@@ -373,7 +378,7 @@ const Wallets = () => {
                         initial_balance: e.target.value,
                       })
                     }
-                    className="w-full px-4 py-3 bg-slate-50 border border-outline-variant rounded-xl text-body-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                    className="w-full px-4 py-3 bg-slate-50 border border-outline-variant rounded-xl text-body-sm focus:ring-2 focus:ring-primary/20 outline-none [appearance:_textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     placeholder="0.00"
                   />
                 </div>

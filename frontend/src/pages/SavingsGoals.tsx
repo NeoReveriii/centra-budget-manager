@@ -170,7 +170,7 @@ const SavingsGoals: React.FC = () => {
       {/* ── Header ─────────────────────────────────────────────── */}
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
-          <h1 className="font-h1 text-h1 text-primary">Savings Goals</h1>
+          <h1 className="font-h1 text-h1 text-on-surface">Savings Goals</h1>
           <p className="font-body-md text-body-md text-on-surface-variant mt-1">
             Track your financial milestones and stay on target.
           </p>

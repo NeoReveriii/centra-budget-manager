@@ -216,7 +216,7 @@ const Transactions = () => {
       {/* HEADER */}
       <header className="flex justify-between items-center">
         <div>
-          <h2 className="font-h1 text-h1 text-primary">Transactions</h2>
+          <h2 className="font-h1 text-h1 text-on-surface">Transactions</h2>
           <p className="font-body-sm text-body-sm text-on-surface-variant">
             Manage and monitor your financial activity across all accounts.
           </p>
