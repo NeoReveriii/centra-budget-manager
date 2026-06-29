@@ -41,7 +41,6 @@ type AiConnectionState = "checking" | "online" | "offline";
 
 interface AiAvailability {
   state: AiConnectionState;
-  label: string;
 }
 const currencyFormatter = new Intl.NumberFormat(undefined, {
   minimumFractionDigits: 2,
@@ -274,7 +273,6 @@ const KwartaAI = () => {
   );
   const [aiAvailability, setAiAvailability] = useState<AiAvailability>({
     state: "checking",
-    label: "Checking AI availability...",
   });
 
   const { data: transactions = [], isLoading: transactionsLoading } = useTransactions();
@@ -323,7 +321,7 @@ const KwartaAI = () => {
     async function loadAiAvailability() {
       if (!isBrowserOnline) {
         if (!cancelled) {
-          setAiAvailability({ state: "offline", label: "Browser offline" });
+          setAiAvailability({ state: "offline" });
         }
         return;
       }
@@ -345,20 +343,18 @@ const KwartaAI = () => {
         if (!cancelled) {
           setAiAvailability({
             state: online ? "online" : "offline",
-            label: online ? "Provider available" : "Provider fallback active",
           });
         }
       } catch {
         if (!cancelled) {
           setAiAvailability({
             state: "offline",
-            label: "Provider fallback active",
           });
         }
       }
     }
 
-    setAiAvailability({ state: "checking", label: "Checking AI availability..." });
+    setAiAvailability({ state: "checking" });
     void loadAiAvailability();
 
     return () => {
@@ -501,11 +497,11 @@ const KwartaAI = () => {
         <div className="flex h-[calc(100dvh-8rem)] min-h-[640px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-slate-100 bg-surface-container-low/30 px-4 py-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container">
+              <div className="flex h-10 w-10 items-center justify-center">
                 <KwartaAvatar />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-primary font-h3">Kwarta AI Elite</h4>
+                <h4 className="text-sm font-bold text-primary font-h3">Kwarta AI</h4>
                 <div className="flex items-center gap-1.5">
                   <span
                     className={`h-2 w-2 rounded-full ${
@@ -526,15 +522,12 @@ const KwartaAI = () => {
                     }`}
                   >
                     {aiAvailability.state === "online"
-                      ? "AI online"
+                      ? "Online"
                       : aiAvailability.state === "checking"
-                        ? "Checking AI..."
-                        : "AI offline"}
+                        ? "Checking..."
+                        : "Offline"}
                   </span>
                 </div>
-                <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  {aiAvailability.label}
-                </p>
               </div>
             </div>
 
