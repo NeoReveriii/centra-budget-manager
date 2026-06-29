@@ -94,13 +94,15 @@ function parseAssistantContent(content: string): ParsedAssistantContent {
     /can only help with finance-related topics/i.test(content) ||
     /i can only answer finance-related questions/i.test(content);
 
+  const isGreeting = /i'm kwarta ai/i.test(content) || /your financial assistant/i.test(content);
+
   const displayContent = content
     .replace(/\[CHART:(INCOME|EXPENSE)\]/g, "")
     .replace(/\[CHART\]/g, "")
     .replace(/\s*\[CHART(?::[A-Z]*)?$/g, "")
     .trim();
 
-  return { chartType, displayContent, isRefusal };
+  return { chartType, displayContent, isRefusal: isRefusal && !isGreeting };
 }
 
 function buildChartData(transactions: Transaction[], chartType: ChartType): ChartDatum[] {
@@ -139,7 +141,7 @@ function buildArcPath(startAngle: number, endAngle: number, radius: number) {
 
 function KwartaAvatar() {
   return (
-    <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-black/5">
+    <div className="relative flex h-8 w-8 items-start justify-center overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-black/5">
       <img
         src="/assets/images/KwartaIcon.png"
         alt="Kwarta AI"
@@ -587,7 +589,7 @@ const KwartaAI = () => {
                   if (msg.sender === "ai") {
                     const parsed = parseAssistantContent(msg.content);
                     return (
-                      <div key={msg.id} className="flex w-full items-end gap-3 pr-4 sm:pr-8">
+                      <div key={msg.id} className="flex w-full items-start gap-3 pr-4 sm:pr-8">
                         <KwartaAvatar />
                         <div
                           className={`min-w-0 w-fit max-w-[80%] rounded-[1.35rem] rounded-tl-md border px-4 py-3 shadow-sm ${
@@ -605,10 +607,10 @@ const KwartaAI = () => {
                           ) : parsed.isRefusal ? (
                             <div className="space-y-3">
                               <div className="flex items-center gap-2">
-                                <span className="inline-flex items-center rounded-full border border-amber-200 bg-white/80 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-amber-800">
+                                <span className="inline-flex items-center rounded-full border border-amber-200 bg-white/80 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-amber-900">
                                   Finance only
                                 </span>
-                                <span className="text-xs font-semibold text-amber-800/80">
+                                <span className="text-xs font-semibold text-amber-900">
                                   Kwarta policy
                                 </span>
                               </div>
@@ -616,9 +618,6 @@ const KwartaAI = () => {
                                 <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                                   {parsed.displayContent}
                                 </ReactMarkdown>
-                              </div>
-                              <div className="rounded-xl border border-amber-200/80 bg-white/70 p-3 text-xs text-amber-900">
-                                I can help with budgets, spending, wallet balances, transactions, savings goals, investments, and economics.
                               </div>
                             </div>
                           ) : (

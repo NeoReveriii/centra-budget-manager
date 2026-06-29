@@ -78,10 +78,21 @@ function normalizePrompt(message: string): string {
   return message.toLowerCase().replace(/[^a-z0-9\s]/g, ' ');
 }
 
+function isPleasantryOrIdentity(message: string): boolean {
+  const normalized = normalizePrompt(message);
+  const pleasantryPattern = /\b(hi|hello|hey|good morning|good afternoon|good evening|how are you|whats your name|what is your name|who are you|your name|tell me about yourself|thanks|thank you|bye|goodbye)\b/;
+  return pleasantryPattern.test(normalized);
+}
+
 function isFinancePrompt(message: string): boolean {
   const normalized = normalizePrompt(message);
-  const financePattern = /\b(finance|financial|budget|budgeting|money|expense|expenses|income|spending|spend|transaction|transactions|wallet|wallets|balance|balances|saving|savings|goal|goals|invest|investment|investments|stock|stocks|crypto|debt|loan|loans|cash\s?flow|net\s?worth|economy|economic|economics|retirement|emergency\s?fund|summary|summarize|monthly\s+summary|inflation|interest|market|markets|asset|assets|liability|liabilities)\b/;
+  const financePattern = /\b(finance|financial|budget|budgeting|money|expense|expenses|income|spending|spend|transaction|transactions|wallet|wallets|balance|balances|saving|savings|goal|goals|invest|investment|investments|stock|stocks|crypto|debt|loan|loans|cash\s?flow|net\s?worth|economy|economic|economics|retirement|emergency\s?fund|summary|summarize|monthly\s+summary|inflation|interest|market|markets|asset|assets|liability|liabilities|can you tell me|tell me|show me|help me|what are|how much|how many|list|my|your|current|recent|latest|total|overall|breakdown|analysis|track|manage|plan|report|status|history|log|record|detail|information|info|data|statistics|stats|overview|summary|spending habits|saving habits|financial health|money management)\b/;
   return financePattern.test(normalized);
+}
+
+function getIdentityResponse(username: string): string {
+  const safeName = username.trim() || 'there';
+  return `Hi ${safeName}! I'm Kwarta AI, your financial assistant. I can help you with budgets, spending, balances, transactions, savings goals, investments, and economics. How can I help you manage your finances today?`;
 }
 
 function getRefusalMessage(username: string): string {
@@ -877,11 +888,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const username = await getAccountUsername(accId);
-    const refusalRequested = !isFinancePrompt(message);
+    const isPleasantry = isPleasantryOrIdentity(message);
+    const refusalRequested = !isFinancePrompt(message) && !isPleasantry;
     const refusalResponse = getRefusalMessage(username);
-    const localFallback = refusalRequested
+    const identityResponse = getIdentityResponse(username);
+    const localFallback = isPleasantry
+      ? identityResponse
+      : refusalRequested
       ? refusalResponse
       : buildLocalFinanceResponse(message, username, transactions, wallets, goals);
+
+    if (isPleasantry) {
+      await storeChatMessage(accId, 'assistant', identityResponse);
+      await streamFinalResponse(res, identityResponse);
+      return;
+    }
 
     if (refusalRequested) {
       await storeChatMessage(accId, 'assistant', refusalResponse);
