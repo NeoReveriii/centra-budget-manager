@@ -685,16 +685,6 @@ const KwartaAI = () => {
                 </button>
               </div>
             </div>
-            <div className="mt-3 flex justify-center gap-6">
-              <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                <span className="material-symbols-outlined text-xs">verified_user</span>
-                Encrypted
-              </span>
-              <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                <span className="material-symbols-outlined text-xs">gavel</span>
-                Compliance Approved
-              </span>
-            </div>
           </form>
         </div>
       </div>
