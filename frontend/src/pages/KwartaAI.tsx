@@ -689,8 +689,8 @@ const KwartaAI = () => {
       }}>
         <DialogContent className="border border-slate-200 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.18)] sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Clear conversation?</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg font-semibold text-slate-900">Clear conversation?</DialogTitle>
+            <DialogDescription className="text-sm text-slate-600">
               This removes the current chat thread from your account and starts a fresh session.
             </DialogDescription>
           </DialogHeader>

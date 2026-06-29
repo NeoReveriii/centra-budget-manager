@@ -57,7 +57,7 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "fixed left-[50%] top-[50%] z-[110] grid w-full max-w-[520px] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-3xl border border-outline-variant/40 bg-surface-container-lowest p-6 shadow-2xl duration-200",
+          "fixed left-[50%] top-[50%] z-[110] grid w-full max-w-[520px] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl duration-200",
           "data-[state=open]:animate-dialog-in",
           className,
         )}
@@ -105,7 +105,7 @@ function DialogTitle({
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("font-h2 text-h2 text-primary", className)}
+      className={cn("text-lg font-semibold text-slate-900", className)}
       {...props}
     />
   );
@@ -118,7 +118,7 @@ function DialogDescription({
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn("text-sm text-on-surface-variant", className)}
+      className={cn("text-sm text-slate-600", className)}
       {...props}
     />
   );

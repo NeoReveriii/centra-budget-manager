@@ -151,14 +151,14 @@ const Wallets = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowTransferModal(true)}
-            className="flex items-center gap-2 border border-outline-variant text-primary px-5 py-2.5 rounded-xl font-bold text-body-sm hover:bg-slate-50 transition-colors cursor-pointer"
+            className="flex items-center gap-2 border border-outline-variant text-primary px-6 py-3 rounded-xl font-bold text-body-sm hover:bg-slate-50 active:scale-[0.98] transition-all shadow-sm cursor-pointer whitespace-nowrap"
           >
             <span className="material-symbols-outlined text-lg">sync_alt</span>
             Transfer
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="bg-primary text-white font-body-sm font-semibold px-6 py-2.5 rounded-xl flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all cursor-pointer"
+            className="bg-primary text-white font-body-sm font-bold px-6 py-3 rounded-xl flex items-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-sm cursor-pointer whitespace-nowrap"
           >
             <span className="material-symbols-outlined text-sm">add</span>
             Add Wallet
@@ -245,7 +245,7 @@ const Wallets = () => {
                   </div>
                   <button
                     onClick={() => setDeleteId(wallet.wallet_id)}
-                    className="text-slate-300 hover:text-error transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
+                    className="text-slate-300 hover:text-error active:scale-[0.98] transition-all cursor-pointer opacity-0 group-hover:opacity-100"
                   >
                     <span className="material-symbols-outlined text-[20px]">
                       delete
@@ -277,11 +277,11 @@ const Wallets = () => {
                       });
                       setShowTransferModal(true);
                     }}
-                    className="py-2.5 border border-slate-200 rounded-lg text-[12px] font-bold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                    className="py-2.5 border border-slate-200 rounded-lg text-[12px] font-bold text-slate-600 hover:bg-slate-50 active:scale-[0.98] transition-all cursor-pointer"
                   >
                     Transfer
                   </button>
-                  <button className="py-2.5 text-[12px] font-bold text-emerald-900 hover:underline transition-all cursor-pointer">
+                  <button className="py-2.5 text-[12px] font-bold text-emerald-900 hover:underline active:scale-[0.98] transition-all cursor-pointer">
                     Details
                   </button>
                 </div>
@@ -292,7 +292,7 @@ const Wallets = () => {
           {/* Add Wallet Card */}
           <button
             onClick={() => setShowAddModal(true)}
-            className="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center gap-3 hover:border-primary hover:bg-emerald-50/30 transition-all cursor-pointer min-h-[280px]"
+            className="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center gap-3 hover:border-primary hover:bg-emerald-50/30 active:scale-[0.98] transition-all cursor-pointer min-h-[280px]"
           >
             <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
               <span className="material-symbols-outlined text-slate-400">
@@ -382,14 +382,14 @@ const Wallets = () => {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="flex-1 py-3 border border-outline-variant rounded-xl font-bold text-body-sm text-slate-600 hover:bg-slate-50 cursor-pointer"
+                  className="flex-1 py-3 border border-outline-variant rounded-xl font-bold text-body-sm text-slate-600 hover:bg-slate-50 active:scale-[0.98] transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={createWalletMutation.isPending}
-                  className="flex-1 py-3 bg-primary text-white rounded-xl font-bold text-body-sm hover:opacity-90 disabled:opacity-50 cursor-pointer"
+                  className="flex-1 py-3 bg-primary text-white rounded-xl font-bold text-body-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
                 >
                   {createWalletMutation.isPending
                     ? "Creating..."
@@ -486,14 +486,14 @@ const Wallets = () => {
                 <button
                   type="button"
                   onClick={() => setShowTransferModal(false)}
-                  className="flex-1 py-3 border border-outline-variant rounded-xl font-bold text-body-sm text-slate-600 hover:bg-slate-50 cursor-pointer"
+                  className="flex-1 py-3 border border-outline-variant rounded-xl font-bold text-body-sm text-slate-600 hover:bg-slate-50 active:scale-[0.98] transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={transferMutation.isPending}
-                  className="flex-1 py-3 bg-primary text-white rounded-xl font-bold text-body-sm hover:opacity-90 disabled:opacity-50 cursor-pointer"
+                  className="flex-1 py-3 bg-primary text-white rounded-xl font-bold text-body-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
                 >
                   {transferMutation.isPending ? "Transferring..." : "Transfer"}
                 </button>
@@ -539,14 +539,14 @@ const Wallets = () => {
                   setDeleteId(null);
                   setDeleteError("");
                 }}
-                className="flex-1 py-3 border border-outline-variant rounded-xl font-bold text-body-sm text-slate-600 hover:bg-slate-50 cursor-pointer"
+                className="flex-1 py-3 border border-outline-variant rounded-xl font-bold text-body-sm text-slate-600 hover:bg-slate-50 active:scale-[0.98] transition-all cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
                 disabled={deleteWalletMutation.isPending}
-                className="flex-1 py-3 bg-error text-white rounded-xl font-bold text-body-sm hover:opacity-90 disabled:opacity-50 cursor-pointer"
+                className="flex-1 py-3 bg-error text-white rounded-xl font-bold text-body-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
               >
                 {deleteWalletMutation.isPending ? "Deleting..." : "Delete"}
               </button>
