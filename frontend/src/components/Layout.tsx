@@ -19,12 +19,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const setTransferModalOpen = useUiStore((s) => s.setTransferModalOpen);
   const setTransferModalFromWalletId = useUiStore((s) => s.setTransferModalFromWalletId);
 
-  const openFabAction = (type: "Income" | "Expense" | "Transfer") => {
+  const openFabAction = (type: "Transaction" | "Transfer") => {
     if (type === "Transfer") {
       setTransferModalFromWalletId("");
       setTransferModalOpen(true);
     } else {
-      setAddModalDefaultType(type);
+      setAddModalDefaultType("Expense");
       setAddModalDefaultWalletId("");
       setAddModalOpen(true);
     }
@@ -63,27 +63,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           aria-hidden={!isFabOpen}
         >
           <button
-            onClick={() => openFabAction("Income")}
+            onClick={() => openFabAction("Transaction")}
             className="group flex items-center gap-3 bg-white border border-outline-variant px-4 py-3 rounded-2xl shadow-xl hover:bg-slate-50 transition-all cursor-pointer whitespace-nowrap"
           >
-            <span className="font-bold text-sm text-emerald-700">
-              Add Income
-            </span>
-            <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <span className="material-symbols-outlined text-[20px]">
-                payments
-              </span>
-            </div>
-          </button>
-          <button
-            onClick={() => openFabAction("Expense")}
-            className="group flex items-center gap-3 bg-white border border-outline-variant px-4 py-3 rounded-2xl shadow-xl hover:bg-slate-50 transition-all cursor-pointer whitespace-nowrap"
-          >
-            <span className="font-bold text-sm text-rose-700">Add Expense</span>
-            <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <span className="material-symbols-outlined text-[20px]">
-                shopping_cart
-              </span>
+            <span className="font-bold text-sm text-primary">Add transaction</span>
+            <div className="w-10 h-10 rounded-xl bg-primary-fixed text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
+              <span className="material-symbols-outlined text-[20px]">add_card</span>
             </div>
           </button>
           <button

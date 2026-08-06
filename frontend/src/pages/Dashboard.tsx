@@ -396,11 +396,6 @@ const Dashboard = () => {
   const [animateTopCategories, setAnimateTopCategories] = useState(false);
   const loading = walletsLoading || transactionsLoading;
   const displayName = formatDisplayName(user?.username);
-  const syncing = walletQuery.isFetching || transactionQuery.isFetching;
-  const updatedAt = Math.max(
-    walletQuery.dataUpdatedAt || 0,
-    transactionQuery.dataUpdatedAt || 0,
-  );
 
   const selectedWallet = useMemo(() => {
     if (selectedWalletId === "all") return null;
@@ -502,10 +497,6 @@ const Dashboard = () => {
   const cashflowDescription = getRangeDescriptor(selectedDateRange);
   const emptyExpenseMessage = getEmptyExpenseMessage(selectedDateRange);
 
-  async function refreshDashboard() {
-    await Promise.all([walletQuery.refetch(), transactionQuery.refetch()]);
-  }
-
   if (loading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
@@ -529,15 +520,8 @@ const Dashboard = () => {
           Dashboard data is unavailable
         </h1>
         <p className="mt-2 text-sm text-slate-500">
-          Your saved data is safe. Check the connection and sync again.
+          Your saved data is safe. The dashboard will reconnect automatically.
         </p>
-        <button
-          type="button"
-          onClick={refreshDashboard}
-          className="mt-6 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-primary-container"
-        >
-          Try again
-        </button>
       </section>
     );
   }
@@ -550,19 +534,6 @@ const Dashboard = () => {
           <p className="mt-1 text-body-sm text-slate-500">
             Viewing {selectedWalletLabel.toLowerCase()}.
           </p>
-          <div className="mt-2 flex items-center gap-2 text-[11px] font-bold tracking-[0.14em] text-secondary">
-            <span
-              className={`h-2 w-2 rounded-full ${syncing ? "animate-pulse bg-amber-500" : "bg-emerald-500"}`}
-            />
-            {syncing
-              ? "SYNCING LIVE DATA"
-              : updatedAt
-                ? `LIVE · UPDATED ${new Date(updatedAt).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}`
-                : "LIVE"}
-          </div>
         </div>
 
         <div className="flex w-full flex-wrap items-center gap-3 md:w-auto">
@@ -624,7 +595,11 @@ const Dashboard = () => {
           <div>
             <div className="font-h2 text-h2 text-primary">{formatCurrency(totalBalance)}</div>
             <div className="mt-1 text-[12px] font-medium text-slate-500">
-              {selectedWallet ? selectedWallet.name : `Across ${wallets.length} wallets`}
+              {selectedWallet
+                ? selectedWallet.name
+                : wallets.length === 0
+                  ? "Held across 0 active wallets"
+                  : "Across " + wallets.length + " active wallets"}
             </div>
           </div>
         </div>

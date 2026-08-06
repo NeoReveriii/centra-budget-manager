@@ -160,7 +160,7 @@ export function AddTransactionModal() {
                 Add Transaction
               </DialogTitle>
               <DialogDescription className="mt-1 text-sm text-slate-500">
-                Record an income or expense and tag it with a category.
+                Add a transaction and categorize it for clearer spending insights.
               </DialogDescription>
             </div>
           </div>

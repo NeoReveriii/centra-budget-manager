@@ -216,11 +216,6 @@ const Wallets = () => {
       )
     : { in: 0, out: 0 };
 
-  const syncing = walletQuery.isFetching || transactionQuery.isFetching;
-  const updatedAt = Math.max(
-    walletQuery.dataUpdatedAt || 0,
-    transactionQuery.dataUpdatedAt || 0,
-  );
 
   function openCreate() {
     setEditingWallet(null);
@@ -313,10 +308,6 @@ const Wallets = () => {
     setTransferModalOpen(true);
   }
 
-  async function refreshData() {
-    await Promise.all([walletQuery.refetch(), transactionQuery.refetch()]);
-  }
-
   if (walletQuery.isLoading || transactionQuery.isLoading) {
     return (
       <div
@@ -344,11 +335,8 @@ const Wallets = () => {
           Wallet data is unavailable
         </h1>
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-          Check your connection, then try again.
+          Your saved data is safe. The account list will reconnect automatically.
         </p>
-        <Button className="mt-6" onClick={refreshData}>
-          Try again
-        </Button>
       </section>
     );
   }
@@ -357,10 +345,6 @@ const Wallets = () => {
     <div className="min-h-screen space-y-6 pb-24 animate-fade-in">
       <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300" aria-live="polite">
-            <span className={"h-2 w-2 rounded-full " + (syncing ? "animate-pulse bg-amber-500" : "bg-emerald-500")} />
-            {syncing ? "Updating accounts" : updatedAt ? "Live, updated " + new Date(updatedAt).toLocaleTimeString("en-PH", { hour: "numeric", minute: "2-digit" }) : "Live account data"}
-          </div>
           <h1 className="text-3xl font-extrabold tracking-[-0.035em] text-slate-950 dark:text-white sm:text-4xl">Wallets</h1>
           <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">See where your money lives, review activity, and move funds between accounts.</p>
         </div>
@@ -373,19 +357,21 @@ const Wallets = () => {
           </Button>
         </div>
       </header>
-      <section className="relative overflow-hidden rounded-2xl border border-primary/10 bg-primary-fixed/25 p-6 dark:border-emerald-900 dark:bg-emerald-950/45 sm:p-8">
-        <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full border-[40px] border-white/25 dark:border-emerald-800/20" />
-        <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(28rem,1fr)] lg:items-end">
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-7">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(28rem,1fr)] lg:items-end">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-800/70 dark:text-emerald-200/70">Total funds</p>
-            <p className="mt-3 text-4xl font-extrabold tracking-[-0.045em] text-primary dark:text-emerald-50 sm:text-5xl">{formatCurrency(totalBalance)}</p>
-            <p className="mt-3 text-sm text-emerald-900/70 dark:text-emerald-200/70">Across {wallets.length} {wallets.length === 1 ? "account" : "accounts"}</p>
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              Portfolio balance
+            </div>
+            <p className="mt-3 text-4xl font-extrabold tracking-[-0.045em] text-slate-950 dark:text-white sm:text-5xl">{formatCurrency(totalBalance)}</p>
+            <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">Across {wallets.length} {wallets.length === 1 ? "account" : "accounts"}</p>
           </div>
-          <dl className="grid grid-cols-3 border-t border-primary/10 pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0 dark:border-emerald-800">
+          <dl className="grid grid-cols-3 border-t border-slate-200 pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0 dark:border-slate-700">
             {[["Active funds", formatCurrency(activeBalance)], ["Active", String(activeWallets.length)], ["Activity", String(transactions.length)]].map(([label, value], index) => (
-              <div key={label} className={index ? "border-l border-primary/10 pl-5 dark:border-emerald-800" : ""}>
-                <dt className="text-[10px] font-bold uppercase tracking-wider text-emerald-900/55 dark:text-emerald-200/60">{label}</dt>
-                <dd className="mt-2 truncate text-base font-extrabold text-primary dark:text-emerald-50">{value}</dd>
+              <div key={label} className={index ? "border-l border-slate-200 pl-5 dark:border-slate-700" : ""}>
+                <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</dt>
+                <dd className="mt-2 truncate text-base font-extrabold text-slate-900 dark:text-white">{value}</dd>
               </div>
             ))}
           </dl>
@@ -441,10 +427,14 @@ const Wallets = () => {
               })}
             </div> : (
               <div className="flex min-h-80 flex-col items-center justify-center px-6 py-12 text-center">
-                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300"><span className="material-symbols-outlined text-[28px]" aria-hidden="true">account_balance_wallet</span></span>
-                <h3 className="mt-5 font-extrabold text-slate-950 dark:text-white">{wallets.length ? "No matching accounts" : "Your wallets start here"}</h3>
-                <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500 dark:text-slate-400">{wallets.length ? "Try another search or switch the account filter." : "Add a wallet to track its balance and transaction history."}</p>
-                <Button className="mt-5" onClick={wallets.length ? () => { setSearch(""); setFilter("ALL"); } : openCreate}>{wallets.length ? "Clear filters" : "Add your first wallet"}</Button>
+                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-fixed/60 text-primary dark:bg-emerald-950 dark:text-emerald-200">
+                  <span className="material-symbols-outlined text-[28px]" aria-hidden="true">account_balance_wallet</span>
+                </span>
+                <h3 className="mt-5 font-extrabold text-slate-950 dark:text-white">{wallets.length ? "No matching accounts" : "Add your first wallet"}</h3>
+                <p className="mt-2 max-w-[28rem] text-sm leading-6 text-slate-500 dark:text-slate-400">
+                  {wallets.length ? "Try another search or switch the account filter." : "Start with the account you use most. Your dashboard will update as soon as it is created."}
+                </p>
+                <Button className="mt-6 min-h-11" onClick={wallets.length ? () => { setSearch(""); setFilter("ALL"); } : openCreate}>{wallets.length ? "Clear filters" : "Add wallet"}</Button>
               </div>
             )}
           </div>
@@ -469,10 +459,15 @@ const Wallets = () => {
                 </dl>
                 <div className="p-5">
                   <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">Quick actions</p>
-                  <div className="mt-3 grid grid-cols-3 gap-2">
-                    {([["Income", "add_circle", () => openTransaction(selectedWallet, "Income"), !isWalletActive(selectedWallet)], ["Expense", "remove_circle", () => openTransaction(selectedWallet, "Expense"), !isWalletActive(selectedWallet)], ["Transfer", "swap_horiz", () => openTransfer(String(selectedWallet.wallet_id)), !isWalletActive(selectedWallet) || activeWallets.length < 2]] as const).map(([label, icon, action, disabled]) => (
-                      <button key={label} type="button" onClick={action} disabled={disabled} className="flex min-h-[68px] flex-col items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-2 text-xs font-bold text-slate-700 hover:bg-primary-fixed/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transform-none dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-emerald-950"><span className="material-symbols-outlined text-[22px]" aria-hidden="true">{icon}</span>{label}</button>
-                    ))}
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <button type="button" onClick={() => openTransaction(selectedWallet, "Expense")} disabled={!isWalletActive(selectedWallet)} className="flex min-h-[68px] flex-col items-center justify-center gap-1.5 rounded-xl bg-primary-fixed/50 px-2 text-xs font-bold text-primary hover:bg-primary-fixed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transform-none dark:bg-emerald-950 dark:text-emerald-200 dark:hover:bg-emerald-900">
+                      <span className="material-symbols-outlined text-[22px]" aria-hidden="true">add_card</span>
+                      Add transaction
+                    </button>
+                    <button type="button" onClick={() => openTransfer(String(selectedWallet.wallet_id))} disabled={!isWalletActive(selectedWallet) || activeWallets.length < 2} className="flex min-h-[68px] flex-col items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-2 text-xs font-bold text-slate-700 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transform-none dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                      <span className="material-symbols-outlined text-[22px]" aria-hidden="true">swap_horiz</span>
+                      Transfer
+                    </button>
                   </div>
                 </div>
                 <div className="border-t border-slate-100 p-5 dark:border-slate-800">
