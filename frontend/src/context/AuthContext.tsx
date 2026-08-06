@@ -56,9 +56,23 @@ async function syncLocalProfile(): Promise<{
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<UserProfile | null>(() => {
+    try {
+      const savedUser = localStorage.getItem("centra_user");
+      return savedUser ? (JSON.parse(savedUser) as UserProfile) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [token, setToken] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem("centra_token");
+    } catch {
+      return null;
+    }
+  });
+  // Cached sessions render immediately; restoreSession verifies them in the background.
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     async function restoreSession() {

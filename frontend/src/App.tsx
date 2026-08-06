@@ -22,27 +22,13 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 // Wrapper that redirects to /login if not authenticated
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return <AuthLoadingScreen />;
-  }
+  const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
-}
-
-function AuthLoadingScreen() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <span className="material-symbols-outlined animate-spin text-primary text-[48px]">
-        progress_activity
-      </span>
-    </div>
-  );
 }
 
 function ResetTokenRedirect() {
@@ -63,15 +49,7 @@ function ResetTokenRedirect() {
 }
 
 function AppRoutes() {
-  const { isAuthenticated, isLoading } = useAuth();
-  const location = useLocation();
-  const isPublicAuthPage =
-    location.pathname === "/forgot-password" ||
-    location.pathname === "/reset-password";
-
-  if (isLoading && !isPublicAuthPage) {
-    return <AuthLoadingScreen />;
-  }
+  const { isAuthenticated } = useAuth();
 
   return (
     <>
