@@ -21,7 +21,7 @@ export const createTransactionSchema = z
   .object({
     description: z.string().trim().min(1).optional(),
     title: z.string().trim().min(1).optional(),
-    type: z.enum(['Income', 'Expense', 'Transfer', 'income', 'expense', 'transfer']),
+    type: z.enum(['Income', 'Expense', 'income', 'expense']),
     wallet_type: z.string().trim().min(1).optional(),
     wallet: z.string().trim().min(1).optional(),
     wallet_id: z.coerce.number().int().positive().optional(),
@@ -80,7 +80,7 @@ export const updateWalletSchema = z.object({
   wallet_id: idFromBody,
   name: z.string().trim().min(1, 'Name is required'),
   type: z.string().trim().min(1, 'Type is required'),
-  status: z.string().trim().optional(),
+  status: z.enum(['ACTIVE', 'ARCHIVED']).optional(),
   initial_balance: z.coerce.number().nonnegative().optional(),
 });
 

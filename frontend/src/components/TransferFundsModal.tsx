@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTransferFunds, useWallets } from "@/hooks/use-budget-data";
 import { useUiStore } from "@/stores/ui-store";
 import { Button } from "@/components/ui/button";
@@ -24,9 +24,13 @@ function formatCurrency(amount: number): string {
 export function TransferFundsModal() {
   const open = useUiStore((s) => s.transferModalOpen);
   const setOpen = useUiStore((s) => s.setTransferModalOpen);
+  const defaultFromWalletId = useUiStore((s) => s.transferModalFromWalletId);
 
   const { data: wallets = [] } = useWallets();
   const transferMutation = useTransferFunds();
+  const activeWallets = wallets.filter(
+    (wallet) => String(wallet.status).toUpperCase() === "ACTIVE",
+  );
 
   const [transfer, setTransfer] = useState({
     from_wallet_id: "",
@@ -34,22 +38,48 @@ export function TransferFundsModal() {
     amount: "",
   });
   const [transferError, setTransferError] = useState("");
+  const wasOpen = useRef(false);
 
   useEffect(() => {
-    if (!open) return;
-    setTransfer({ from_wallet_id: "", to_wallet_id: "", amount: "" });
+    if (!open) {
+      wasOpen.current = false;
+      return;
+    }
+    if (wasOpen.current) return;
+    wasOpen.current = true;
+    const fromWalletId = activeWallets.some(
+      (wallet) => String(wallet.wallet_id) === defaultFromWalletId,
+    )
+      ? defaultFromWalletId
+      : "";
+    setTransfer({ from_wallet_id: fromWalletId, to_wallet_id: "", amount: "" });
     setTransferError("");
-  }, [open]);
+  }, [open, defaultFromWalletId, wallets]);
 
   async function handleTransfer(e: React.FormEvent) {
     e.preventDefault();
     setTransferError("");
 
+    const sourceWallet = activeWallets.find(
+      (wallet) => wallet.wallet_id === Number(transfer.from_wallet_id),
+    );
+    const amount = Number(transfer.amount);
+    if (!sourceWallet) {
+      setTransferError("Select an active source wallet");
+      return;
+    }
+    if (amount > Number(sourceWallet.calculated_balance)) {
+      setTransferError(
+        `Available balance is ${formatCurrency(Number(sourceWallet.calculated_balance))}`,
+      );
+      return;
+    }
+
     try {
       await transferMutation.mutateAsync({
         from_wallet_id: Number(transfer.from_wallet_id),
         to_wallet_id: Number(transfer.to_wallet_id),
-        amount: Number(transfer.amount),
+        amount,
       });
       setOpen(false);
     } catch (err: unknown) {
@@ -85,14 +115,22 @@ export function TransferFundsModal() {
             </label>
             <select
               value={transfer.from_wallet_id}
-              onChange={(e) =>
-                setTransfer({ ...transfer, from_wallet_id: e.target.value })
-              }
+              onChange={(e) => {
+                const fromWalletId = e.target.value;
+                setTransfer({
+                  ...transfer,
+                  from_wallet_id: fromWalletId,
+                  to_wallet_id:
+                    transfer.to_wallet_id === fromWalletId
+                      ? ""
+                      : transfer.to_wallet_id,
+                });
+              }}
               className="w-full cursor-pointer rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-body-sm font-bold outline-none transition-colors focus:bg-white focus:ring-2 focus:ring-primary/20"
               required
             >
               <option value="">Select source wallet</option>
-              {wallets.map((w) => (
+              {activeWallets.map((w) => (
                 <option key={w.wallet_id} value={w.wallet_id}>
                   {w.name} - {formatCurrency(Number(w.calculated_balance))}
                 </option>
@@ -113,7 +151,7 @@ export function TransferFundsModal() {
               required
             >
               <option value="">Select destination wallet</option>
-              {wallets
+              {activeWallets
                 .filter((w) => String(w.wallet_id) !== transfer.from_wallet_id)
                 .map((w) => (
                   <option key={w.wallet_id} value={w.wallet_id}>
@@ -122,6 +160,12 @@ export function TransferFundsModal() {
                 ))}
             </select>
           </div>
+
+          {activeWallets.length < 2 ? (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm font-medium text-amber-800">
+              You need at least two active wallets to transfer funds.
+            </div>
+          ) : null}
 
           <div className="space-y-2">
             <label className="block text-label-caps font-label-caps text-slate-500 uppercase">
@@ -152,7 +196,7 @@ export function TransferFundsModal() {
             </Button>
             <Button
               type="submit"
-              disabled={transferMutation.isPending}
+              disabled={transferMutation.isPending || activeWallets.length < 2}
               className="flex-1 rounded-xl shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30"
             >
               {transferMutation.isPending ? "Transferring..." : "Transfer"}
