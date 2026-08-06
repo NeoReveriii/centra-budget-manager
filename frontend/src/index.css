@@ -111,6 +111,10 @@
     color: #f1f5f9;
   }
 
+  .dark .bg-background {
+    background-color: #0f172a;
+  }
+
   .dark .bg-surface-container-lowest {
     background-color: #1e293b;
   }

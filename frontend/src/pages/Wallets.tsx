@@ -345,8 +345,8 @@ const Wallets = () => {
     <div className="min-h-screen space-y-6 pb-24 animate-fade-in">
       <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-[-0.035em] text-slate-950 dark:text-white sm:text-4xl">Wallets</h1>
-          <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">See where your money lives, review activity, and move funds between accounts.</p>
+          <h1 className="text-3xl font-extrabold tracking-[-0.035em] text-on-background dark:text-slate-100 sm:text-4xl">Wallets</h1>
+          <p className="mt-2 text-sm leading-6 text-on-surface-variant dark:text-slate-300">See where your money lives, review activity, and move funds between accounts.</p>
         </div>
         <div className="flex flex-wrap gap-3">
           <Button variant="outline" className="min-h-11" onClick={() => openTransfer()} disabled={activeWallets.length < 2}>
@@ -381,8 +381,8 @@ const Wallets = () => {
       <section aria-labelledby="accounts-heading">
         <div className="mb-4 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div>
-            <h2 id="accounts-heading" className="text-xl font-extrabold tracking-tight text-slate-950 dark:text-white">Accounts</h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Select an account to manage it and review recent activity.</p>
+            <h2 id="accounts-heading" className="text-xl font-extrabold tracking-tight text-on-background dark:text-slate-100">Accounts</h2>
+            <p className="mt-1 text-sm text-on-surface-variant dark:text-slate-400">Select an account to manage it and review recent activity.</p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <label className="relative block sm:w-64">
