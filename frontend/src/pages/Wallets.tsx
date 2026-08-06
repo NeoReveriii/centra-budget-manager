@@ -23,6 +23,8 @@ import { Label } from "@/components/ui/label";
 
 type WalletFilter = "ALL" | "ACTIVE" | "ARCHIVED";
 
+const EMPTY_WALLETS: Wallet[] = [];
+const EMPTY_TRANSACTIONS: Transaction[] = [];
 const WALLET_TYPES = [
   "E-Wallet",
   "Bank Account",
@@ -34,23 +36,23 @@ const WALLET_TYPES = [
 const WALLET_VISUALS: Record<string, { icon: string; surface: string }> = {
   "E-Wallet": {
     icon: "phone_iphone",
-    surface: "bg-[#dff3e9] text-[#064e3b]",
+    surface: "bg-primary-fixed/55 text-primary dark:bg-emerald-900 dark:text-emerald-100",
   },
   "Bank Account": {
     icon: "account_balance",
-    surface: "bg-[#e5ebf4] text-[#1f2f43]",
+    surface: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
   },
   Cash: {
     icon: "payments",
-    surface: "bg-[#f3ecd9] text-[#6b5524]",
+    surface: "bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
   },
   "Credit Card": {
     icon: "credit_card",
-    surface: "bg-[#f0e7e2] text-[#6c4235]",
+    surface: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
   },
   Investment: {
     icon: "monitoring",
-    surface: "bg-[#e2eee9] text-[#214c3d]",
+    surface: "bg-primary-fixed/40 text-primary dark:bg-emerald-900 dark:text-emerald-100",
   },
 };
 
@@ -72,6 +74,10 @@ function formatDate(date: string): string {
   });
 }
 
+function isWalletActive(wallet: Wallet) {
+  return String(wallet.status || "ACTIVE").toUpperCase() === "ACTIVE";
+}
+
 function walletHasTransaction(transaction: Transaction, walletId: number) {
   return (
     transaction.wallet_id === walletId ||
@@ -83,22 +89,22 @@ function walletHasTransaction(transaction: Transaction, walletId: number) {
 function transactionAmountLabel(transaction: Transaction, walletId: number) {
   const amount = formatCurrency(Number(transaction.amount));
   if (transaction.type === "Income") {
-    return { label: `+${amount}`, tone: "text-emerald-700" };
+    return { label: `+${amount}`, tone: "text-emerald-700 dark:text-emerald-300" };
   }
   if (transaction.type === "Expense") {
-    return { label: `-${amount}`, tone: "text-rose-700" };
+    return { label: `-${amount}`, tone: "text-rose-700 dark:text-rose-300" };
   }
   if (transaction.transfer_to_wallet_id === walletId) {
-    return { label: `+${amount}`, tone: "text-emerald-700" };
+    return { label: `+${amount}`, tone: "text-emerald-700 dark:text-emerald-300" };
   }
-  return { label: `-${amount}`, tone: "text-slate-700" };
+  return { label: `-${amount}`, tone: "text-slate-700 dark:text-slate-200" };
 }
 
 const Wallets = () => {
   const walletQuery = useWallets();
   const transactionQuery = useTransactions();
-  const wallets = walletQuery.data ?? [];
-  const transactions = transactionQuery.data ?? [];
+  const wallets = walletQuery.data ?? EMPTY_WALLETS;
+  const transactions = transactionQuery.data ?? EMPTY_TRANSACTIONS;
 
   const createWallet = useCreateWallet();
   const updateWallet = useUpdateWallet();
@@ -116,9 +122,9 @@ const Wallets = () => {
 
   const [filter, setFilter] = useState<WalletFilter>("ALL");
   const [search, setSearch] = useState("");
+  const [selectedWalletId, setSelectedWalletId] = useState<number | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editingWallet, setEditingWallet] = useState<Wallet | null>(null);
-  const [detailWalletId, setDetailWalletId] = useState<number | null>(null);
   const [walletToDelete, setWalletToDelete] = useState<Wallet | null>(null);
   const [form, setForm] = useState({
     name: "",
@@ -129,11 +135,13 @@ const Wallets = () => {
   const [actionError, setActionError] = useState("");
   const [deleteError, setDeleteError] = useState("");
 
-  const activeWallets = wallets.filter(
-    (wallet) => String(wallet.status).toUpperCase() === "ACTIVE",
+  const activeWallets = useMemo(
+    () => wallets.filter(isWalletActive),
+    [wallets],
   );
-  const archivedWallets = wallets.filter(
-    (wallet) => String(wallet.status).toUpperCase() === "ARCHIVED",
+  const archivedWallets = useMemo(
+    () => wallets.filter((wallet) => !isWalletActive(wallet)),
+    [wallets],
   );
   const totalBalance = wallets.reduce(
     (sum, wallet) => sum + Number(wallet.calculated_balance || 0),
@@ -161,7 +169,9 @@ const Wallets = () => {
     const term = search.trim().toLowerCase();
     return wallets.filter((wallet) => {
       const matchesFilter =
-        filter === "ALL" || String(wallet.status).toUpperCase() === filter;
+        filter === "ALL" ||
+        (filter === "ACTIVE" && isWalletActive(wallet)) ||
+        (filter === "ARCHIVED" && !isWalletActive(wallet));
       const matchesSearch =
         !term ||
         wallet.name.toLowerCase().includes(term) ||
@@ -170,15 +180,41 @@ const Wallets = () => {
     });
   }, [filter, search, wallets]);
 
-  const detailWallet =
-    wallets.find((wallet) => wallet.wallet_id === detailWalletId) ?? null;
-  const detailTransactions = detailWallet
+  const selectedWallet =
+    visibleWallets.find((wallet) => wallet.wallet_id === selectedWalletId) ??
+    visibleWallets[0] ??
+    null;
+  const selectedTransactions = selectedWallet
     ? transactions
         .filter((transaction) =>
-          walletHasTransaction(transaction, detailWallet.wallet_id),
+          walletHasTransaction(transaction, selectedWallet.wallet_id),
         )
-        .slice(0, 6)
+        .slice(0, 5)
     : [];
+  const selectedFlow = selectedWallet
+    ? transactions.reduce(
+        (totals, transaction) => {
+          if (!walletHasTransaction(transaction, selectedWallet.wallet_id)) {
+            return totals;
+          }
+          const amount = Number(transaction.amount);
+          if (
+            transaction.type === "Income" ||
+            transaction.transfer_to_wallet_id === selectedWallet.wallet_id
+          ) {
+            totals.in += amount;
+          }
+          if (
+            transaction.type === "Expense" ||
+            transaction.transfer_from_wallet_id === selectedWallet.wallet_id
+          ) {
+            totals.out += amount;
+          }
+          return totals;
+        },
+        { in: 0, out: 0 },
+      )
+    : { in: 0, out: 0 };
 
   const syncing = walletQuery.isFetching || transactionQuery.isFetching;
   const updatedAt = Math.max(
@@ -219,18 +255,16 @@ const Wallets = () => {
           wallet_id: editingWallet.wallet_id,
           name: form.name.trim(),
           type: form.type,
-          status:
-            String(editingWallet.status).toUpperCase() === "ARCHIVED"
-              ? "ARCHIVED"
-              : "ACTIVE",
+          status: isWalletActive(editingWallet) ? "ACTIVE" : "ARCHIVED",
           initial_balance: initialBalance,
         });
       } else {
-        await createWallet.mutateAsync({
+        const result = await createWallet.mutateAsync({
           name: form.name.trim(),
           type: form.type,
           initial_balance: initialBalance,
         });
+        setSelectedWalletId(result.wallet.wallet_id);
       }
       setFormOpen(false);
     } catch (error: unknown) {
@@ -240,14 +274,12 @@ const Wallets = () => {
 
   async function toggleWalletStatus(wallet: Wallet) {
     setActionError("");
-    const nextStatus =
-      String(wallet.status).toUpperCase() === "ACTIVE" ? "ARCHIVED" : "ACTIVE";
     try {
       await updateWallet.mutateAsync({
         wallet_id: wallet.wallet_id,
         name: wallet.name,
         type: wallet.type,
-        status: nextStatus,
+        status: isWalletActive(wallet) ? "ARCHIVED" : "ACTIVE",
       });
     } catch (error: unknown) {
       setActionError(
@@ -262,13 +294,15 @@ const Wallets = () => {
     try {
       await deleteWallet.mutateAsync(walletToDelete.wallet_id);
       setWalletToDelete(null);
-      if (detailWalletId === walletToDelete.wallet_id) setDetailWalletId(null);
+      if (selectedWalletId === walletToDelete.wallet_id) {
+        setSelectedWalletId(null);
+      }
     } catch (error: unknown) {
       setDeleteError(error instanceof Error ? error.message : "Could not delete wallet");
     }
   }
 
-  function openTransaction(wallet: Wallet, type: "Income" | "Expense" = "Expense") {
+  function openTransaction(wallet: Wallet, type: "Income" | "Expense") {
     setAddModalDefaultType(type);
     setAddModalDefaultWalletId(String(wallet.wallet_id));
     setAddModalOpen(true);
@@ -285,12 +319,16 @@ const Wallets = () => {
 
   if (walletQuery.isLoading || transactionQuery.isLoading) {
     return (
-      <div className="space-y-6 animate-pulse" aria-label="Loading wallets">
-        <div className="h-10 w-56 rounded-lg bg-slate-200" />
-        <div className="h-52 rounded-2xl bg-slate-200" />
-        <div className="grid gap-5 md:grid-cols-2">
-          <div className="h-64 rounded-2xl bg-slate-200" />
-          <div className="h-64 rounded-2xl bg-slate-200" />
+      <div
+        className="space-y-6 animate-pulse"
+        aria-label="Loading wallets"
+        aria-busy="true"
+      >
+        <div className="h-10 w-48 rounded-xl bg-slate-200 dark:bg-slate-800" />
+        <div className="h-44 rounded-2xl bg-slate-200 dark:bg-slate-800" />
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+          <div className="h-96 rounded-2xl bg-slate-200 dark:bg-slate-800" />
+          <div className="h-96 rounded-2xl bg-slate-200 dark:bg-slate-800" />
         </div>
       </div>
     );
@@ -298,15 +336,17 @@ const Wallets = () => {
 
   if (walletQuery.isError || transactionQuery.isError) {
     return (
-      <section className="mx-auto mt-20 max-w-xl rounded-2xl border border-rose-200 bg-white p-8 text-center shadow-sm">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-rose-50 text-rose-700">
+      <section className="mx-auto mt-20 max-w-xl rounded-2xl border border-rose-200 bg-white p-8 text-center shadow-sm dark:border-rose-900 dark:bg-slate-900">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-200">
           <span className="material-symbols-outlined">cloud_off</span>
         </div>
-        <h1 className="mt-5 text-xl font-bold text-slate-900">Wallet data is unavailable</h1>
-        <p className="mt-2 text-sm text-slate-500">
-          Check your connection, then try syncing again.
+        <h1 className="mt-5 text-xl font-bold text-slate-900 dark:text-slate-100">
+          Wallet data is unavailable
+        </h1>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+          Check your connection, then try again.
         </p>
-        <Button className="mt-6 rounded-xl" onClick={refreshData}>
+        <Button className="mt-6" onClick={refreshData}>
           Try again
         </Button>
       </section>
@@ -314,521 +354,205 @@ const Wallets = () => {
   }
 
   return (
-    <div className="min-h-screen space-y-7 pb-24 animate-fade-in">
-      <header className="flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
+    <div className="min-h-screen space-y-6 pb-24 animate-fade-in">
+      <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="mb-2 flex items-center gap-2 text-xs font-bold tracking-[0.16em] text-secondary">
-            <span
-              className={`h-2 w-2 rounded-full ${syncing ? "animate-pulse bg-amber-500" : "bg-emerald-500"}`}
-            />
-            {syncing
-              ? "SYNCING"
-              : updatedAt
-                ? `LIVE · ${new Date(updatedAt).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}`
-                : "LIVE"}
+          <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300" aria-live="polite">
+            <span className={"h-2 w-2 rounded-full " + (syncing ? "animate-pulse bg-amber-500" : "bg-emerald-500")} />
+            {syncing ? "Updating accounts" : updatedAt ? "Live, updated " + new Date(updatedAt).toLocaleTimeString("en-PH", { hour: "numeric", minute: "2-digit" }) : "Live account data"}
           </div>
-          <h1 className="text-h1 font-h1 text-on-background">Wallets</h1>
-          <p className="mt-1 max-w-2xl text-body-sm text-slate-500">
-            Keep every account in one place, move money safely, and see each balance update as activity lands.
-          </p>
+          <h1 className="text-3xl font-extrabold tracking-[-0.035em] text-slate-950 dark:text-white sm:text-4xl">Wallets</h1>
+          <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">See where your money lives, review activity, and move funds between accounts.</p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            className="rounded-xl border-slate-200 bg-white"
-            onClick={refreshData}
-            disabled={syncing}
-          >
-            <span className={`material-symbols-outlined text-[18px] ${syncing ? "animate-spin" : ""}`}>
-              sync
-            </span>
-            Refresh
+          <Button variant="outline" className="min-h-11" onClick={() => openTransfer()} disabled={activeWallets.length < 2}>
+            <span className="material-symbols-outlined text-[20px]" aria-hidden="true">swap_horiz</span>Transfer
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="rounded-xl border-slate-200 bg-white"
-            onClick={() => openTransfer()}
-            disabled={activeWallets.length < 2}
-          >
-            <span className="material-symbols-outlined text-[18px]">sync_alt</span>
-            Transfer
-          </Button>
-          <Button type="button" className="rounded-xl" onClick={openCreate}>
-            <span className="material-symbols-outlined text-[18px]">add</span>
-            Add wallet
+          <Button className="min-h-11" onClick={openCreate}>
+            <span className="material-symbols-outlined text-[20px]" aria-hidden="true">add</span>Add wallet
           </Button>
         </div>
       </header>
-
-      {actionError ? (
-        <div className="flex items-center justify-between gap-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800">
-          <span>{actionError}</span>
-          <button type="button" onClick={() => setActionError("")} aria-label="Dismiss error">
-            <span className="material-symbols-outlined text-[18px]">close</span>
-          </button>
-        </div>
-      ) : null}
-
-      <section className="grid overflow-hidden rounded-2xl bg-[#073c2e] text-white shadow-[0_22px_60px_rgba(0,53,39,0.18)] lg:grid-cols-[1.35fr_0.65fr]">
-        <div className="relative overflow-hidden p-7 sm:p-9">
-          <div className="pointer-events-none absolute -right-20 -top-28 h-72 w-72 rounded-full border-[48px] border-white/[0.05]" />
-          <p className="text-xs font-bold tracking-[0.18em] text-emerald-100/70">
-            TOTAL AVAILABLE
-          </p>
-          <p className="mt-3 text-4xl font-extrabold tracking-[-0.04em] tabular-nums sm:text-5xl">
-            {formatCurrency(totalBalance)}
-          </p>
-          <p className="mt-4 max-w-lg text-sm leading-6 text-emerald-50/70">
-            {formatCurrency(activeBalance)} is held across {activeWallets.length} active {activeWallets.length === 1 ? "wallet" : "wallets"}.
-          </p>
-          <div className="mt-9 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => activeWallets[0] && openTransaction(activeWallets[0], "Income")}
-              disabled={activeWallets.length === 0}
-              className="rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-[#073c2e] transition-transform hover:-translate-y-0.5 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Record income
-            </button>
-            <button
-              type="button"
-              onClick={() => activeWallets[0] && openTransaction(activeWallets[0], "Expense")}
-              disabled={activeWallets.length === 0}
-              className="rounded-xl border border-white/20 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Record expense
-            </button>
+      <section className="relative overflow-hidden rounded-2xl border border-primary/10 bg-primary-fixed/25 p-6 dark:border-emerald-900 dark:bg-emerald-950/45 sm:p-8">
+        <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full border-[40px] border-white/25 dark:border-emerald-800/20" />
+        <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(28rem,1fr)] lg:items-end">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-800/70 dark:text-emerald-200/70">Total funds</p>
+            <p className="mt-3 text-4xl font-extrabold tracking-[-0.045em] text-primary dark:text-emerald-50 sm:text-5xl">{formatCurrency(totalBalance)}</p>
+            <p className="mt-3 text-sm text-emerald-900/70 dark:text-emerald-200/70">Across {wallets.length} {wallets.length === 1 ? "account" : "accounts"}</p>
           </div>
-        </div>
-        <div className="grid grid-cols-3 border-t border-white/10 bg-black/10 lg:grid-cols-1 lg:border-l lg:border-t-0">
-          {[
-            { label: "Active", value: activeWallets.length, icon: "verified" },
-            { label: "Archived", value: archivedWallets.length, icon: "archive" },
-            { label: "Activity", value: transactions.length, icon: "receipt_long" },
-          ].map((metric) => (
-            <div
-              key={metric.label}
-              className="flex flex-col justify-center border-r border-white/10 p-5 last:border-r-0 lg:border-b lg:border-r-0 lg:last:border-b-0"
-            >
-              <span className="material-symbols-outlined text-[20px] text-emerald-200/70">
-                {metric.icon}
-              </span>
-              <span className="mt-2 text-2xl font-bold tabular-nums">{metric.value}</span>
-              <span className="text-xs font-semibold text-emerald-50/60">{metric.label}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <div className="mb-5 flex flex-col justify-between gap-4 md:flex-row md:items-center">
-          <div className="flex gap-1 rounded-xl bg-slate-100 p-1">
-            {(["ALL", "ACTIVE", "ARCHIVED"] as WalletFilter[]).map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => setFilter(option)}
-                className={`rounded-lg px-4 py-2 text-xs font-bold transition-colors ${
-                  filter === option
-                    ? "bg-white text-primary shadow-sm"
-                    : "text-slate-500 hover:text-slate-800"
-                }`}
-              >
-                {option === "ALL"
-                  ? `All ${wallets.length}`
-                  : option === "ACTIVE"
-                    ? `Active ${activeWallets.length}`
-                    : `Archived ${archivedWallets.length}`}
-              </button>
-            ))}
-          </div>
-          <div className="relative w-full md:w-72">
-            <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[19px] text-slate-400">
-              search
-            </span>
-            <Input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              className="h-10 rounded-xl border-slate-200 bg-white pl-10"
-              placeholder="Find a wallet"
-            />
-          </div>
-        </div>
-
-        {visibleWallets.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-primary">
-              <span className="material-symbols-outlined text-[28px]">account_balance_wallet</span>
-            </div>
-            <h2 className="mt-5 text-lg font-bold text-slate-900">
-              {wallets.length === 0 ? "Add your first wallet" : "No wallets match"}
-            </h2>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-              {wallets.length === 0
-                ? "Start with the account you use most. Your dashboard will update as soon as it is created."
-                : "Try another name or switch the status filter."}
-            </p>
-            {wallets.length === 0 ? (
-              <Button className="mt-6 rounded-xl" onClick={openCreate}>
-                Add wallet
-              </Button>
-            ) : null}
-          </div>
-        ) : (
-          <div className="grid gap-5 md:grid-cols-2">
-            {visibleWallets.map((wallet) => {
-              const visual = WALLET_VISUALS[wallet.type] ?? WALLET_VISUALS["E-Wallet"];
-              const isActive = String(wallet.status).toUpperCase() === "ACTIVE";
-              const activityCount = activityCounts.get(wallet.wallet_id) ?? 0;
-              return (
-                <article
-                  key={wallet.wallet_id}
-                  className={`group relative overflow-hidden rounded-2xl border bg-white p-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(15,23,42,0.08)] ${
-                    isActive ? "border-slate-200" : "border-slate-200 opacity-75"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex min-w-0 items-center gap-4">
-                      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${visual.surface}`}>
-                        <span className="material-symbols-outlined">{visual.icon}</span>
-                      </div>
-                      <div className="min-w-0">
-                        <h2 className="truncate text-lg font-bold tracking-tight text-slate-900">
-                          {wallet.name}
-                        </h2>
-                        <p className="mt-0.5 text-xs font-semibold text-slate-500">{wallet.type}</p>
-                      </div>
-                    </div>
-                    <span
-                      className={`shrink-0 rounded-md px-2 py-1 text-[10px] font-bold tracking-[0.12em] ${
-                        isActive
-                          ? "bg-emerald-50 text-emerald-700"
-                          : "bg-slate-100 text-slate-500"
-                      }`}
-                    >
-                      {isActive ? "ACTIVE" : "ARCHIVED"}
-                    </span>
-                  </div>
-
-                  <div className="mt-8">
-                    <p className="text-[11px] font-bold tracking-[0.16em] text-slate-400">
-                      CURRENT BALANCE
-                    </p>
-                    <p className="mt-2 text-3xl font-extrabold tracking-[-0.035em] text-primary tabular-nums">
-                      {formatCurrency(Number(wallet.calculated_balance || 0))}
-                    </p>
-                  </div>
-
-                  <div className="mt-7 grid grid-cols-2 gap-4 border-y border-slate-100 py-4">
-                    <div>
-                      <p className="text-[10px] font-bold tracking-[0.12em] text-slate-400">STARTED WITH</p>
-                      <p className="mt-1 text-sm font-bold text-slate-700 tabular-nums">
-                        {formatCurrency(Number(wallet.initial_balance || 0))}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold tracking-[0.12em] text-slate-400">ACTIVITY</p>
-                      <p className="mt-1 text-sm font-bold text-slate-700">
-                        {activityCount} {activityCount === 1 ? "entry" : "entries"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => openTransaction(wallet)}
-                        disabled={!isActive}
-                        className="rounded-lg bg-primary px-3.5 py-2 text-xs font-bold text-white transition-colors hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        Add activity
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => openTransfer(String(wallet.wallet_id))}
-                        disabled={!isActive || activeWallets.length < 2}
-                        className="rounded-lg border border-slate-200 px-3.5 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        Transfer
-                      </button>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setDetailWalletId(wallet.wallet_id)}
-                      className="flex items-center gap-1 text-xs font-bold text-primary hover:underline"
-                    >
-                      Details
-                      <span className="material-symbols-outlined text-[17px]">arrow_forward</span>
-                    </button>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent className="max-w-[480px] overflow-hidden p-0" showCloseButton={false}>
-          <DialogHeader className="border-b border-slate-100 bg-slate-50/70 p-6 text-left">
-            <DialogTitle>{editingWallet ? "Edit wallet" : "Add wallet"}</DialogTitle>
-            <DialogDescription>
-              {editingWallet
-                ? "Update the wallet name, type, or starting balance."
-                : "Connect another place where you keep or spend money."}
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={saveWallet} className="space-y-5 p-6">
-            {formError ? (
-              <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-800">
-                {formError}
+          <dl className="grid grid-cols-3 border-t border-primary/10 pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0 dark:border-emerald-800">
+            {[["Active funds", formatCurrency(activeBalance)], ["Active", String(activeWallets.length)], ["Activity", String(transactions.length)]].map(([label, value], index) => (
+              <div key={label} className={index ? "border-l border-primary/10 pl-5 dark:border-emerald-800" : ""}>
+                <dt className="text-[10px] font-bold uppercase tracking-wider text-emerald-900/55 dark:text-emerald-200/60">{label}</dt>
+                <dd className="mt-2 truncate text-base font-extrabold text-primary dark:text-emerald-50">{value}</dd>
               </div>
-            ) : null}
-            <div className="space-y-2">
-              <Label htmlFor="wallet-name">Wallet name</Label>
-              <Input
-                id="wallet-name"
-                value={form.name}
-                onChange={(event) => setForm({ ...form, name: event.target.value })}
-                placeholder="e.g. BPI Payroll"
-                className="h-11 rounded-xl border-slate-200 bg-slate-50"
-                maxLength={80}
-                required
-                autoFocus
-              />
+            ))}
+          </dl>
+        </div>
+      </section>
+      {actionError ? <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-200">{actionError}</div> : null}
+      <section aria-labelledby="accounts-heading">
+        <div className="mb-4 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div>
+            <h2 id="accounts-heading" className="text-xl font-extrabold tracking-tight text-slate-950 dark:text-white">Accounts</h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Select an account to manage it and review recent activity.</p>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <label className="relative block sm:w-64">
+              <span className="sr-only">Search wallets</span>
+              <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-slate-400" aria-hidden="true">search</span>
+              <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search accounts" className="h-11 bg-white pl-10 dark:bg-slate-900" />
+            </label>
+            <div className="grid grid-cols-3 rounded-xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-800" aria-label="Wallet filters">
+              {([["ALL", "All", wallets.length], ["ACTIVE", "Active", activeWallets.length], ["ARCHIVED", "Archived", archivedWallets.length]] as const).map(([value, label, count]) => (
+                <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)} className={"min-h-11 rounded-lg px-3 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-[0.98] motion-reduce:transform-none " + (filter === value ? "bg-white text-primary shadow-sm dark:bg-slate-700 dark:text-emerald-200" : "text-slate-500 dark:text-slate-400")}>
+                  {label} <span className="opacity-60">{count}</span>
+                </button>
+              ))}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="wallet-type">Account type</Label>
-              <select
-                id="wallet-type"
-                value={form.type}
-                onChange={(event) => setForm({ ...form, type: event.target.value })}
-                className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                {WALLET_TYPES.map((type) => (
-                  <option key={type}>{type}</option>
-                ))}
-              </select>
+          </div>
+        </div>
+        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            {visibleWallets.length ? <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              {visibleWallets.map((wallet) => {
+                const selected = selectedWallet?.wallet_id === wallet.wallet_id;
+                const visual = WALLET_VISUALS[wallet.type] ?? WALLET_VISUALS.Cash;
+                const activityCount = activityCounts.get(wallet.wallet_id) ?? 0;
+                return (
+                  <button key={wallet.wallet_id} type="button" aria-pressed={selected} onClick={() => setSelectedWalletId(wallet.wallet_id)} className={"grid min-h-[88px] w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 py-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary active:scale-[0.995] motion-reduce:transform-none sm:px-5 " + (selected ? "bg-primary-fixed/20 shadow-[inset_3px_0_0_#006b52] dark:bg-emerald-950/55" : "hover:bg-slate-50 dark:hover:bg-slate-800/60")}>
+                    <span className={"flex h-12 w-12 items-center justify-center rounded-xl " + visual.surface}>
+                      <span className="material-symbols-outlined text-[24px]" aria-hidden="true">{visual.icon}</span>
+                    </span>
+                    <span className="min-w-0">
+                      <span className="flex items-center gap-2">
+                        <span className="truncate font-extrabold text-slate-950 dark:text-white">{wallet.name}</span>
+                        {!isWalletActive(wallet) ? <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-500 dark:bg-slate-800 dark:text-slate-300">Archived</span> : null}
+                      </span>
+                      <span className="mt-1 block truncate text-xs text-slate-500 dark:text-slate-400">{wallet.type}, {activityCount} {activityCount === 1 ? "transaction" : "transactions"}</span>
+                    </span>
+                    <span className="flex items-center gap-2 text-right">
+                      <span><span className="block text-sm font-extrabold tabular-nums text-slate-950 dark:text-white sm:text-base">{formatCurrency(Number(wallet.calculated_balance))}</span><span className="mt-1 hidden text-[10px] font-bold uppercase tracking-wider text-slate-400 sm:block">Balance</span></span>
+                      <span className="material-symbols-outlined text-[20px] text-slate-300 dark:text-slate-600" aria-hidden="true">chevron_right</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div> : (
+              <div className="flex min-h-80 flex-col items-center justify-center px-6 py-12 text-center">
+                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300"><span className="material-symbols-outlined text-[28px]" aria-hidden="true">account_balance_wallet</span></span>
+                <h3 className="mt-5 font-extrabold text-slate-950 dark:text-white">{wallets.length ? "No matching accounts" : "Your wallets start here"}</h3>
+                <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500 dark:text-slate-400">{wallets.length ? "Try another search or switch the account filter." : "Add a wallet to track its balance and transaction history."}</p>
+                <Button className="mt-5" onClick={wallets.length ? () => { setSearch(""); setFilter("ALL"); } : openCreate}>{wallets.length ? "Clear filters" : "Add your first wallet"}</Button>
+              </div>
+            )}
+          </div>
+          <aside className="lg:sticky lg:top-24">
+            {selectedWallet ? (
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <div className="border-b border-slate-100 p-5 dark:border-slate-800">
+                  <div className="flex items-start gap-4">
+                    <span className={"flex h-12 w-12 items-center justify-center rounded-xl " + (WALLET_VISUALS[selectedWallet.type] ?? WALLET_VISUALS.Cash).surface}>
+                      <span className="material-symbols-outlined text-[24px]" aria-hidden="true">{(WALLET_VISUALS[selectedWallet.type] ?? WALLET_VISUALS.Cash).icon}</span>
+                    </span>
+                    <div className="min-w-0 flex-1"><p className="truncate text-lg font-extrabold text-slate-950 dark:text-white">{selectedWallet.name}</p><p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{selectedWallet.type}</p></div>
+                    <span className={"rounded-md px-2 py-1 text-[10px] font-bold uppercase " + (isWalletActive(selectedWallet) ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-200" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300")}>{isWalletActive(selectedWallet) ? "Active" : "Archived"}</span>
+                  </div>
+                  <p className="mt-6 text-xs font-bold uppercase tracking-wider text-slate-400">Current balance</p>
+                  <p className="mt-1 text-3xl font-extrabold tracking-[-0.04em] text-slate-950 dark:text-white">{formatCurrency(Number(selectedWallet.calculated_balance))}</p>
+                </div>
+                <dl className="grid grid-cols-2 border-b border-slate-100 dark:border-slate-800">
+                  {[["Starting balance", formatCurrency(Number(selectedWallet.initial_balance))], ["Share of funds", totalBalance > 0 ? ((Number(selectedWallet.calculated_balance) / totalBalance) * 100).toFixed(1) + "%" : "0.0%"], ["Money in", formatCurrency(selectedFlow.in)], ["Money out", formatCurrency(selectedFlow.out)]].map(([label, value], index) => (
+                    <div key={label} className={"p-4 " + (index % 2 ? "border-l border-slate-100 dark:border-slate-800 " : "") + (index > 1 ? "border-t border-slate-100 dark:border-slate-800" : "")}><dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</dt><dd className="mt-1 truncate text-sm font-extrabold tabular-nums text-slate-800 dark:text-slate-100">{value}</dd></div>
+                  ))}
+                </dl>
+                <div className="p-5">
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">Quick actions</p>
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    {([["Income", "add_circle", () => openTransaction(selectedWallet, "Income"), !isWalletActive(selectedWallet)], ["Expense", "remove_circle", () => openTransaction(selectedWallet, "Expense"), !isWalletActive(selectedWallet)], ["Transfer", "swap_horiz", () => openTransfer(String(selectedWallet.wallet_id)), !isWalletActive(selectedWallet) || activeWallets.length < 2]] as const).map(([label, icon, action, disabled]) => (
+                      <button key={label} type="button" onClick={action} disabled={disabled} className="flex min-h-[68px] flex-col items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-2 text-xs font-bold text-slate-700 hover:bg-primary-fixed/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transform-none dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-emerald-950"><span className="material-symbols-outlined text-[22px]" aria-hidden="true">{icon}</span>{label}</button>
+                    ))}
+                  </div>
+                </div>
+                <div className="border-t border-slate-100 p-5 dark:border-slate-800">
+                  <div className="flex items-center justify-between"><p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">Recent activity</p><span className="text-xs font-semibold text-slate-400">Latest {selectedTransactions.length}</span></div>
+                  {selectedTransactions.length ? (
+                    <ul className="mt-3 space-y-1">
+                      {selectedTransactions.map((transaction) => {
+                        const amount = transactionAmountLabel(transaction, selectedWallet.wallet_id);
+                        return (
+                          <li key={transaction.trans_id} className="flex items-center justify-between gap-3 rounded-xl px-2 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/70">
+                            <span className="min-w-0"><span className="block truncate text-sm font-bold text-slate-800 dark:text-slate-100">{transaction.description || transaction.type}</span><span className="mt-0.5 block text-[11px] text-slate-400">{transaction.type}, {formatDate(transaction.dateoftrans)}</span></span>
+                            <span className={"shrink-0 text-xs font-extrabold tabular-nums " + amount.tone}>{amount.label}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : <p className="mt-4 rounded-xl bg-slate-50 px-4 py-5 text-center text-xs leading-5 text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">No activity yet. Add income or an expense to begin.</p>}
+                </div>
+                <div className="grid grid-cols-3 border-t border-slate-100 dark:border-slate-800">
+                  <button type="button" onClick={() => openEdit(selectedWallet)} className="min-h-12 text-xs font-bold text-slate-600 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary dark:text-slate-300 dark:hover:bg-slate-800">Edit</button>
+                  <button type="button" onClick={() => toggleWalletStatus(selectedWallet)} disabled={updateWallet.isPending} className="min-h-12 border-x border-slate-100 text-xs font-bold text-slate-600 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary disabled:opacity-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800">{isWalletActive(selectedWallet) ? "Archive" : "Restore"}</button>
+                  <button type="button" onClick={() => { setDeleteError(""); setWalletToDelete(selectedWallet); }} className="min-h-12 text-xs font-bold text-rose-600 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-rose-500 dark:text-rose-300 dark:hover:bg-rose-950">Delete</button>
+                </div>
+              </div>
+            ) : <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center dark:border-slate-700 dark:bg-slate-900"><span className="material-symbols-outlined text-3xl text-slate-300 dark:text-slate-600">touch_app</span><p className="mt-3 text-sm font-bold text-slate-700 dark:text-slate-200">Select an account</p><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Account controls and recent activity will appear here.</p></div>}
+          </aside>
+        </div>
+      </section>
+      <Dialog open={formOpen} onOpenChange={setFormOpen}>
+        <DialogContent className="max-w-[480px] overflow-hidden p-0 dark:border-slate-800 dark:bg-slate-900">
+          <form onSubmit={saveWallet}>
+            <DialogHeader className="border-b border-slate-100 bg-slate-50 px-6 py-5 text-left dark:border-slate-800 dark:bg-slate-900">
+              <DialogTitle className="text-xl font-extrabold text-slate-950 dark:text-white">{editingWallet ? "Edit wallet" : "Add wallet"}</DialogTitle>
+              <DialogDescription className="text-slate-500 dark:text-slate-400">{editingWallet ? "Update this account's name, type, or starting balance." : "Create an account to track its balance and activity."}</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-5 px-6 py-6">
+              {formError ? <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-200">{formError}</div> : null}
+              <div className="space-y-2">
+                <Label htmlFor="wallet-name">Wallet name</Label>
+                <Input id="wallet-name" required autoFocus value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="Everyday account" className="h-11 dark:bg-slate-950" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="wallet-type">Account type</Label>
+                <select id="wallet-type" value={form.type} onChange={(event) => setForm({ ...form, type: event.target.value })} className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white">
+                  {WALLET_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="wallet-balance">Starting balance</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">₱</span>
+                  <Input id="wallet-balance" type="number" min="0" step="0.01" inputMode="decimal" value={form.initial_balance} onChange={(event) => setForm({ ...form, initial_balance: event.target.value })} placeholder="0.00" className="h-11 pl-8 dark:bg-slate-950" />
+                </div>
+                <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">Use the balance from when you began tracking this account.</p>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="wallet-balance">Starting balance</Label>
-              <Input
-                id="wallet-balance"
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.initial_balance}
-                onChange={(event) =>
-                  setForm({ ...form, initial_balance: event.target.value })
-                }
-                placeholder="0.00"
-                className="h-11 rounded-xl border-slate-200 bg-slate-50 tabular-nums"
-              />
-              {editingWallet ? (
-                <p className="text-xs leading-5 text-slate-500">
-                  Changing this adjusts the current balance without altering transaction history.
-                </p>
-              ) : null}
-            </div>
-            <DialogFooter className="gap-3 pt-2 sm:justify-stretch">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1 rounded-xl"
-                onClick={() => setFormOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                className="flex-1 rounded-xl"
-                disabled={createWallet.isPending || updateWallet.isPending}
-              >
-                {createWallet.isPending || updateWallet.isPending
-                  ? "Saving..."
-                  : editingWallet
-                    ? "Save changes"
-                    : "Create wallet"}
+            <DialogFooter className="border-t border-slate-100 px-6 py-4 dark:border-slate-800">
+              <Button type="button" variant="outline" onClick={() => setFormOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={createWallet.isPending || updateWallet.isPending || !form.name.trim()}>
+                {createWallet.isPending || updateWallet.isPending ? "Saving..." : editingWallet ? "Save changes" : "Add wallet"}
               </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
-
-      <Dialog
-        open={detailWallet !== null}
-        onOpenChange={(open) => !open && setDetailWalletId(null)}
-      >
-        <DialogContent className="max-w-[620px] overflow-hidden p-0">
-          {detailWallet ? (
-            <>
-              <div className="bg-[#073c2e] p-7 text-white">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-bold tracking-[0.16em] text-emerald-100/60">
-                      {detailWallet.type.toUpperCase()}
-                    </p>
-                    <DialogTitle className="mt-2 text-2xl text-white">
-                      {detailWallet.name}
-                    </DialogTitle>
-                  </div>
-                  <span className="rounded-md bg-white/10 px-2.5 py-1 text-[10px] font-bold tracking-[0.12em]">
-                    {String(detailWallet.status).toUpperCase()}
-                  </span>
-                </div>
-                <p className="mt-8 text-4xl font-extrabold tracking-[-0.04em] tabular-nums">
-                  {formatCurrency(Number(detailWallet.calculated_balance || 0))}
-                </p>
-                <p className="mt-1 text-xs font-semibold text-emerald-50/60">Current balance</p>
-              </div>
-              <div className="max-h-[60vh] overflow-y-auto p-6">
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="rounded-xl bg-slate-50 p-3">
-                    <p className="text-[10px] font-bold tracking-[0.12em] text-slate-400">STARTING</p>
-                    <p className="mt-1 text-sm font-bold text-slate-800 tabular-nums">
-                      {formatCurrency(Number(detailWallet.initial_balance || 0))}
-                    </p>
-                  </div>
-                  <div className="rounded-xl bg-slate-50 p-3">
-                    <p className="text-[10px] font-bold tracking-[0.12em] text-slate-400">ACTIVITY</p>
-                    <p className="mt-1 text-sm font-bold text-slate-800">
-                      {activityCounts.get(detailWallet.wallet_id) ?? 0} entries
-                    </p>
-                  </div>
-                  <div className="rounded-xl bg-slate-50 p-3">
-                    <p className="text-[10px] font-bold tracking-[0.12em] text-slate-400">CREATED</p>
-                    <p className="mt-1 text-sm font-bold text-slate-800">
-                      {formatDate(detailWallet.created_at)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-6 flex flex-wrap gap-2">
-                  <Button
-                    size="sm"
-                    className="rounded-lg"
-                    onClick={() => {
-                      setDetailWalletId(null);
-                      openEdit(detailWallet);
-                    }}
-                  >
-                    <span className="material-symbols-outlined text-[17px]">edit</span>
-                    Edit
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="rounded-lg"
-                    onClick={() => toggleWalletStatus(detailWallet)}
-                    disabled={updateWallet.isPending}
-                  >
-                    <span className="material-symbols-outlined text-[17px]">
-                      {String(detailWallet.status).toUpperCase() === "ACTIVE"
-                        ? "archive"
-                        : "unarchive"}
-                    </span>
-                    {String(detailWallet.status).toUpperCase() === "ACTIVE"
-                      ? "Archive"
-                      : "Restore"}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="rounded-lg border-rose-200 text-rose-700 hover:bg-rose-50"
-                    onClick={() => {
-                      setDeleteError("");
-                      setDetailWalletId(null);
-                      setWalletToDelete(detailWallet);
-                    }}
-                  >
-                    <span className="material-symbols-outlined text-[17px]">delete</span>
-                    Delete
-                  </Button>
-                </div>
-
-                <div className="mt-7">
-                  <div className="mb-3 flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-slate-900">Recent activity</h3>
-                    <span className="text-xs font-semibold text-slate-400">Latest six</span>
-                  </div>
-                  {detailTransactions.length === 0 ? (
-                    <div className="rounded-xl border border-dashed border-slate-200 py-8 text-center text-sm text-slate-400">
-                      No activity in this wallet yet
-                    </div>
-                  ) : (
-                    <div className="divide-y divide-slate-100 rounded-xl border border-slate-100">
-                      {detailTransactions.map((transaction) => {
-                        const amount = transactionAmountLabel(
-                          transaction,
-                          detailWallet.wallet_id,
-                        );
-                        return (
-                          <div
-                            key={transaction.trans_id}
-                            className="flex items-center justify-between gap-4 p-3.5"
-                          >
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-bold text-slate-800">
-                                {transaction.description}
-                              </p>
-                              <p className="mt-0.5 text-xs text-slate-400">
-                                {formatDate(transaction.dateoftrans)} · {transaction.type}
-                              </p>
-                            </div>
-                            <span className={`shrink-0 text-sm font-bold tabular-nums ${amount.tone}`}>
-                              {amount.label}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </>
-          ) : null}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
-        open={walletToDelete !== null}
-        onOpenChange={(open) => !open && setWalletToDelete(null)}
-      >
-        <DialogContent className="max-w-[420px]" showCloseButton={false}>
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-700">
-            <span className="material-symbols-outlined text-[28px]">delete</span>
-          </div>
-          <DialogHeader className="text-center sm:text-center">
-            <DialogTitle>Delete {walletToDelete?.name}?</DialogTitle>
-            <DialogDescription>
-              Wallets with activity cannot be deleted. Archive the wallet if you need to keep its history.
+      <Dialog open={Boolean(walletToDelete)} onOpenChange={(open) => { if (!open) setWalletToDelete(null); }}>
+        <DialogContent className="max-w-[440px] dark:border-slate-800 dark:bg-slate-900">
+          <DialogHeader className="text-left">
+            <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950 dark:text-rose-300">
+              <span className="material-symbols-outlined" aria-hidden="true">delete</span>
+            </div>
+            <DialogTitle className="text-xl font-extrabold text-slate-950 dark:text-white">Delete wallet?</DialogTitle>
+            <DialogDescription className="leading-6 text-slate-500 dark:text-slate-400">
+              {walletToDelete ? walletToDelete.name + " will be permanently removed. Existing transactions are kept in your activity history." : ""}
             </DialogDescription>
           </DialogHeader>
-          {deleteError ? (
-            <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-800">
-              {deleteError}
-            </div>
-          ) : null}
-          <DialogFooter className="gap-3 sm:justify-stretch">
-            <Button
-              variant="outline"
-              className="flex-1 rounded-xl"
-              onClick={() => setWalletToDelete(null)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              className="flex-1 rounded-xl"
-              onClick={confirmDelete}
-              disabled={deleteWallet.isPending}
-            >
+          {deleteError ? <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-200">{deleteError}</div> : null}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setWalletToDelete(null)}>Cancel</Button>
+            <Button type="button" variant="destructive" onClick={confirmDelete} disabled={deleteWallet.isPending}>
               {deleteWallet.isPending ? "Deleting..." : "Delete wallet"}
             </Button>
           </DialogFooter>

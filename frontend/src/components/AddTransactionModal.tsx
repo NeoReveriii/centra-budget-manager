@@ -1,5 +1,9 @@
-import { useEffect, useRef, useState } from "react";
-import { useCreateTransaction, useWallets } from "@/hooks/use-budget-data";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCreateTransaction,
+  useWallets,
+  type Wallet,
+} from "@/hooks/use-budget-data";
 import { useUiStore } from "@/stores/ui-store";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +37,7 @@ const TRANSACTION_CATEGORIES = {
 } as const;
 
 const TYPE_OPTIONS = ["Expense", "Income"] as const;
+const EMPTY_WALLETS: Wallet[] = [];
 
 type TxType = (typeof TYPE_OPTIONS)[number];
 
@@ -53,10 +58,14 @@ export function AddTransactionModal() {
   const defaultType = useUiStore((s) => s.addModalDefaultType);
   const defaultWalletId = useUiStore((s) => s.addModalDefaultWalletId);
 
-  const { data: wallets = [] } = useWallets();
+  const { data: wallets = EMPTY_WALLETS } = useWallets();
   const createTx = useCreateTransaction();
-  const activeWallets = wallets.filter(
-    (wallet) => String(wallet.status).toUpperCase() === "ACTIVE",
+  const activeWallets = useMemo(
+    () =>
+      wallets.filter(
+        (wallet) => String(wallet.status).toUpperCase() === "ACTIVE",
+      ),
+    [wallets],
   );
 
   const [newTx, setNewTx] = useState({
@@ -94,7 +103,7 @@ export function AddTransactionModal() {
       category: defaultCategoryForType(normalizedType),
     });
     setAddError("");
-  }, [open, defaultType, defaultWalletId, wallets]);
+  }, [open, defaultType, defaultWalletId, activeWallets]);
 
   const categoryOptions = getCategoryOptions(newTx.type);
 

@@ -1,5 +1,15 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query";
 import { useAuth } from "../context/AuthContext";
+import {
+  budgetQueryKeys,
+  publishBudgetSync,
+  type BudgetSyncTopic,
+} from "@/lib/budget-sync";
 import {
   clearChatHistory,
   createTransaction,
@@ -20,14 +30,19 @@ import {
   type Goal,
 } from "@/lib/api";
 
-export const budgetQueryKeys = {
-  wallets: ["wallets"] as const,
-  transactions: ["transactions"] as const,
-  goals: ["goals"] as const,
-  chatHistory: ["chatHistory"] as const,
-};
+export { budgetQueryKeys } from "@/lib/budget-sync";
 
-export const LIVE_REFRESH_INTERVAL_MS = 10_000;
+async function synchronizeBudgetQueries(
+  queryClient: QueryClient,
+  topics: BudgetSyncTopic[],
+) {
+  publishBudgetSync(topics);
+  await Promise.all(
+    topics.map((topic) =>
+      queryClient.invalidateQueries({ queryKey: budgetQueryKeys[topic] }),
+    ),
+  );
+}
 
 function useBudgetQueryIdentity(enabled = true) {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -43,8 +58,6 @@ export function useWallets() {
     queryKey: [...budgetQueryKeys.wallets, identity.accountId],
     queryFn: fetchWallets,
     enabled: identity.enabled,
-    refetchInterval: LIVE_REFRESH_INTERVAL_MS,
-    refetchIntervalInBackground: false,
   });
 }
 
@@ -54,8 +67,6 @@ export function useTransactions() {
     queryKey: [...budgetQueryKeys.transactions, identity.accountId],
     queryFn: fetchTransactions,
     enabled: identity.enabled,
-    refetchInterval: LIVE_REFRESH_INTERVAL_MS,
-    refetchIntervalInBackground: false,
   });
 }
 
@@ -65,8 +76,6 @@ export function useGoals() {
     queryKey: [...budgetQueryKeys.goals, identity.accountId],
     queryFn: fetchGoals,
     enabled: identity.enabled,
-    refetchInterval: LIVE_REFRESH_INTERVAL_MS,
-    refetchIntervalInBackground: false,
   });
 }
 
@@ -83,11 +92,20 @@ export function useCreateTransaction() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createTransaction,
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: budgetQueryKeys.transactions }),
-        queryClient.invalidateQueries({ queryKey: budgetQueryKeys.wallets }),
-      ]);
+    onSuccess: async (transaction) => {
+      queryClient.setQueriesData<Transaction[]>(
+        { queryKey: budgetQueryKeys.transactions },
+        (current) =>
+          current
+            ? [
+                transaction,
+                ...current.filter(
+                  (item) => item.trans_id !== transaction.trans_id,
+                ),
+              ]
+            : current,
+      );
+      await synchronizeBudgetQueries(queryClient, ["transactions", "wallets"]);
     },
   });
 }
@@ -96,11 +114,17 @@ export function useDeleteTransaction() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteTransaction,
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: budgetQueryKeys.transactions }),
-        queryClient.invalidateQueries({ queryKey: budgetQueryKeys.wallets }),
-      ]);
+    onSuccess: async (transaction) => {
+      if (transaction) {
+        queryClient.setQueriesData<Transaction[]>(
+          { queryKey: budgetQueryKeys.transactions },
+          (current) =>
+            current?.filter(
+              (item) => item.trans_id !== transaction.trans_id,
+            ),
+        );
+      }
+      await synchronizeBudgetQueries(queryClient, ["transactions", "wallets"]);
     },
   });
 }
@@ -109,8 +133,22 @@ export function useCreateWallet() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createWallet,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: budgetQueryKeys.wallets });
+    onSuccess: async ({ wallet }) => {
+      queryClient.setQueriesData<Wallet[]>(
+        { queryKey: budgetQueryKeys.wallets },
+        (current) =>
+          current
+            ? [
+                ...current,
+                {
+                  ...wallet,
+                  calculated_balance:
+                    wallet.calculated_balance ?? wallet.initial_balance,
+                },
+              ]
+            : current,
+      );
+      await synchronizeBudgetQueries(queryClient, ["wallets"]);
     },
   });
 }
@@ -120,10 +158,7 @@ export function useUpdateWallet() {
   return useMutation({
     mutationFn: updateWallet,
     onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: budgetQueryKeys.wallets }),
-        queryClient.invalidateQueries({ queryKey: budgetQueryKeys.transactions }),
-      ]);
+      await synchronizeBudgetQueries(queryClient, ["wallets", "transactions"]);
     },
   });
 }
@@ -132,11 +167,13 @@ export function useDeleteWallet() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteWallet,
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: budgetQueryKeys.wallets }),
-        queryClient.invalidateQueries({ queryKey: budgetQueryKeys.transactions }),
-      ]);
+    onSuccess: async (_, walletId) => {
+      queryClient.setQueriesData<Wallet[]>(
+        { queryKey: budgetQueryKeys.wallets },
+        (current) =>
+          current?.filter((wallet) => wallet.wallet_id !== walletId),
+      );
+      await synchronizeBudgetQueries(queryClient, ["wallets", "transactions"]);
     },
   });
 }
@@ -145,11 +182,18 @@ export function useTransferFunds() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: transferFunds,
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: budgetQueryKeys.wallets }),
-        queryClient.invalidateQueries({ queryKey: budgetQueryKeys.transactions }),
-      ]);
+    onSuccess: async ({ row }) => {
+      queryClient.setQueriesData<Transaction[]>(
+        { queryKey: budgetQueryKeys.transactions },
+        (current) =>
+          current
+            ? [
+                row,
+                ...current.filter((item) => item.trans_id !== row.trans_id),
+              ]
+            : current,
+      );
+      await synchronizeBudgetQueries(queryClient, ["wallets", "transactions"]);
     },
   });
 }
@@ -159,7 +203,11 @@ export function useClearChatHistory() {
   return useMutation({
     mutationFn: clearChatHistory,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: budgetQueryKeys.chatHistory });
+      queryClient.setQueriesData(
+        { queryKey: budgetQueryKeys.chatHistory },
+        () => [],
+      );
+      await synchronizeBudgetQueries(queryClient, ["chatHistory"]);
     },
   });
 }
@@ -168,8 +216,12 @@ export function useCreateGoal() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createGoal,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: budgetQueryKeys.goals });
+    onSuccess: async ({ goal }) => {
+      queryClient.setQueriesData<Goal[]>(
+        { queryKey: budgetQueryKeys.goals },
+        (current) => (current ? [...current, goal] : current),
+      );
+      await synchronizeBudgetQueries(queryClient, ["goals"]);
     },
   });
 }
@@ -178,8 +230,13 @@ export function useUpdateGoal() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateGoal,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: budgetQueryKeys.goals });
+    onSuccess: async ({ goal }) => {
+      queryClient.setQueriesData<Goal[]>(
+        { queryKey: budgetQueryKeys.goals },
+        (current) =>
+          current?.map((item) => (item.goal_id === goal.goal_id ? goal : item)),
+      );
+      await synchronizeBudgetQueries(queryClient, ["goals"]);
     },
   });
 }
@@ -188,8 +245,12 @@ export function useDeleteGoal() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteGoal,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: budgetQueryKeys.goals });
+    onSuccess: async (_, goalId) => {
+      queryClient.setQueriesData<Goal[]>(
+        { queryKey: budgetQueryKeys.goals },
+        (current) => current?.filter((goal) => goal.goal_id !== goalId),
+      );
+      await synchronizeBudgetQueries(queryClient, ["goals"]);
     },
   });
 }

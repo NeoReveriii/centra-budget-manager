@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useTransactions, useWallets } from "@/hooks/use-budget-data";
+import {
+  useTransactions,
+  useWallets,
+  type Transaction,
+  type Wallet,
+} from "@/hooks/use-budget-data";
 import {
   AreaChart,
   Area,
@@ -17,6 +22,9 @@ interface CategoryStyle {
   iconBg: string;
   iconColor: string;
 }
+
+const EMPTY_WALLETS: Wallet[] = [];
+const EMPTY_TRANSACTIONS: Transaction[] = [];
 
 const CATEGORY_STYLES: Record<string, CategoryStyle> = {
   food: {
@@ -379,8 +387,8 @@ const Dashboard = () => {
   const { user } = useAuth();
   const walletQuery = useWallets();
   const transactionQuery = useTransactions();
-  const wallets = walletQuery.data ?? [];
-  const transactions = transactionQuery.data ?? [];
+  const wallets = walletQuery.data ?? EMPTY_WALLETS;
+  const transactions = transactionQuery.data ?? EMPTY_TRANSACTIONS;
   const walletsLoading = walletQuery.isLoading;
   const transactionsLoading = transactionQuery.isLoading;
   const [selectedWalletId, setSelectedWalletId] = useState<string>("all");
@@ -558,17 +566,6 @@ const Dashboard = () => {
         </div>
 
         <div className="flex w-full flex-wrap items-center gap-3 md:w-auto">
-          <button
-            type="button"
-            onClick={refreshDashboard}
-            disabled={syncing}
-            aria-label="Refresh dashboard data"
-            className="flex h-10 w-10 items-center justify-center rounded-lg border border-outline-variant bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-primary disabled:cursor-wait"
-          >
-            <span className={`material-symbols-outlined text-[18px] ${syncing ? "animate-spin" : ""}`}>
-              sync
-            </span>
-          </button>
           <div className="relative">
             <select
               value={selectedDateRange}

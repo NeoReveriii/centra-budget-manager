@@ -1,5 +1,9 @@
-import { useEffect, useRef, useState } from "react";
-import { useTransferFunds, useWallets } from "@/hooks/use-budget-data";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useTransferFunds,
+  useWallets,
+  type Wallet,
+} from "@/hooks/use-budget-data";
 import { useUiStore } from "@/stores/ui-store";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,15 +25,21 @@ function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
+const EMPTY_WALLETS: Wallet[] = [];
+
 export function TransferFundsModal() {
   const open = useUiStore((s) => s.transferModalOpen);
   const setOpen = useUiStore((s) => s.setTransferModalOpen);
   const defaultFromWalletId = useUiStore((s) => s.transferModalFromWalletId);
 
-  const { data: wallets = [] } = useWallets();
+  const { data: wallets = EMPTY_WALLETS } = useWallets();
   const transferMutation = useTransferFunds();
-  const activeWallets = wallets.filter(
-    (wallet) => String(wallet.status).toUpperCase() === "ACTIVE",
+  const activeWallets = useMemo(
+    () =>
+      wallets.filter(
+        (wallet) => String(wallet.status).toUpperCase() === "ACTIVE",
+      ),
+    [wallets],
   );
 
   const [transfer, setTransfer] = useState({
@@ -54,7 +64,7 @@ export function TransferFundsModal() {
       : "";
     setTransfer({ from_wallet_id: fromWalletId, to_wallet_id: "", amount: "" });
     setTransferError("");
-  }, [open, defaultFromWalletId, wallets]);
+  }, [open, defaultFromWalletId, activeWallets]);
 
   async function handleTransfer(e: React.FormEvent) {
     e.preventDefault();
