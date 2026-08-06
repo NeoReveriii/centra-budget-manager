@@ -347,7 +347,7 @@ const Wallets = () => {
         <div>
           <p className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-primary/70 dark:text-emerald-300">Money overview</p>
           <h1 className="text-3xl font-extrabold tracking-[-0.045em] text-on-background dark:text-slate-100 sm:text-4xl">Wallets</h1>
-          <p className="mt-2 max-w-xl text-sm leading-6 text-on-surface-variant dark:text-slate-300">See where your money lives, review activity, and move funds between accounts.</p>
+          <p className="mt-2 max-w-[36rem] text-sm leading-6 text-on-surface-variant dark:text-slate-300">See where your money lives, review activity, and move funds between accounts.</p>
         </div>
         <div className="flex flex-wrap gap-3">
           <Button variant="outline" className="min-h-11" onClick={() => openTransfer()} disabled={activeWallets.length < 2}>

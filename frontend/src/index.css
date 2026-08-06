@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Keep the app's persisted theme in control of dark: utilities instead of the OS preference. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-primary-container: #064e3b;
   --color-surface-tint: #2b6954;
