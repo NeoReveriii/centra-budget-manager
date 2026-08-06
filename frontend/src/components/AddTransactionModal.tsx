@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { StyledSelect } from "@/components/ui/styled-select";
 
 const TRANSACTION_CATEGORIES = {
   Expense: [
@@ -197,23 +198,13 @@ export function AddTransactionModal() {
               <Label htmlFor="tx-type" className="font-bold text-slate-600">
                 Type
               </Label>
-              <div className="relative">
-                <select
-                  id="tx-type"
-                  value={newTx.type}
-                  onChange={(e) => handleTypeChange(e.target.value as TxType)}
-                  className="h-11 w-full cursor-pointer appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 pr-10 text-body-sm font-bold outline-none transition-colors focus:bg-white focus:ring-2 focus:ring-primary/20"
-                >
-                  {TYPE_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-                <span className="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[20px] text-slate-400">
-                  expand_more
-                </span>
-              </div>
+              <StyledSelect
+                id="tx-type"
+                value={newTx.type}
+                onChange={(value) => handleTypeChange(value as TxType)}
+                options={TYPE_OPTIONS.map((option) => ({ value: option, label: option }))}
+                className="bg-slate-50"
+              />
             </div>
 
             <div className="space-y-2">
@@ -274,27 +265,17 @@ export function AddTransactionModal() {
             <Label htmlFor="tx-wallet" className="font-bold text-slate-600">
               Wallet
             </Label>
-            <div className="relative">
-              <select
-                id="tx-wallet"
-                value={newTx.wallet_id}
-                onChange={(e) =>
-                  setNewTx({ ...newTx, wallet_id: e.target.value })
-                }
-                className="h-11 w-full cursor-pointer appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 pr-10 text-body-sm font-bold outline-none transition-colors focus:bg-white focus:ring-2 focus:ring-primary/20"
-                required
-              >
-                <option value="">Select wallet</option>
-                {activeWallets.map((w) => (
-                  <option key={w.wallet_id} value={w.wallet_id}>
-                    {w.name}
-                  </option>
-                ))}
-              </select>
-              <span className="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[20px] text-slate-400">
-                expand_more
-              </span>
-            </div>
+            <StyledSelect
+              id="tx-wallet"
+              value={newTx.wallet_id}
+              onChange={(value) => setNewTx({ ...newTx, wallet_id: value })}
+              options={[
+                { value: "", label: "Select wallet" },
+                ...activeWallets.map((wallet) => ({ value: String(wallet.wallet_id), label: wallet.name })),
+              ]}
+              required
+              className="bg-slate-50"
+            />
             {activeWallets.length === 0 ? (
               <p className="text-xs font-medium text-error">
                 Create or restore an active wallet before recording a transaction.

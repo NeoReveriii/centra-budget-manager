@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { useUiStore } from "@/stores/ui-store";
+import { StyledSelect } from "@/components/ui/styled-select";
 
 const Settings = () => {
   const theme = useUiStore((s) => s.theme);
   const setTheme = useUiStore((s) => s.setTheme);
+  const [language, setLanguage] = useState("English");
 
   return (
     <div className="max-w-[800px] w-full mx-auto animate-fade-in">
@@ -68,16 +71,17 @@ const Settings = () => {
                 Select your preferred display language.
               </p>
             </div>
-            <div className="relative group">
-              <select className="appearance-none bg-surface-container-lowest border border-outline-variant rounded-lg px-md pr-10 py-sm font-body-sm font-semibold text-on-surface focus:ring-primary focus:border-primary group-hover:bg-surface-container-high transition-colors cursor-pointer outline-none">
-                <option>English</option>
-                <option>Filipino</option>
-                <option>Spanish</option>
-              </select>
-              <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-outline text-[20px]">
-                expand_more
-              </span>
-            </div>
+            <StyledSelect
+              value={language}
+              onChange={setLanguage}
+              options={[
+                { value: "English", label: "English" },
+                { value: "Filipino", label: "Filipino" },
+                { value: "Spanish", label: "Spanish" },
+              ]}
+              className="min-w-[140px] rounded-lg bg-white text-on-surface"
+              aria-label="Language"
+            />
           </div>
 
           {/* Currency Display Row */}

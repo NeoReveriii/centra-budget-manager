@@ -10,22 +10,25 @@ const LandingPage = () => {
   return (
     <div className="bg-background min-h-screen text-on-surface font-body-md">
       {/* TopNavBar */}
-      <nav className="fixed top-0 w-full z-50 bg-white border-b border-emerald-100 shadow-sm shadow-emerald-900/5">
-        <div className="max-w-7xl mx-auto px-6 h-[72px] flex items-center justify-between">
-          <CentraBrand variant="text" size="nav" surface="light" />
+      <nav className="fixed top-0 z-50 h-[72px] w-full overflow-hidden border-b border-slate-200/80 bg-white shadow-[0_4px_18px_rgba(15,23,42,0.04)]">
+        <div className="mx-auto flex h-[72px] w-full max-w-7xl items-center justify-between gap-6 overflow-hidden px-6">
+          <div className="flex h-11 w-[184px] shrink-0 items-center overflow-hidden">
+            <CentraBrand variant="text" size="nav" surface="light" className="shrink-0" />
+          </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <button
               onClick={() => setShowLoginModal(true)}
-              className="px-4 py-2 text-emerald-900 font-semibold text-sm hover:bg-emerald-100 hover:text-emerald-950 transition-all rounded-lg cursor-pointer active:scale-95 duration-150"
+              className="min-h-11 rounded-full border border-transparent px-4 text-sm font-bold text-primary transition-[background-color,border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-[#c8e0d3] hover:bg-[#eff8f3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 active:translate-y-0"
             >
               Sign In
             </button>
             <button
               onClick={() => setShowCreateAccountModal(true)}
-              className="px-5 py-2 bg-primary text-white font-semibold text-sm rounded-lg hover:opacity-90 active:scale-95 duration-150 ease-in-out cursor-pointer"
+              className="group flex min-h-11 items-center gap-2 rounded-full bg-primary px-5 text-sm font-bold text-white shadow-[0_5px_14px_rgba(0,53,39,0.14)] transition-[background-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:bg-primary-container hover:shadow-[0_9px_22px_rgba(0,53,39,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 active:translate-y-0"
             >
-              Open Account
+              Get started
+              <span className="material-symbols-outlined text-[18px] transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true">arrow_forward</span>
             </button>
           </div>
         </div>
@@ -186,34 +189,33 @@ const LandingPage = () => {
       </main>
 
       {/* Footer */}
-      <footer className="w-full py-12 border-t border-emerald-200 bg-emerald-50 mt-auto">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-          <div className="space-y-4">
-            <div className="font-bold text-emerald-900 text-[18px]">
+      <footer className="mt-auto w-full border-t border-slate-200 bg-white py-14">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-6 md:grid-cols-[1.2fr_0.8fr] md:items-start">
+          <div className="max-w-sm">
+            <div className="text-lg font-extrabold tracking-tight text-slate-900">
               Centra Financial Systems
             </div>
-            <p className="text-[12px] font-medium tracking-wide text-emerald-700/60 leading-relaxed">
-              Providing institutional-grade financial infrastructure for the
-              modern era. Secure, intelligent, and private.
+            <p className="mt-3 text-sm leading-6 text-slate-500">
+              Calm, intelligent tools for keeping your money organized and moving with intention.
             </p>
-            <div className="text-[12px] font-medium tracking-wide text-emerald-700/60 mt-4">
+            <div className="mt-5 border-t border-slate-200 pt-5 text-xs font-medium text-slate-400">
               © 2026 Centra Financial Systems. All rights reserved.
             </div>
           </div>
-          <div className="flex flex-wrap md:justify-end gap-x-8 gap-y-4 text-[12px] font-medium tracking-wide">
-            <a className="text-emerald-700/60 hover:text-emerald-900 hover:underline decoration-emerald-500/30 transition-all cursor-pointer">
-              Institutional Disclosure
+          <nav aria-label="Footer navigation" className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm font-semibold text-slate-600 sm:grid-cols-4 md:justify-items-end">
+            <a href="#" className="transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
+              About
             </a>
-            <a className="text-emerald-700/60 hover:text-emerald-900 hover:underline decoration-emerald-500/30 transition-all cursor-pointer">
-              Privacy Policy
+            <a href="/views/privacy.html" className="transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
+              Privacy
             </a>
-            <a className="text-emerald-700/60 hover:text-emerald-900 hover:underline decoration-emerald-500/30 transition-all cursor-pointer">
-              Terms of Service
+            <a href="/views/terms.html" className="transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
+              Terms
             </a>
-            <a className="text-emerald-700/60 hover:text-emerald-900 hover:underline decoration-emerald-500/30 transition-all cursor-pointer">
+            <a href="#" className="transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
               Security
             </a>
-          </div>
+          </nav>
         </div>
       </footer>
 

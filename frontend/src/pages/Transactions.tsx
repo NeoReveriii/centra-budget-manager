@@ -6,6 +6,7 @@ import {
 } from "@/hooks/use-budget-data";
 import { useUiStore } from "@/stores/ui-store";
 import { Button } from "@/components/ui/button";
+import { StyledSelect } from "@/components/ui/styled-select";
 import {
   Dialog,
   DialogContent,
@@ -237,26 +238,20 @@ const Transactions = () => {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <select
-          className="appearance-none px-4 pr-10 py-3 bg-white border border-outline-variant rounded-xl text-body-sm text-on-surface font-bold focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer"
+        <StyledSelect
           value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value)}
-        >
-          <option>All Types</option>
-          <option>Expense</option>
-          <option>Income</option>
-          <option>Transfer</option>
-        </select>
-        <select
-          className="appearance-none px-4 pr-10 py-3 bg-white border border-outline-variant rounded-xl text-body-sm text-on-surface font-bold focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer"
+          onChange={setTypeFilter}
+          options={["All Types", "Expense", "Income", "Transfer"].map((option) => ({ value: option, label: option }))}
+          className="min-w-[150px] rounded-xl border-outline-variant bg-white text-on-surface"
+          aria-label="Transaction type filter"
+        />
+        <StyledSelect
           value={walletFilter}
-          onChange={(e) => setWalletFilter(e.target.value)}
-        >
-          <option>All Wallets</option>
-          {wallets.map((w) => (
-            <option key={w.wallet_id}>{w.name}</option>
-          ))}
-        </select>
+          onChange={setWalletFilter}
+          options={[{ value: "All Wallets", label: "All Wallets" }, ...wallets.map((w) => ({ value: w.name, label: w.name }))]}
+          className="min-w-[180px] rounded-xl border-outline-variant bg-white text-on-surface"
+          aria-label="Wallet filter"
+        />
       </section>
 
       {/* DATA TABLE */}

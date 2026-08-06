@@ -1,0 +1,177 @@
+import { createPortal } from "react-dom";
+import { useEffect, useId, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
+import { cn } from "@/lib/utils";
+
+export interface StyledSelectOption {
+  value: string;
+  label: string;
+}
+
+interface StyledSelectProps {
+  id?: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: readonly StyledSelectOption[];
+  placeholder?: string;
+  className?: string;
+  disabled?: boolean;
+  required?: boolean;
+  "aria-label"?: string;
+}
+
+export function StyledSelect({
+  id,
+  value,
+  onChange,
+  options,
+  placeholder = "Select an option",
+  className,
+  disabled = false,
+  required = false,
+  "aria-label": ariaLabel,
+}: StyledSelectProps) {
+  const [open, setOpen] = useState(false);
+  const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
+  const [activeIndex, setActiveIndex] = useState(() =>
+    Math.max(0, options.findIndex((option) => option.value === value)),
+  );
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuId = useId();
+  const selectedIndex = options.findIndex((option) => option.value === value);
+  const selectedOption = options[selectedIndex];
+
+  useEffect(() => {
+    if (!open) return;
+    const updatePosition = () => {
+      const rect = buttonRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const menuHeight = Math.min(options.length * 44 + 8, 280);
+      const roomBelow = window.innerHeight - rect.bottom;
+      const top = roomBelow < menuHeight && rect.top > menuHeight
+        ? rect.top - menuHeight - 6
+        : rect.bottom + 6;
+      setMenuStyle({ top, left: rect.left, width: rect.width });
+    };
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [open, options.length]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (!wrapperRef.current?.contains(target) && !(target as HTMLElement).closest(`[data-select-menu="${menuId}"]`)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [open, menuId]);
+
+  function choose(index: number) {
+    const option = options[index];
+    if (!option) return;
+    onChange(option.value);
+    setActiveIndex(index);
+    setOpen(false);
+    buttonRef.current?.focus();
+  }
+
+  function handleKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
+    if (disabled) return;
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      const direction = event.key === "ArrowDown" ? 1 : -1;
+      const next = open
+        ? (activeIndex + direction + options.length) % options.length
+        : Math.max(0, selectedIndex) + (event.key === "ArrowDown" ? 1 : -1);
+      setActiveIndex(Math.max(0, Math.min(options.length - 1, next)));
+      setOpen(true);
+    } else if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      if (open) choose(activeIndex);
+      else {
+        setActiveIndex(Math.max(0, selectedIndex));
+        setOpen(true);
+      }
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      setOpen(false);
+    } else if (event.key === "Home" || event.key === "End") {
+      event.preventDefault();
+      setActiveIndex(event.key === "Home" ? 0 : options.length - 1);
+      setOpen(true);
+    }
+  }
+
+  return (
+    <div ref={wrapperRef} className="relative w-full">
+      <button
+        ref={buttonRef}
+        id={id}
+        type="button"
+        disabled={disabled}
+        aria-label={ariaLabel}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={open ? menuId : undefined}
+        aria-required={required || undefined}
+        onClick={() => {
+          setActiveIndex(Math.max(0, selectedIndex));
+          setOpen((current) => !current);
+        }}
+        onKeyDown={handleKeyDown}
+        className={cn(
+          "flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 text-left text-sm font-semibold text-slate-800 shadow-sm outline-none transition-[border-color,box-shadow,background-color] hover:border-slate-300 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50",
+          className,
+        )}
+      >
+        <span className={selectedOption ? "truncate" : "truncate text-slate-400"}>
+          {selectedOption?.label ?? placeholder}
+        </span>
+        <span className={cn("material-symbols-outlined shrink-0 text-[20px] text-slate-400 transition-transform", open && "rotate-180 text-primary")} aria-hidden="true">
+          expand_more
+        </span>
+      </button>
+
+      {open && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              id={menuId}
+              data-select-menu={menuId}
+              role="listbox"
+              aria-labelledby={id}
+              className="fixed z-[200] max-h-[280px] overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-[0_16px_38px_rgba(15,23,42,0.16)]"
+              style={menuStyle}
+            >
+              {options.map((option, index) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="option"
+                  aria-selected={option.value === value}
+                  onMouseEnter={() => setActiveIndex(index)}
+                  onClick={() => choose(index)}
+                  className={cn(
+                    "flex min-h-10 w-full items-center justify-between rounded-lg px-3 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-[#eff8f3] hover:text-primary focus-visible:bg-[#eff8f3] focus-visible:text-primary focus-visible:outline-none",
+                    index === activeIndex && "bg-slate-50",
+                    option.value === value && "font-bold text-primary",
+                  )}
+                >
+                  <span className="truncate">{option.label}</span>
+                  {option.value === value ? <span className="material-symbols-outlined text-[18px]" aria-hidden="true">check</span> : null}
+                </button>
+              ))}
+            </div>,
+            document.body,
+          )
+        : null}
+    </div>
+  );
+}

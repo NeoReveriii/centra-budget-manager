@@ -16,6 +16,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { StyledSelect } from "@/components/ui/styled-select";
 
 interface CategoryStyle {
   icon: string;
@@ -538,45 +539,28 @@ const Dashboard = () => {
 
         <div className="flex w-full flex-wrap items-center gap-3 md:w-auto">
           <div className="relative">
-            <select
+            <StyledSelect
               value={selectedDateRange}
-              onChange={(e) =>
-                setSelectedDateRange(e.target.value as DateRangeOption)
-              }
-              className="cursor-pointer appearance-none rounded-lg border border-outline-variant bg-white py-2 pl-10 pr-8 font-bold text-body-sm text-slate-600 transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/20"
-            >
-              {DATE_RANGE_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setSelectedDateRange(value as DateRangeOption)}
+              options={DATE_RANGE_OPTIONS.map((option) => ({ value: option, label: option }))}
+              className="rounded-lg border-outline-variant bg-white pl-10 pr-8 font-bold text-body-sm text-slate-600"
+              aria-label="Date range"
+            />
             <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">
               calendar_month
-            </span>
-            <span className="material-symbols-outlined pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">
-              expand_more
             </span>
           </div>
 
           <div className="relative">
-            <select
+            <StyledSelect
               value={selectedWalletId}
-              onChange={(e) => setSelectedWalletId(e.target.value)}
-              className="cursor-pointer appearance-none rounded-lg border border-outline-variant bg-white py-2 pl-10 pr-8 font-bold text-body-sm text-slate-600 transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/20"
-            >
-              <option value="all">All Wallets</option>
-              {wallets.map((wallet) => (
-                <option key={wallet.wallet_id} value={wallet.wallet_id}>
-                  {wallet.name}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedWalletId}
+              options={[{ value: "all", label: "All Wallets" }, ...wallets.map((wallet) => ({ value: String(wallet.wallet_id), label: wallet.name }))]}
+              className="rounded-lg border-outline-variant bg-white pl-10 pr-8 font-bold text-body-sm text-slate-600"
+              aria-label="Wallet filter"
+            />
             <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">
               account_balance_wallet
-            </span>
-            <span className="material-symbols-outlined pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">
-              expand_more
             </span>
           </div>
         </div>

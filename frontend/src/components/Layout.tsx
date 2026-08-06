@@ -19,12 +19,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const setTransferModalOpen = useUiStore((s) => s.setTransferModalOpen);
   const setTransferModalFromWalletId = useUiStore((s) => s.setTransferModalFromWalletId);
 
-  const openFabAction = (type: "Transaction" | "Transfer") => {
+  const openFabAction = (type: "Expense" | "Income" | "Transfer") => {
     if (type === "Transfer") {
       setTransferModalFromWalletId("");
       setTransferModalOpen(true);
     } else {
-      setAddModalDefaultType("Expense");
+      setAddModalDefaultType(type);
       setAddModalDefaultWalletId("");
       setAddModalOpen(true);
     }
@@ -63,33 +63,46 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           aria-hidden={!isFabOpen}
         >
           <button
-            onClick={() => openFabAction("Transaction")}
-            className="group flex items-center gap-3 bg-white border border-outline-variant px-4 py-3 rounded-2xl shadow-xl hover:bg-slate-50 transition-all cursor-pointer whitespace-nowrap"
+            type="button"
+            aria-label="Add expense"
+            onClick={() => openFabAction("Expense")}
+            className="group flex min-h-16 w-60 items-center justify-between gap-4 rounded-2xl border border-outline-variant bg-white px-4 py-3 text-left shadow-[0_10px_24px_rgba(15,23,42,0.1)] transition-[background-color,border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-rose-200 hover:bg-rose-50/40 hover:shadow-[0_14px_28px_rgba(15,23,42,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/30 active:translate-y-0"
           >
-            <span className="font-bold text-sm text-primary">Add transaction</span>
-            <div className="w-10 h-10 rounded-xl bg-primary-fixed text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
-              <span className="material-symbols-outlined text-[20px]">add_card</span>
-            </div>
+            <span className="text-sm font-extrabold text-slate-800">Add expenses</span>
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-700 transition-transform duration-200 group-hover:scale-105">
+              <span className="material-symbols-outlined text-[22px]" aria-hidden="true">trending_down</span>
+            </span>
           </button>
           <button
-            onClick={() => openFabAction("Transfer")}
-            className="group flex items-center gap-3 bg-white border border-outline-variant px-4 py-3 rounded-2xl shadow-xl hover:bg-slate-50 transition-all cursor-pointer whitespace-nowrap"
+            type="button"
+            aria-label="Add income"
+            onClick={() => openFabAction("Income")}
+            className="group flex min-h-16 w-60 items-center justify-between gap-4 rounded-2xl border border-outline-variant bg-white px-4 py-3 text-left shadow-[0_10px_24px_rgba(15,23,42,0.1)] transition-[background-color,border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:bg-emerald-50/50 hover:shadow-[0_14px_28px_rgba(15,23,42,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 active:translate-y-0"
           >
-            <span className="font-bold text-sm text-blue-700">
-              Add Transfer
+            <span className="text-sm font-extrabold text-slate-800">Add income</span>
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 transition-transform duration-200 group-hover:scale-105">
+              <span className="material-symbols-outlined text-[22px]" aria-hidden="true">trending_up</span>
             </span>
-            <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <span className="material-symbols-outlined text-[20px]">
-                sync_alt
-              </span>
-            </div>
+          </button>
+          <button
+            type="button"
+            aria-label="Add transfer"
+            onClick={() => openFabAction("Transfer")}
+            className="group flex min-h-16 w-60 items-center justify-between gap-4 rounded-2xl border border-outline-variant bg-white px-4 py-3 text-left shadow-[0_10px_24px_rgba(15,23,42,0.1)] transition-[background-color,border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50/50 hover:shadow-[0_14px_28px_rgba(15,23,42,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 active:translate-y-0"
+          >
+            <span className="text-sm font-extrabold text-slate-800">Add transfer</span>
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700 transition-transform duration-200 group-hover:scale-105">
+              <span className="material-symbols-outlined text-[22px]" aria-hidden="true">sync_alt</span>
+            </span>
           </button>
         </div>
 
         {/* Main FAB Button */}
         <button
           onClick={() => setFabOpen(!isFabOpen)}
-          className={`w-16 h-16 bg-[#003527] text-white rounded-2xl shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer group ${isFabOpen ? "ring-4 ring-primary/20" : ""}`}
+          aria-label={isFabOpen ? "Close quick actions" : "Open quick actions"}
+          aria-expanded={isFabOpen}
+          className={`flex h-16 w-16 items-center justify-center rounded-2xl bg-[#003527] text-white shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer group ${isFabOpen ? "ring-4 ring-primary/20" : ""}`}
         >
           <span
             className={`material-symbols-outlined text-[32px] transition-transform duration-500 ${isFabOpen ? "rotate-135" : "rotate-0"}`}

@@ -6,6 +6,7 @@ import {
 } from "@/hooks/use-budget-data";
 import { useUiStore } from "@/stores/ui-store";
 import { Button } from "@/components/ui/button";
+import { StyledSelect } from "@/components/ui/styled-select";
 import {
   Dialog,
   DialogContent,
@@ -123,10 +124,9 @@ export function TransferFundsModal() {
             <label className="block text-label-caps font-label-caps text-slate-500 uppercase">
               From Wallet
             </label>
-            <select
+            <StyledSelect
               value={transfer.from_wallet_id}
-              onChange={(e) => {
-                const fromWalletId = e.target.value;
+              onChange={(fromWalletId) => {
                 setTransfer({
                   ...transfer,
                   from_wallet_id: fromWalletId,
@@ -136,39 +136,37 @@ export function TransferFundsModal() {
                       : transfer.to_wallet_id,
                 });
               }}
-              className="w-full cursor-pointer rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-body-sm font-bold outline-none transition-colors focus:bg-white focus:ring-2 focus:ring-primary/20"
+              options={[
+                { value: "", label: "Select source wallet" },
+                ...activeWallets.map((wallet) => ({
+                  value: String(wallet.wallet_id),
+                  label: `${wallet.name} - ${formatCurrency(Number(wallet.calculated_balance))}`,
+                })),
+              ]}
+              className="bg-slate-50"
               required
-            >
-              <option value="">Select source wallet</option>
-              {activeWallets.map((w) => (
-                <option key={w.wallet_id} value={w.wallet_id}>
-                  {w.name} - {formatCurrency(Number(w.calculated_balance))}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div className="space-y-2">
             <label className="block text-label-caps font-label-caps text-slate-500 uppercase">
               To Wallet
             </label>
-            <select
+            <StyledSelect
               value={transfer.to_wallet_id}
-              onChange={(e) =>
-                setTransfer({ ...transfer, to_wallet_id: e.target.value })
-              }
-              className="w-full cursor-pointer rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-body-sm font-bold outline-none transition-colors focus:bg-white focus:ring-2 focus:ring-primary/20"
+              onChange={(value) => setTransfer({ ...transfer, to_wallet_id: value })}
+              options={[
+                { value: "", label: "Select destination wallet" },
+                ...activeWallets
+                  .filter((wallet) => String(wallet.wallet_id) !== transfer.from_wallet_id)
+                  .map((wallet) => ({
+                    value: String(wallet.wallet_id),
+                    label: `${wallet.name} - ${formatCurrency(Number(wallet.calculated_balance))}`,
+                  })),
+              ]}
+              className="bg-slate-50"
               required
-            >
-              <option value="">Select destination wallet</option>
-              {activeWallets
-                .filter((w) => String(w.wallet_id) !== transfer.from_wallet_id)
-                .map((w) => (
-                  <option key={w.wallet_id} value={w.wallet_id}>
-                    {w.name} - {formatCurrency(Number(w.calculated_balance))}
-                  </option>
-                ))}
-            </select>
+            />
           </div>
 
           {activeWallets.length < 2 ? (

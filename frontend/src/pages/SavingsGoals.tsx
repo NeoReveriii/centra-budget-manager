@@ -7,6 +7,7 @@ import { budgetQueryKeys } from "../hooks/use-budget-data";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+import { StyledSelect } from "@/components/ui/styled-select";
 import {
   Dialog,
   DialogContent,
@@ -26,11 +27,6 @@ const CATEGORY_ICONS: Record<string, string> = {
   Education: "school",
   Savings:   "savings",
 };
-
-const SELECT_CLS =
-  "w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm " +
-  "outline-none focus:border-primary transition-colors cursor-pointer " +
-  "disabled:cursor-not-allowed disabled:opacity-50";
 
 function formatCurrency(n: number) {
   return (
@@ -226,32 +222,28 @@ const SavingsGoals: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label htmlFor="goal-category">Category</Label>
-                    <select
+                    <StyledSelect
                       id="goal-category"
                       value={category}
-                      onChange={e => setCategory(e.target.value)}
-                      className={SELECT_CLS}
-                    >
-                      {Object.keys(CATEGORY_ICONS).map(c => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
+                      onChange={setCategory}
+                      options={Object.keys(CATEGORY_ICONS).map((c) => ({ value: c, label: c }))}
+                    />
                   </div>
 
                   <div className="space-y-1.5">
                     <Label htmlFor="goal-priority">Priority</Label>
-                    <select
+                    <StyledSelect
                       id="goal-priority"
-                      value={priority}
-                      onChange={e => setPriority(Number(e.target.value))}
-                      className={SELECT_CLS}
-                    >
-                      <option value={5}>🔴 High (Urgent)</option>
-                      <option value={4}>🟠 High</option>
-                      <option value={3}>🟡 Medium</option>
-                      <option value={2}>🟢 Low</option>
-                      <option value={1}>⚪ Very Low</option>
-                    </select>
+                      value={String(priority)}
+                      onChange={(value) => setPriority(Number(value))}
+                      options={[
+                        { value: "5", label: "High (Urgent)" },
+                        { value: "4", label: "High" },
+                        { value: "3", label: "Medium" },
+                        { value: "2", label: "Low" },
+                        { value: "1", label: "Very Low" },
+                      ]}
+                    />
                   </div>
                 </div>
 

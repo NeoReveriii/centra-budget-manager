@@ -96,7 +96,7 @@ const LoginModal = ({ onClose, onSwitchToCreateAccount }: LoginModalProps) => {
               className="rounded-full"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. you@example.com"
+              placeholder="name@example.com"
               type="email"
               required
             />
@@ -124,7 +124,6 @@ const LoginModal = ({ onClose, onSwitchToCreateAccount }: LoginModalProps) => {
                 className="rounded-full pr-12"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••••••"
                 type={showPassword ? "text" : "password"}
                 required
               />
@@ -143,7 +142,7 @@ const LoginModal = ({ onClose, onSwitchToCreateAccount }: LoginModalProps) => {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full rounded-full uppercase tracking-widest bg-primary-container text-on-primary font-bold hover:bg-primary hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-300 ease-out active:scale-[0.98] cursor-pointer"
+            className="w-full rounded-full uppercase tracking-widest bg-primary text-on-primary font-bold shadow-[0_5px_14px_rgba(0,53,39,0.12)] transition-[background-color,box-shadow,transform] duration-200 ease-out hover:bg-primary-container hover:-translate-y-0.5 hover:shadow-[0_9px_22px_rgba(0,53,39,0.2)] focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 active:translate-y-0"
           >
             {isLoading ? "Authenticating..." : "Sign In"}
           </Button>
@@ -195,16 +194,16 @@ const LoginModal = ({ onClose, onSwitchToCreateAccount }: LoginModalProps) => {
           </Button>
         </div>
 
-        <div className="bg-surface-container py-5 px-8 border-t border-outline-variant flex justify-center items-center">
-          <p className="font-label-caps text-label-caps text-on-surface-variant uppercase">
-            New Partner?
+        <div className="border-t border-slate-200 bg-white px-8 py-5 flex items-center justify-center">
+          <p className="text-xs font-medium text-slate-500">
+            New to Centra?
           </p>
           <button
             type="button"
             onClick={onSwitchToCreateAccount}
-            className="ml-2 font-label-caps text-label-caps text-primary hover:underline cursor-pointer"
+            className="ml-2 rounded-md px-1 text-xs font-bold text-primary underline-offset-4 transition-colors hover:text-primary-container hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
           >
-            Create Account
+            Create an account
           </button>
         </div>
       </DialogContent>

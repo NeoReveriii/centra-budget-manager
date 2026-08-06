@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { StyledSelect } from "@/components/ui/styled-select";
 
 type WalletFilter = "ALL" | "ACTIVE" | "ARCHIVED";
 
@@ -513,9 +514,12 @@ const Wallets = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="wallet-type">Account type</Label>
-                <select id="wallet-type" value={form.type} onChange={(event) => setForm({ ...form, type: event.target.value })} className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white">
-                  {WALLET_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
-                </select>
+                <StyledSelect
+                  id="wallet-type"
+                  value={form.type}
+                  onChange={(value) => setForm({ ...form, type: value })}
+                  options={WALLET_TYPES.map((type) => ({ value: type, label: type }))}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="wallet-balance">Starting balance</Label>
