@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useCreateTransaction, useWallets } from "@/hooks/use-budget-data";
 import { useUiStore } from "@/stores/ui-store";
 import { Button } from "@/components/ui/button";
@@ -51,9 +51,13 @@ export function AddTransactionModal() {
   const open = useUiStore((s) => s.addModalOpen);
   const setOpen = useUiStore((s) => s.setAddModalOpen);
   const defaultType = useUiStore((s) => s.addModalDefaultType);
+  const defaultWalletId = useUiStore((s) => s.addModalDefaultWalletId);
 
   const { data: wallets = [] } = useWallets();
   const createTx = useCreateTransaction();
+  const activeWallets = wallets.filter(
+    (wallet) => String(wallet.status).toUpperCase() === "ACTIVE",
+  );
 
   const [newTx, setNewTx] = useState({
     description: "",
@@ -63,9 +67,15 @@ export function AddTransactionModal() {
     category: defaultCategoryForType("Expense" as TxType),
   });
   const [addError, setAddError] = useState("");
+  const wasOpen = useRef(false);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      wasOpen.current = false;
+      return;
+    }
+    if (wasOpen.current) return;
+    wasOpen.current = true;
     const normalizedType = TYPE_OPTIONS.includes(defaultType as TxType)
       ? (defaultType as TxType)
       : "Expense";
@@ -73,12 +83,18 @@ export function AddTransactionModal() {
     setNewTx({
       description: "",
       type: normalizedType,
-      wallet_id: "",
+      wallet_id: activeWallets.some(
+        (wallet) => String(wallet.wallet_id) === defaultWalletId,
+      )
+        ? defaultWalletId
+        : activeWallets.length === 1
+          ? String(activeWallets[0].wallet_id)
+          : "",
       amount: "",
       category: defaultCategoryForType(normalizedType),
     });
     setAddError("");
-  }, [open, defaultType]);
+  }, [open, defaultType, defaultWalletId, wallets]);
 
   const categoryOptions = getCategoryOptions(newTx.type);
 
@@ -260,7 +276,7 @@ export function AddTransactionModal() {
                 required
               >
                 <option value="">Select wallet</option>
-                {wallets.map((w) => (
+                {activeWallets.map((w) => (
                   <option key={w.wallet_id} value={w.wallet_id}>
                     {w.name}
                   </option>
@@ -270,6 +286,11 @@ export function AddTransactionModal() {
                 expand_more
               </span>
             </div>
+            {activeWallets.length === 0 ? (
+              <p className="text-xs font-medium text-error">
+                Create or restore an active wallet before recording a transaction.
+              </p>
+            ) : null}
           </div>
 
           <DialogFooter className="gap-3 pt-4 sm:justify-stretch">
@@ -283,7 +304,7 @@ export function AddTransactionModal() {
             </Button>
             <Button
               type="submit"
-              disabled={createTx.isPending}
+              disabled={createTx.isPending || activeWallets.length === 0}
               className="flex-1 rounded-xl shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30"
             >
               {createTx.isPending ? "Saving..." : "Save Transaction"}

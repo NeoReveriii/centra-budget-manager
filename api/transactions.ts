@@ -27,6 +27,12 @@ interface BalanceRow {
   current_balance: string | number;
 }
 
+interface TransactionWalletRow {
+  wallet_id: number;
+  name: string;
+  status: string | null;
+}
+
 const sql = neon(process.env.DATABASE_URL!);
 const SCHEMA_CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -198,7 +204,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         FROM transactions
         WHERE account_id = ${account.acc_id}
         ORDER BY dateoftrans DESC
-        LIMIT 50
       `;
       return res.status(200).json(rows);
 
@@ -319,10 +324,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       const description = String(postBody.description ?? postBody.title ?? '').trim();
       const type = normalizeType(postBody.type);
-      const walletType = String(postBody.wallet_type ?? postBody.wallet ?? '').trim();
-      const walletId = postBody.wallet_id ?? null;
+      let walletType = String(postBody.wallet_type ?? postBody.wallet ?? '').trim();
+      let walletId = postBody.wallet_id ?? null;
       const category = String(postBody.category ?? '').trim() || null;
       const amountNum = postBody.amount;
+
+      const walletRows = walletId != null
+        ? await sql`
+          SELECT wallet_id, name, status
+          FROM wallets
+          WHERE account_id = ${account.acc_id}
+            AND wallet_id = ${walletId}
+          LIMIT 1
+        ` as TransactionWalletRow[]
+        : await sql`
+          SELECT wallet_id, name, status
+          FROM wallets
+          WHERE account_id = ${account.acc_id}
+            AND LOWER(name) = LOWER(${walletType})
+          LIMIT 1
+        ` as TransactionWalletRow[];
+
+      const wallet = walletRows[0];
+      if (!wallet) {
+        return res.status(404).json({ error: 'Wallet not found' });
+      }
+      if (String(wallet.status || '').toUpperCase() !== 'ACTIVE') {
+        return res.status(400).json({ error: `Wallet "${wallet.name}" is archived` });
+      }
+
+      walletId = wallet.wallet_id;
+      walletType = wallet.name;
 
       const now = new Date();
 
@@ -388,5 +420,3 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(500).json({ error: 'Database error', details });
   }
 }
-
-

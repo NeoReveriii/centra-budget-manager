@@ -14,6 +14,7 @@ import {
   fetchTransactions,
   fetchWallets,
   transferFunds,
+  updateWallet,
   type Transaction,
   type Wallet,
   type Goal,
@@ -26,40 +27,55 @@ export const budgetQueryKeys = {
   chatHistory: ["chatHistory"] as const,
 };
 
-function useDataQueryEnabled(enabled = true): boolean {
-  const { isAuthenticated, isLoading } = useAuth();
-  return enabled && isAuthenticated && !isLoading;
+export const LIVE_REFRESH_INTERVAL_MS = 10_000;
+
+function useBudgetQueryIdentity(enabled = true) {
+  const { user, isAuthenticated, isLoading } = useAuth();
+  return {
+    accountId: user?.acc_id ?? "anonymous",
+    enabled: enabled && isAuthenticated && !isLoading,
+  };
 }
 
 export function useWallets() {
+  const identity = useBudgetQueryIdentity();
   return useQuery({
-    queryKey: budgetQueryKeys.wallets,
+    queryKey: [...budgetQueryKeys.wallets, identity.accountId],
     queryFn: fetchWallets,
-    enabled: useDataQueryEnabled(),
+    enabled: identity.enabled,
+    refetchInterval: LIVE_REFRESH_INTERVAL_MS,
+    refetchIntervalInBackground: false,
   });
 }
 
 export function useTransactions() {
+  const identity = useBudgetQueryIdentity();
   return useQuery({
-    queryKey: budgetQueryKeys.transactions,
+    queryKey: [...budgetQueryKeys.transactions, identity.accountId],
     queryFn: fetchTransactions,
-    enabled: useDataQueryEnabled(),
+    enabled: identity.enabled,
+    refetchInterval: LIVE_REFRESH_INTERVAL_MS,
+    refetchIntervalInBackground: false,
   });
 }
 
 export function useGoals() {
+  const identity = useBudgetQueryIdentity();
   return useQuery({
-    queryKey: budgetQueryKeys.goals,
+    queryKey: [...budgetQueryKeys.goals, identity.accountId],
     queryFn: fetchGoals,
-    enabled: useDataQueryEnabled(),
+    enabled: identity.enabled,
+    refetchInterval: LIVE_REFRESH_INTERVAL_MS,
+    refetchIntervalInBackground: false,
   });
 }
 
 export function useChatHistory(enabled = true) {
+  const identity = useBudgetQueryIdentity(enabled);
   return useQuery({
-    queryKey: budgetQueryKeys.chatHistory,
+    queryKey: [...budgetQueryKeys.chatHistory, identity.accountId],
     queryFn: fetchChatHistory,
-    enabled: useDataQueryEnabled(enabled),
+    enabled: identity.enabled,
   });
 }
 
@@ -67,9 +83,11 @@ export function useCreateTransaction() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createTransaction,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: budgetQueryKeys.transactions });
-      queryClient.invalidateQueries({ queryKey: budgetQueryKeys.wallets });
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: budgetQueryKeys.transactions }),
+        queryClient.invalidateQueries({ queryKey: budgetQueryKeys.wallets }),
+      ]);
     },
   });
 }
@@ -78,9 +96,11 @@ export function useDeleteTransaction() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteTransaction,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: budgetQueryKeys.transactions });
-      queryClient.invalidateQueries({ queryKey: budgetQueryKeys.wallets });
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: budgetQueryKeys.transactions }),
+        queryClient.invalidateQueries({ queryKey: budgetQueryKeys.wallets }),
+      ]);
     },
   });
 }
@@ -89,8 +109,21 @@ export function useCreateWallet() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createWallet,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: budgetQueryKeys.wallets });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: budgetQueryKeys.wallets });
+    },
+  });
+}
+
+export function useUpdateWallet() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateWallet,
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: budgetQueryKeys.wallets }),
+        queryClient.invalidateQueries({ queryKey: budgetQueryKeys.transactions }),
+      ]);
     },
   });
 }
@@ -99,9 +132,11 @@ export function useDeleteWallet() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteWallet,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: budgetQueryKeys.wallets });
-      queryClient.invalidateQueries({ queryKey: budgetQueryKeys.transactions });
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: budgetQueryKeys.wallets }),
+        queryClient.invalidateQueries({ queryKey: budgetQueryKeys.transactions }),
+      ]);
     },
   });
 }
@@ -110,9 +145,11 @@ export function useTransferFunds() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: transferFunds,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: budgetQueryKeys.wallets });
-      queryClient.invalidateQueries({ queryKey: budgetQueryKeys.transactions });
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: budgetQueryKeys.wallets }),
+        queryClient.invalidateQueries({ queryKey: budgetQueryKeys.transactions }),
+      ]);
     },
   });
 }
@@ -121,8 +158,8 @@ export function useClearChatHistory() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: clearChatHistory,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: budgetQueryKeys.chatHistory });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: budgetQueryKeys.chatHistory });
     },
   });
 }
@@ -131,8 +168,8 @@ export function useCreateGoal() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createGoal,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: budgetQueryKeys.goals });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: budgetQueryKeys.goals });
     },
   });
 }
@@ -141,8 +178,8 @@ export function useUpdateGoal() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateGoal,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: budgetQueryKeys.goals });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: budgetQueryKeys.goals });
     },
   });
 }
@@ -151,8 +188,8 @@ export function useDeleteGoal() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteGoal,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: budgetQueryKeys.goals });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: budgetQueryKeys.goals });
     },
   });
 }

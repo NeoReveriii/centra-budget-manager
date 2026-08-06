@@ -20,6 +20,10 @@ interface WalletNameRow {
   name: string;
 }
 
+interface ExistingWalletRow {
+  wallet_id: number;
+}
+
 const sql = neon(process.env.DATABASE_URL!);
 const SCHEMA_CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -126,6 +130,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const body = parseBody(createWalletSchema, req.body, res);
       if (!body) return;
 
+      const duplicateRows = await sql`
+        SELECT wallet_id
+        FROM wallets
+        WHERE account_id = ${account.acc_id}
+          AND LOWER(name) = LOWER(${body.name})
+        LIMIT 1
+      ` as ExistingWalletRow[];
+
+      if (duplicateRows.length > 0) {
+        return res.status(409).json({ error: 'A wallet with this name already exists' });
+      }
+
       const rows = await sql`
         INSERT INTO wallets (account_id, name, type, initial_balance)
         VALUES (${account.acc_id}, ${body.name}, ${body.type}, ${body.initial_balance})
@@ -139,7 +155,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!body) return;
 
       const { wallet_id, name, type, status, initial_balance } = body;
-      const parsedBalance = initial_balance ?? 0;
 
       const oldWalletRows = await sql`
         SELECT name FROM wallets WHERE wallet_id = ${wallet_id} AND account_id = ${account.acc_id}
@@ -150,9 +165,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
       const oldName = oldWalletRows[0].name;
 
+      const duplicateRows = await sql`
+        SELECT wallet_id
+        FROM wallets
+        WHERE account_id = ${account.acc_id}
+          AND LOWER(name) = LOWER(${name})
+          AND wallet_id <> ${wallet_id}
+        LIMIT 1
+      ` as ExistingWalletRow[];
+
+      if (duplicateRows.length > 0) {
+        return res.status(409).json({ error: 'A wallet with this name already exists' });
+      }
+
       const rows = await sql`
         UPDATE wallets
-        SET name = ${name}, type = ${type}, status = ${status || 'ACTIVE'}, initial_balance = ${parsedBalance}
+        SET name = ${name},
+            type = ${type},
+            status = COALESCE(${status ?? null}, status),
+            initial_balance = COALESCE(${initial_balance ?? null}, initial_balance)
         WHERE wallet_id = ${wallet_id} AND account_id = ${account.acc_id}
         RETURNING *
       `;
@@ -161,7 +192,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         await sql`
           UPDATE transactions
           SET wallet_type = ${name}
-          WHERE wallet_type = ${oldName} AND account_id = ${account.acc_id}
+          WHERE account_id = ${account.acc_id}
+            AND (
+              wallet_id = ${wallet_id}
+              OR transfer_from_wallet_id = ${wallet_id}
+              OR (wallet_id IS NULL AND wallet_type = ${oldName})
+            )
         `;
       }
 

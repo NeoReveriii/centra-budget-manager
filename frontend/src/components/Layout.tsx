@@ -15,13 +15,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const setFabOpen = useUiStore((s) => s.setFabOpen);
   const setAddModalOpen = useUiStore((s) => s.setAddModalOpen);
   const setAddModalDefaultType = useUiStore((s) => s.setAddModalDefaultType);
+  const setAddModalDefaultWalletId = useUiStore((s) => s.setAddModalDefaultWalletId);
   const setTransferModalOpen = useUiStore((s) => s.setTransferModalOpen);
+  const setTransferModalFromWalletId = useUiStore((s) => s.setTransferModalFromWalletId);
 
   const openFabAction = (type: "Income" | "Expense" | "Transfer") => {
     if (type === "Transfer") {
+      setTransferModalFromWalletId("");
       setTransferModalOpen(true);
     } else {
       setAddModalDefaultType(type);
+      setAddModalDefaultWalletId("");
       setAddModalOpen(true);
     }
 
