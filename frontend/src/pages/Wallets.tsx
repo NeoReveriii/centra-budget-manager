@@ -342,11 +342,12 @@ const Wallets = () => {
   }
 
   return (
-    <div className="min-h-screen space-y-6 pb-24 animate-fade-in">
+    <div className="min-h-screen space-y-7 pb-24 animate-fade-in">
       <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-[-0.035em] text-on-background dark:text-slate-100 sm:text-4xl">Wallets</h1>
-          <p className="mt-2 text-sm leading-6 text-on-surface-variant dark:text-slate-300">See where your money lives, review activity, and move funds between accounts.</p>
+          <p className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-primary/70 dark:text-emerald-300">Money overview</p>
+          <h1 className="text-3xl font-extrabold tracking-[-0.045em] text-on-background dark:text-slate-100 sm:text-4xl">Wallets</h1>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-on-surface-variant dark:text-slate-300">See where your money lives, review activity, and move funds between accounts.</p>
         </div>
         <div className="flex flex-wrap gap-3">
           <Button variant="outline" className="min-h-11" onClick={() => openTransfer()} disabled={activeWallets.length < 2}>
@@ -357,21 +358,22 @@ const Wallets = () => {
           </Button>
         </div>
       </header>
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-7">
+      <section className="relative overflow-hidden rounded-2xl border border-[#b8d7c9] bg-[#eff8f3] p-6 shadow-[0_12px_30px_rgba(0,53,39,0.06)] dark:border-emerald-900 dark:bg-emerald-950/40 sm:p-7">
+        <div className="pointer-events-none absolute -right-10 -top-16 h-44 w-44 rounded-full bg-primary/5 blur-2xl" />
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(28rem,1fr)] lg:items-end">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">
+            <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.16em] text-primary dark:text-emerald-300">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
               Portfolio balance
             </div>
-            <p className="mt-3 text-4xl font-extrabold tracking-[-0.045em] text-slate-950 dark:text-white sm:text-5xl">{formatCurrency(totalBalance)}</p>
-            <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">Across {wallets.length} {wallets.length === 1 ? "account" : "accounts"}</p>
+            <p className="mt-3 text-4xl font-extrabold tracking-[-0.055em] text-primary dark:text-white sm:text-5xl">{formatCurrency(totalBalance)}</p>
+            <p className="mt-3 text-sm font-medium text-on-surface-variant dark:text-slate-300">Across {wallets.length} {wallets.length === 1 ? "account" : "accounts"}</p>
           </div>
-          <dl className="grid grid-cols-3 border-t border-slate-200 pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0 dark:border-slate-700">
+          <dl className="grid grid-cols-3 border-t border-[#c8e0d3] pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0 dark:border-emerald-800">
             {[["Active funds", formatCurrency(activeBalance)], ["Active", String(activeWallets.length)], ["Activity", String(transactions.length)]].map(([label, value], index) => (
-              <div key={label} className={index ? "border-l border-slate-200 pl-5 dark:border-slate-700" : ""}>
-                <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</dt>
-                <dd className="mt-2 truncate text-base font-extrabold text-slate-900 dark:text-white">{value}</dd>
+              <div key={label} className={index ? "border-l border-[#c8e0d3] pl-5 dark:border-emerald-800" : ""}>
+                <dt className="text-[10px] font-extrabold uppercase tracking-wider text-on-surface-variant/70 dark:text-emerald-200/70">{label}</dt>
+                <dd className="mt-2 truncate text-base font-extrabold text-primary dark:text-white">{value}</dd>
               </div>
             ))}
           </dl>
@@ -400,7 +402,7 @@ const Wallets = () => {
           </div>
         </div>
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:border-slate-800 dark:bg-slate-900">
             {visibleWallets.length ? <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {visibleWallets.map((wallet) => {
                 const selected = selectedWallet?.wallet_id === wallet.wallet_id;
@@ -426,15 +428,15 @@ const Wallets = () => {
                 );
               })}
             </div> : (
-              <div className="flex min-h-80 flex-col items-center justify-center px-6 py-12 text-center">
-                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-fixed/60 text-primary dark:bg-emerald-950 dark:text-emerald-200">
+              <div className="flex min-h-[19rem] flex-col items-center justify-center px-6 py-10 text-center sm:px-12">
+                <span className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[#b8d7c9] bg-[#eff8f3] text-primary dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
                   <span className="material-symbols-outlined text-[28px]" aria-hidden="true">account_balance_wallet</span>
                 </span>
-                <h3 className="mt-5 font-extrabold text-slate-950 dark:text-white">{wallets.length ? "No matching accounts" : "Add your first wallet"}</h3>
+                <h3 className="mt-5 text-lg font-extrabold tracking-tight text-slate-950 dark:text-white">{wallets.length ? "No matching accounts" : "Add your first wallet"}</h3>
                 <p className="mt-2 max-w-[28rem] text-sm leading-6 text-slate-500 dark:text-slate-400">
                   {wallets.length ? "Try another search or switch the account filter." : "Start with the account you use most. Your dashboard will update as soon as it is created."}
                 </p>
-                <Button className="mt-6 min-h-11" onClick={wallets.length ? () => { setSearch(""); setFilter("ALL"); } : openCreate}>{wallets.length ? "Clear filters" : "Add wallet"}</Button>
+                <Button className="mt-6 min-h-11 px-5 shadow-sm" onClick={wallets.length ? () => { setSearch(""); setFilter("ALL"); } : openCreate}><span className="material-symbols-outlined text-[18px]" aria-hidden="true">{wallets.length ? "filter_alt_off" : "add"}</span>{wallets.length ? "Clear filters" : "Add wallet"}</Button>
               </div>
             )}
           </div>
@@ -492,7 +494,7 @@ const Wallets = () => {
                   <button type="button" onClick={() => { setDeleteError(""); setWalletToDelete(selectedWallet); }} className="min-h-12 text-xs font-bold text-rose-600 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-rose-500 dark:text-rose-300 dark:hover:bg-rose-950">Delete</button>
                 </div>
               </div>
-            ) : <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center dark:border-slate-700 dark:bg-slate-900"><span className="material-symbols-outlined text-3xl text-slate-300 dark:text-slate-600">touch_app</span><p className="mt-3 text-sm font-bold text-slate-700 dark:text-slate-200">Select an account</p><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Account controls and recent activity will appear here.</p></div>}
+            ) : <div className="rounded-2xl border border-dashed border-[#b8d7c9] bg-[#f6fbf8] p-8 text-center dark:border-emerald-900 dark:bg-emerald-950/30"><span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#e6f4ec] text-primary dark:bg-emerald-950 dark:text-emerald-200"><span className="material-symbols-outlined text-[24px]" aria-hidden="true">touch_app</span></span><p className="mt-4 text-sm font-extrabold text-slate-800 dark:text-slate-200">Select an account</p><p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">Account controls and recent activity will appear here.</p></div>}
           </aside>
         </div>
       </section>
