@@ -190,8 +190,8 @@ const LandingPage = () => {
 
       {/* Footer */}
       <footer className="mt-auto w-full border-t border-slate-200 bg-white py-14">
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-6 md:grid-cols-[1.2fr_0.8fr] md:items-start">
-          <div className="max-w-sm">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
+          <div className="w-full max-w-[384px]">
             <div className="text-lg font-extrabold tracking-tight text-slate-900">
               Centra Financial Systems
             </div>
