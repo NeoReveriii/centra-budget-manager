@@ -12,34 +12,44 @@ gsap.registerPlugin(useGSAP, ScrollTrigger);
 const LandingPage = () => {
   const pageRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
+  const headerShellRef = useRef<HTMLDivElement>(null);
 
   useGSAP(
     () => {
       const header = headerRef.current;
-      if (!header) return;
+      const headerShell = headerShellRef.current;
+      if (!header || !headerShell) return;
 
       const media = gsap.matchMedia();
 
-      const setHeaderVisibility = (visible: boolean, animate: boolean) => {
-        gsap.to(header, {
-          autoAlpha: visible ? 1 : 0,
-          y: visible ? 0 : -22,
-          scale: visible ? 1 : 0.965,
-          pointerEvents: visible ? "auto" : "none",
-          duration: animate ? (visible ? 0.55 : 0.32) : 0,
-          ease: visible ? "power3.out" : "power2.inOut",
+      const setHeaderCompact = (compact: boolean, animate: boolean) => {
+        gsap.to(headerShell, {
+          maxWidth: compact ? "1120px" : "1280px",
+          borderRadius: compact ? "16px" : "12px",
+          backgroundColor: compact ? "rgba(255,255,255,0.88)" : "rgba(255,255,255,0.84)",
+          boxShadow: compact
+            ? "0 18px 50px rgba(15,23,42,0.13)"
+            : "0 8px 24px rgba(15,23,42,0.05)",
+          duration: animate ? 0.5 : 0,
+          ease: "power3.out",
           overwrite: true,
         });
       };
 
       media.add("(prefers-reduced-motion: no-preference)", () => {
-        gsap.set(header, { autoAlpha: 0, y: -22, scale: 0.965, pointerEvents: "none" });
+        gsap.set(header, { autoAlpha: 1, y: 0, scale: 1, pointerEvents: "auto" });
+        gsap.set(headerShell, {
+          maxWidth: "1280px",
+          borderRadius: "12px",
+          backgroundColor: "rgba(255,255,255,0.84)",
+          boxShadow: "0 8px 24px rgba(15,23,42,0.05)",
+        });
 
         ScrollTrigger.create({
           trigger: pageRef.current,
           start: "top -112",
           end: "bottom top",
-          onToggle: (trigger) => setHeaderVisibility(trigger.isActive, true),
+          onToggle: (trigger) => setHeaderCompact(trigger.isActive, true),
         });
 
         const intro = gsap.timeline({ defaults: { ease: "power3.out" } });
@@ -169,14 +179,20 @@ const LandingPage = () => {
       });
 
       media.add("(prefers-reduced-motion: reduce)", () => {
-        gsap.set(header, { autoAlpha: 0, y: 0, scale: 1, pointerEvents: "none" });
+        gsap.set(header, { autoAlpha: 1, y: 0, scale: 1, pointerEvents: "auto" });
+        gsap.set(headerShell, {
+          maxWidth: "1280px",
+          borderRadius: "12px",
+          backgroundColor: "rgba(255,255,255,0.84)",
+          boxShadow: "0 8px 24px rgba(15,23,42,0.05)",
+        });
         gsap.set("[data-build-line]", { scaleX: 1, transformOrigin: "left center" });
 
         ScrollTrigger.create({
           trigger: pageRef.current,
           start: "top -112",
           end: "bottom top",
-          onToggle: (trigger) => setHeaderVisibility(trigger.isActive, false),
+          onToggle: (trigger) => setHeaderCompact(trigger.isActive, false),
         });
       });
 
@@ -193,7 +209,7 @@ const LandingPage = () => {
       >
         Skip to main content
       </a>
-      <LandingHeader headerRef={headerRef} />
+      <LandingHeader headerRef={headerRef} shellRef={headerShellRef} />
 
       <main className="w-full max-w-full overflow-x-hidden">
         <section

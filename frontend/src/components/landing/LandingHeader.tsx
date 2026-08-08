@@ -6,16 +6,20 @@ import { Button } from "@/components/ui/button";
 
 interface LandingHeaderProps {
   headerRef: RefObject<HTMLElement | null>;
+  shellRef: RefObject<HTMLDivElement | null>;
 }
 
-export default function LandingHeader({ headerRef }: LandingHeaderProps) {
+export default function LandingHeader({ headerRef, shellRef }: LandingHeaderProps) {
   return (
     <header
       ref={headerRef}
-      className="pointer-events-none invisible fixed inset-x-0 top-4 z-50 px-4"
+      className="fixed inset-x-0 top-0 z-50 px-4 py-4"
       aria-label="Landing navigation"
     >
-      <div className="mx-auto flex h-16 w-full max-w-[1120px] items-center justify-between rounded-2xl border border-white/80 bg-white/88 px-4 shadow-[0_18px_50px_rgba(15,23,42,0.13)] backdrop-blur-xl sm:px-5">
+      <div
+        ref={shellRef}
+        className="mx-auto flex h-16 w-full max-w-[1280px] items-center justify-between rounded-xl border border-slate-200/70 bg-white/84 px-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)] backdrop-blur-xl sm:px-5"
+      >
         <Link
           to="/"
           aria-label="Centra home"
