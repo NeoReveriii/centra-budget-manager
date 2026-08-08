@@ -538,7 +538,7 @@ const Dashboard = () => {
         </div>
 
         <div className="flex w-full flex-wrap items-center gap-3 md:w-auto">
-          <div className="relative">
+          <div className="relative w-full md:w-[150px]">
             <StyledSelect
               value={selectedDateRange}
               onChange={(value) => setSelectedDateRange(value as DateRangeOption)}
@@ -551,7 +551,7 @@ const Dashboard = () => {
             </span>
           </div>
 
-          <div className="relative">
+          <div className="relative w-full md:w-[164px]">
             <StyledSelect
               value={selectedWalletId}
               onChange={setSelectedWalletId}
