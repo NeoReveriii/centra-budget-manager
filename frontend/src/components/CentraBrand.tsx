@@ -60,6 +60,7 @@ export function CentraBrand({
       className={cn(
         "inline-flex items-center overflow-visible",
         variant === "text" && (size === "sidebar" ? "h-11" : "h-14 sm:h-16"),
+        variant === "text" && align === "left" && "-ml-3",
         className,
       )}
     >
