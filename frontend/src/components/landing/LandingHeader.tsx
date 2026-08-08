@@ -18,12 +18,12 @@ export default function LandingHeader({ headerRef, shellRef }: LandingHeaderProp
     >
       <div
         ref={shellRef}
-        className="mx-auto flex h-16 w-full max-w-[1280px] items-center justify-between rounded-xl border border-slate-200/70 bg-white/84 px-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)] backdrop-blur-xl sm:px-5"
+        className="mx-auto grid h-16 w-full max-w-[1400px] grid-cols-[1fr_auto_1fr] items-center rounded-xl border border-transparent bg-transparent px-4 shadow-none backdrop-blur-none sm:px-6"
       >
         <Link
           to="/"
           aria-label="Centra home"
-          className="flex h-10 w-[138px] items-center overflow-hidden rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+          className="flex h-10 w-[138px] items-center justify-self-start overflow-hidden rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
         >
           <CentraBrand variant="text" size="nav" surface="light" className="shrink-0" />
         </Link>
@@ -40,7 +40,7 @@ export default function LandingHeader({ headerRef, shellRef }: LandingHeaderProp
           </a>
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-self-end gap-2">
           <Button
             asChild
             variant="ghost"

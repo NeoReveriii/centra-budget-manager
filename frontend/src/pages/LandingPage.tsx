@@ -24,12 +24,14 @@ const LandingPage = () => {
 
       const setHeaderCompact = (compact: boolean, animate: boolean) => {
         gsap.to(headerShell, {
-          maxWidth: compact ? "1120px" : "1280px",
+          maxWidth: compact ? "1280px" : "1400px",
           borderRadius: compact ? "16px" : "12px",
-          backgroundColor: compact ? "rgba(255,255,255,0.88)" : "rgba(255,255,255,0.84)",
+          backgroundColor: compact ? "rgba(255,255,255,0.92)" : "transparent",
+          borderColor: compact ? "rgba(226,232,240,0.9)" : "transparent",
+          backdropFilter: compact ? "blur(20px)" : "none",
           boxShadow: compact
             ? "0 18px 50px rgba(15,23,42,0.13)"
-            : "0 8px 24px rgba(15,23,42,0.05)",
+            : "none",
           duration: animate ? 0.5 : 0,
           ease: "power3.out",
           overwrite: true,
@@ -39,10 +41,12 @@ const LandingPage = () => {
       media.add("(prefers-reduced-motion: no-preference)", () => {
         gsap.set(header, { autoAlpha: 1, y: 0, scale: 1, pointerEvents: "auto" });
         gsap.set(headerShell, {
-          maxWidth: "1280px",
+          maxWidth: "1400px",
           borderRadius: "12px",
-          backgroundColor: "rgba(255,255,255,0.84)",
-          boxShadow: "0 8px 24px rgba(15,23,42,0.05)",
+          backgroundColor: "transparent",
+          borderColor: "transparent",
+          backdropFilter: "none",
+          boxShadow: "none",
         });
 
         ScrollTrigger.create({
@@ -181,10 +185,12 @@ const LandingPage = () => {
       media.add("(prefers-reduced-motion: reduce)", () => {
         gsap.set(header, { autoAlpha: 1, y: 0, scale: 1, pointerEvents: "auto" });
         gsap.set(headerShell, {
-          maxWidth: "1280px",
+          maxWidth: "1400px",
           borderRadius: "12px",
-          backgroundColor: "rgba(255,255,255,0.84)",
-          boxShadow: "0 8px 24px rgba(15,23,42,0.05)",
+          backgroundColor: "transparent",
+          borderColor: "transparent",
+          backdropFilter: "none",
+          boxShadow: "none",
         });
         gsap.set("[data-build-line]", { scaleX: 1, transformOrigin: "left center" });
 
