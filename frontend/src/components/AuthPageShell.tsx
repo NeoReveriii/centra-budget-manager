@@ -1,7 +1,6 @@
 import { CentraBrand } from "@/components/CentraBrand";
 import { ShaderBackground } from "@/components/ui/manu";
-import { ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import SiteHeader from "@/components/SiteHeader";
 import type { ReactNode } from "react";
 
 interface AuthPageShellProps {
@@ -23,27 +22,7 @@ export default function AuthPageShell({
 
   return (
     <div className="min-h-[100dvh] bg-[#f2f6f4] text-slate-950">
-      <header className="h-[68px] border-b border-slate-200/80 bg-white">
-        <div className="mx-auto flex h-full w-full max-w-[1560px] items-center justify-between px-5 sm:px-8">
-          <div className="flex h-11 w-[184px] items-center overflow-hidden">
-            <CentraBrand variant="text" to="/" size="nav" surface="light" className="shrink-0" />
-          </div>
-
-          <nav aria-label="Auth navigation" className="hidden items-center gap-8 text-sm font-semibold text-slate-600 md:flex">
-            <Link to="/" className="transition-colors hover:text-primary">Home</Link>
-            <a href="/views/privacy.html" className="transition-colors hover:text-primary">Privacy</a>
-            <a href="/views/terms.html" className="transition-colors hover:text-primary">Terms</a>
-          </nav>
-
-          <Link
-            to="/"
-            className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-slate-600 transition-[background-color,color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#edf7f2] hover:text-primary hover:shadow-sm active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100"
-          >
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            Back to home
-          </Link>
-        </div>
-      </header>
+      <SiteHeader mode="auth" />
 
       <main className="mx-auto w-full max-w-[1560px] p-4 sm:p-6">
         <div className="grid min-h-[calc(100dvh-116px)] overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.09)] lg:grid-cols-[minmax(0,1.06fr)_minmax(430px,0.94fr)]">
