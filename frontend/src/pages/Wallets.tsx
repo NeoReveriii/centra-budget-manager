@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Search } from "lucide-react";
 import {
   useCreateWallet,
   useDeleteWallet,
@@ -416,15 +417,15 @@ const Wallets = () => {
             <h2 id="accounts-heading" className="text-xl font-extrabold tracking-tight text-on-background dark:text-slate-100">Accounts</h2>
             <p className="mt-1 text-sm text-on-surface-variant dark:text-slate-400">Select an account to manage it and review recent activity.</p>
           </div>
-          <div className="flex min-w-0 flex-col gap-3 sm:flex-row">
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
             <label className="relative block min-w-0 sm:w-64">
               <span className="sr-only">Search wallets</span>
-              <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-slate-400" aria-hidden="true">search</span>
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
               <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search accounts" className="h-11 bg-white pl-10 dark:bg-slate-900" />
             </label>
-            <div className="grid min-w-0 grid-cols-3 rounded-xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-800" aria-label="Wallet filters">
+            <div className="grid h-11 min-w-0 grid-cols-3 rounded-xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-800" aria-label="Wallet filters">
               {([["ALL", "All", wallets.length], ["ACTIVE", "Active", activeWallets.length], ["ARCHIVED", "Archived", archivedWallets.length]] as const).map(([value, label, count]) => (
-                <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)} className={"min-h-11 rounded-lg px-3 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-[0.98] motion-reduce:transform-none " + (filter === value ? "bg-white text-primary shadow-sm dark:bg-slate-700 dark:text-emerald-200" : "text-slate-500 dark:text-slate-400")}>
+                <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)} className={"h-full min-h-0 whitespace-nowrap rounded-lg px-3 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-[0.98] motion-reduce:transform-none " + (filter === value ? "bg-white text-primary shadow-sm dark:bg-slate-700 dark:text-emerald-200" : "text-slate-500 dark:text-slate-400")}>
                   {label} <span className="opacity-60">{count}</span>
                 </button>
               ))}
