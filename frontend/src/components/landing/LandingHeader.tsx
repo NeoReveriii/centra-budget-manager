@@ -18,7 +18,7 @@ export default function LandingHeader({ headerRef, shellRef }: LandingHeaderProp
     >
       <div
         ref={shellRef}
-        className="mx-auto grid h-16 w-full max-w-[1400px] grid-cols-[1fr_auto_1fr] items-center rounded-xl border border-transparent bg-transparent px-4 shadow-none backdrop-blur-none sm:px-6"
+        className="mx-auto grid h-16 w-full max-w-[1400px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center rounded-xl border border-transparent bg-transparent px-4 shadow-none backdrop-blur-none sm:px-6"
       >
         <Link
           to="/"
@@ -28,7 +28,7 @@ export default function LandingHeader({ headerRef, shellRef }: LandingHeaderProp
           <CentraBrand variant="text" size="nav" surface="light" className="shrink-0" />
         </Link>
 
-        <nav aria-label="Landing sections" className="hidden items-center gap-7 text-sm font-semibold text-slate-600 md:flex">
+        <nav aria-label="Landing sections" className="hidden items-center justify-self-center gap-7 text-sm font-semibold text-slate-600 md:flex">
           <a href="#overview" className="transition-colors duration-200 hover:text-primary focus-visible:outline-none focus-visible:text-primary">
             Overview
           </a>
