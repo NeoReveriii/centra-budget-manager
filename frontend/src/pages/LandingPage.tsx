@@ -24,7 +24,9 @@ const LandingPage = () => {
 
       const setHeaderCompact = (compact: boolean, animate: boolean) => {
         gsap.to(headerShell, {
-          maxWidth: compact ? "1280px" : "1400px",
+          maxWidth: compact ? "1280px" : "none",
+          paddingLeft: compact ? "clamp(16px, 2vw, 24px)" : "clamp(16px, 4vw, 48px)",
+          paddingRight: compact ? "clamp(16px, 2vw, 24px)" : "clamp(16px, 4vw, 48px)",
           borderRadius: compact ? "16px" : "12px",
           backgroundColor: compact ? "rgba(255,255,255,0.92)" : "transparent",
           borderColor: compact ? "rgba(226,232,240,0.9)" : "transparent",
@@ -41,7 +43,9 @@ const LandingPage = () => {
       media.add("(prefers-reduced-motion: no-preference)", () => {
         gsap.set(header, { autoAlpha: 1, y: 0, scale: 1, pointerEvents: "auto" });
         gsap.set(headerShell, {
-          maxWidth: "1400px",
+          maxWidth: "none",
+          paddingLeft: "clamp(16px, 4vw, 48px)",
+          paddingRight: "clamp(16px, 4vw, 48px)",
           borderRadius: "12px",
           backgroundColor: "transparent",
           borderColor: "transparent",
@@ -185,7 +189,9 @@ const LandingPage = () => {
       media.add("(prefers-reduced-motion: reduce)", () => {
         gsap.set(header, { autoAlpha: 1, y: 0, scale: 1, pointerEvents: "auto" });
         gsap.set(headerShell, {
-          maxWidth: "1400px",
+          maxWidth: "none",
+          paddingLeft: "clamp(16px, 4vw, 48px)",
+          paddingRight: "clamp(16px, 4vw, 48px)",
           borderRadius: "12px",
           backgroundColor: "transparent",
           borderColor: "transparent",

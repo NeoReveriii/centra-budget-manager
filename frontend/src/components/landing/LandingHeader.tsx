@@ -13,12 +13,12 @@ export default function LandingHeader({ headerRef, shellRef }: LandingHeaderProp
   return (
     <header
       ref={headerRef}
-      className="fixed inset-x-0 top-0 z-50 px-4 py-4"
+      className="fixed inset-x-0 top-0 z-50 px-0 py-4"
       aria-label="Landing navigation"
     >
       <div
         ref={shellRef}
-        className="mx-auto grid h-16 w-full max-w-[1400px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center rounded-xl border border-transparent bg-transparent px-4 shadow-none backdrop-blur-none sm:px-6"
+        className="mx-auto grid h-16 w-full max-w-none grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center rounded-xl border border-transparent bg-transparent px-4 shadow-none backdrop-blur-none sm:px-8 lg:px-12"
       >
         <Link
           to="/"
