@@ -21,7 +21,7 @@ export default function SiteHeader({ mode, headerRef, shellRef }: SiteHeaderProp
         "z-50",
         isLanding
           ? "fixed inset-x-0 top-0 px-0 py-0"
-          : "relative h-[68px] border-b border-slate-200/80 bg-white",
+          : "relative h-[68px] bg-transparent",
       )}
       aria-label={isLanding ? "Landing navigation" : "Auth navigation"}
     >
@@ -29,9 +29,7 @@ export default function SiteHeader({ mode, headerRef, shellRef }: SiteHeaderProp
         ref={shellRef}
         className={cn(
           "grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center",
-          isLanding
-            ? "mx-auto h-[68px] w-full max-w-none rounded-xl border border-transparent bg-transparent px-4 shadow-none backdrop-blur-none sm:px-8 lg:px-12"
-            : "mx-auto h-full w-full max-w-[1560px] px-5 sm:px-8",
+          "mx-auto h-[68px] w-full max-w-none rounded-xl border border-transparent bg-transparent px-4 shadow-none backdrop-blur-none sm:px-8 lg:px-12",
         )}
       >
         <Link
