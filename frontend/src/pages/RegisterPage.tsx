@@ -236,11 +236,14 @@ export default function RegisterPage() {
       </form>
 
       <p className="mt-5 text-center text-xs font-medium leading-5 text-slate-500">
-        By continuing, you agree to our <a href="/views/terms.html" className="font-bold text-slate-700 hover:text-primary hover:underline">Terms of Service</a> and <a href="/views/privacy.html" className="font-bold text-slate-700 hover:text-primary hover:underline">Privacy Policy</a>.
+        By continuing, you agree to our{" "}
+        <a href="/views/terms.html" className="font-bold text-slate-700 transition-colors duration-200 hover:text-primary hover:underline">Terms of Service</a>{" "}
+        and{" "}
+        <a href="/views/privacy.html" className="font-bold text-slate-700 transition-colors duration-200 hover:text-primary hover:underline">Privacy Policy</a>.
       </p>
       <p className="mt-5 text-center text-sm font-medium text-slate-600">
         Already have an account?
-        <Link to="/login" className="ml-1 font-bold text-primary hover:underline">Sign in</Link>
+        <Link to="/login" className="ml-1 inline-block font-bold text-primary transition-[color,transform] duration-200 hover:-translate-y-px hover:text-primary-container hover:underline motion-reduce:transition-none motion-reduce:hover:translate-y-0">Sign in</Link>
       </p>
     </AuthPageShell>
   );

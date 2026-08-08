@@ -122,7 +122,7 @@ export default function LoginPage() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="login-password" className="text-sm font-bold text-slate-800">Password</Label>
-            <Link to="/forgot-password" className="text-xs font-bold text-primary hover:underline">
+            <Link to="/forgot-password" className="inline-block text-xs font-bold text-primary transition-[color,transform] duration-200 hover:-translate-y-px hover:text-primary-container hover:underline motion-reduce:transition-none motion-reduce:hover:translate-y-0">
               Forgot password?
             </Link>
           </div>
@@ -171,7 +171,7 @@ export default function LoginPage() {
 
       <p className="mt-5 text-center text-xs font-medium leading-5 text-slate-500">
         By continuing, you agree to our{" "}
-        <a href="/views/terms.html" className="font-bold text-slate-700 hover:text-primary hover:underline">
+        <a href="/views/terms.html" className="font-bold text-slate-700 transition-colors duration-200 hover:text-primary hover:underline">
           Terms of Service
         </a>{" "}
         and{" "}
@@ -183,7 +183,7 @@ export default function LoginPage() {
 
       <p className="mt-5 text-center text-sm font-medium text-slate-600">
         New to Centra?
-        <Link to="/register" className="ml-1 font-bold text-primary hover:underline">Create an account</Link>
+        <Link to="/register" className="ml-1 inline-block font-bold text-primary transition-[color,transform] duration-200 hover:-translate-y-px hover:text-primary-container hover:underline motion-reduce:transition-none motion-reduce:hover:translate-y-0">Create an account</Link>
       </p>
     </AuthPageShell>
   );
