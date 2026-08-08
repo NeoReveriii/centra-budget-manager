@@ -1,4 +1,6 @@
 import { CentraBrand } from "@/components/CentraBrand";
+import { ShaderBackground } from "@/components/ui/manu";
+import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { ReactNode } from "react";
 
@@ -18,96 +20,82 @@ export default function AuthPageShell({
   mode = "utility",
 }: AuthPageShellProps) {
   const isRegister = mode === "register";
+  const isUtility = mode === "utility";
 
   return (
-    <div className="min-h-[100dvh] bg-[#f7fbf9] text-on-surface">
-      <header className="border-b border-slate-200/80 bg-white">
-        <div className="mx-auto flex h-[72px] w-full max-w-7xl items-center justify-between px-5 sm:px-8">
-          <CentraBrand variant="text" to="/" size="nav" surface="light" />
+    <div className="min-h-[100dvh] bg-[#f8faf9] text-slate-950">
+      <header className="h-[68px] border-b border-slate-200/80 bg-white">
+        <div className="mx-auto flex h-full w-full max-w-[1560px] items-center justify-between px-5 sm:px-8">
+          <div className="flex h-11 w-[184px] items-center overflow-hidden">
+            <CentraBrand variant="text" to="/" size="nav" surface="light" className="shrink-0" />
+          </div>
+
+          <nav aria-label="Auth navigation" className="hidden items-center gap-8 text-sm font-medium text-slate-500 md:flex">
+            <Link to="/" className="transition-colors hover:text-primary">Home</Link>
+            <a href="/views/privacy.html" className="transition-colors hover:text-primary">Privacy</a>
+            <a href="/views/terms.html" className="transition-colors hover:text-primary">Terms</a>
+          </nav>
+
           <Link
             to="/"
-            className="inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold text-slate-500 transition-colors hover:bg-[#eff8f3] hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-slate-600 transition-colors hover:bg-[#edf7f2] hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
           >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Back to home
           </Link>
         </div>
       </header>
 
-      <main className="mx-auto grid min-h-[calc(100dvh-72px)] w-full max-w-7xl lg:grid-cols-[minmax(0,1.05fr)_minmax(420px,0.95fr)]">
-        <section className="relative hidden overflow-hidden bg-primary px-8 py-12 text-white lg:flex lg:min-h-[calc(100dvh-72px)] lg:flex-col lg:justify-between lg:px-14 lg:py-14">
-          <div className="absolute -right-32 -top-32 h-[28rem] w-[28rem] rounded-full border border-emerald-200/15" />
-          <div className="absolute -bottom-48 -left-48 h-[34rem] w-[34rem] rounded-full border border-emerald-200/10" />
-          <div className="absolute right-24 top-40 h-48 w-48 rounded-full bg-emerald-300/10 blur-3xl" />
+      <main className="mx-auto w-full max-w-[1560px] p-4 sm:p-6">
+        <div className="grid min-h-[calc(100dvh-116px)] overflow-hidden rounded-2xl bg-white shadow-[0_24px_70px_rgba(15,23,42,0.07)] lg:grid-cols-[minmax(0,1.06fr)_minmax(430px,0.94fr)]">
+          <section className="relative hidden min-h-[760px] overflow-hidden rounded-2xl bg-primary lg:flex lg:items-center lg:justify-center">
+            <ShaderBackground className="absolute inset-0 h-full w-full" />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,33,23,0.18)_0%,rgba(0,33,23,0.42)_58%,rgba(0,20,14,0.78)_100%)]" />
+            <div className="absolute inset-x-0 bottom-0 h-2/5 bg-[radial-gradient(ellipse_at_bottom,rgba(176,240,214,0.22),transparent_66%)]" />
 
-          <div className="relative z-10 max-w-xl">
-            <div className="mb-14 flex items-center gap-3 text-emerald-100">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-200/20 bg-white/10">
-                <span className="material-symbols-outlined text-[21px]" aria-hidden="true">
-                  account_balance
-                </span>
-              </span>
-              <span className="text-sm font-bold tracking-[0.18em] uppercase">Centra</span>
-            </div>
-
-            <p className="mb-5 text-xs font-bold tracking-[0.2em] text-emerald-200 uppercase">
-              Personal finance, clarified
-            </p>
-            <h2 className="max-w-lg text-4xl font-extrabold leading-[1.08] tracking-[-0.04em] sm:text-5xl">
-              {isRegister ? "Build a better relationship with your money." : "A calmer way to move money."}
-            </h2>
-            <p className="mt-6 max-w-md text-base leading-7 text-emerald-50/75">
-              {isRegister
-                ? "Bring your accounts, goals, and everyday decisions into one clear place."
-                : "See what matters, understand your momentum, and make your next decision with confidence."}
-            </p>
-          </div>
-
-          <div className="relative z-10 mt-14 max-w-md rounded-3xl border border-white/15 bg-white/[0.08] p-5 shadow-2xl backdrop-blur-sm">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <div>
-                <p className="text-xs font-semibold tracking-[0.16em] text-emerald-100/70 uppercase">Your financial view</p>
-                <p className="mt-2 text-lg font-bold text-white">Clearer by design</p>
+            <div className="relative z-10 mx-auto flex w-full max-w-[620px] flex-col items-center px-12 text-center text-white">
+              <div className="mb-10 flex h-14 w-[208px] items-center justify-center overflow-hidden">
+                <CentraBrand variant="text" size="nav" surface="dark" className="shrink-0" />
               </div>
-              <span className="material-symbols-outlined text-emerald-200" aria-hidden="true">north_east</span>
-            </div>
-            <div className="mt-5 flex items-end gap-2">
-              <span className="h-12 w-3 rounded-full bg-emerald-200/35" />
-              <span className="h-20 w-3 rounded-full bg-emerald-200/45" />
-              <span className="h-16 w-3 rounded-full bg-emerald-200/30" />
-              <span className="h-28 w-3 rounded-full bg-emerald-200/70" />
-              <span className="h-24 w-3 rounded-full bg-emerald-200/50" />
-              <span className="h-36 w-3 rounded-full bg-emerald-200" />
-              <div className="ml-auto self-end text-right">
-                <p className="text-xs text-emerald-100/65">A more intentional next step</p>
-                <p className="mt-1 text-sm font-semibold text-white">Always within reach</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="flex items-center justify-center px-5 py-12 sm:px-10 lg:px-14 lg:py-16">
-          <div className="w-full max-w-[460px]">
-            <div className="mb-8 lg:hidden">
-              <CentraBrand variant="text" to="/" size="nav" surface="light" />
-            </div>
-            <div className="mb-8">
-              <p className="mb-3 text-xs font-bold tracking-[0.18em] text-secondary uppercase">
-                {isRegister ? "Start with Centra" : "Welcome back"}
+              <h2 className="max-w-[580px] text-[38px] font-extrabold leading-[1.14] tracking-[-0.045em] xl:text-[44px]">
+                {isRegister
+                  ? "Bring every money decision into focus."
+                  : "See your money clearly, then move with confidence."}
+              </h2>
+              <p className="mt-6 max-w-[500px] text-base leading-7 text-emerald-50/80 xl:text-lg">
+                {isRegister
+                  ? "Create one secure place for your wallets, goals, income, and everyday spending."
+                  : "Your wallets, goals, and recent activity stay organized in one calm financial workspace."}
               </p>
-              <h1 className="text-3xl font-extrabold tracking-[-0.035em] text-slate-950 sm:text-4xl">{title}</h1>
-              {subtitle && <p className="mt-3 max-w-md text-sm leading-6 text-slate-500">{subtitle}</p>}
             </div>
+          </section>
 
-            {children}
+          <section className="flex min-h-[720px] items-center justify-center px-5 py-12 sm:px-10 lg:min-h-[760px] lg:px-14 lg:py-16 xl:px-20">
+            <div className="w-full max-w-[520px]">
+              <div className="mb-9 text-center">
+                <h1 className="text-[30px] font-extrabold leading-tight tracking-[-0.035em] text-slate-950 sm:text-[36px]">
+                  {title}
+                </h1>
+                {subtitle && (
+                  <p className="mx-auto mt-3 max-w-[440px] text-sm leading-6 text-slate-500 sm:text-base">
+                    {subtitle}
+                  </p>
+                )}
+              </div>
 
-            {footer && <div className="mt-8 border-t border-slate-200 pt-6">{footer}</div>}
+              {children}
 
-            <div className="mt-8 flex items-center gap-2 text-xs text-slate-400">
-              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">verified_user</span>
-              <span>Secure account access with privacy-first defaults.</span>
+              {footer && <div className="mt-7 border-t border-slate-200 pt-6 text-center">{footer}</div>}
+
+              {!isUtility && (
+                <div className="mt-7 flex items-center justify-center gap-2 text-xs text-slate-400">
+                  <ShieldCheck className="h-4 w-4 text-secondary" aria-hidden="true" />
+                  <span>Protected with secure, encrypted authentication.</span>
+                </div>
+              )}
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
       </main>
     </div>
   );

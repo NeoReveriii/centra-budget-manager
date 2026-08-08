@@ -23,7 +23,7 @@ interface CentraBrandProps {
   /** Visual size preset — assets have large transparent padding */
   size?: "nav" | "sidebar";
   /** Force light assets (e.g. white header bar) regardless of app theme */
-  surface?: "light" | "auto";
+  surface?: "light" | "dark" | "auto";
 }
 
 export function CentraBrand({
@@ -36,7 +36,13 @@ export function CentraBrand({
 }: CentraBrandProps) {
   const theme = useUiStore((s) => s.theme);
   const assetTheme =
-    surface === "light" ? "light" : theme === "dark" ? "dark" : "light";
+    surface === "light"
+      ? "light"
+      : surface === "dark"
+        ? "dark"
+        : theme === "dark"
+          ? "dark"
+          : "light";
   const src = BRAND_ASSETS[variant][assetTheme];
 
   const sizeClasses =

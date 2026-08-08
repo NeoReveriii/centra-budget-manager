@@ -687,7 +687,7 @@ const KwartaAI = () => {
           setDeleteError(null);
         }
       }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-[448px]">
           <DialogHeader>
             <DialogTitle>Clear conversation?</DialogTitle>
             <DialogDescription>

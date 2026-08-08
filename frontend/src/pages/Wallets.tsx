@@ -328,7 +328,7 @@ const Wallets = () => {
 
   if (walletQuery.isError || transactionQuery.isError) {
     return (
-      <section className="mx-auto mt-20 max-w-xl rounded-2xl border border-rose-200 bg-white p-8 text-center shadow-sm dark:border-rose-900 dark:bg-slate-900">
+      <section className="mx-auto mt-20 max-w-[576px] rounded-2xl border border-rose-200 bg-white p-8 text-center shadow-sm dark:border-rose-900 dark:bg-slate-900">
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-200">
           <span className="material-symbols-outlined">cloud_off</span>
         </div>
