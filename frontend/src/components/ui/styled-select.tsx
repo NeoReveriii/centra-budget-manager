@@ -153,7 +153,9 @@ export function StyledSelect({
               data-select-menu={menuId}
               role="listbox"
               aria-labelledby={id}
-              className="fixed z-[200] max-h-[280px] overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-[0_16px_38px_rgba(15,23,42,0.16)]"
+              onPointerDown={(event) => event.stopPropagation()}
+              onMouseDown={(event) => event.stopPropagation()}
+              className="fixed z-[300] max-h-[280px] overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-[0_16px_38px_rgba(15,23,42,0.16)]"
               style={menuStyle}
             >
               {options.map((option, index) => (

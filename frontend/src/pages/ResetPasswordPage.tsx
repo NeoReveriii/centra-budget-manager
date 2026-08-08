@@ -143,7 +143,7 @@ export default function ResetPasswordPage() {
             <button
               type="button"
               aria-label={showPassword ? "Hide passwords" : "Show passwords"}
-              className="absolute inset-y-0 right-1 flex w-11 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-emerald-50 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+              className="absolute inset-y-0 right-0 flex w-10 items-center justify-center rounded-md bg-transparent text-slate-600 transition-[color,transform] duration-200 hover:bg-transparent hover:text-primary active:scale-[0.96] focus-visible:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
               onClick={() => setShowPassword((visible) => !visible)}
             >
               {showPassword ? <EyeOff className="h-5 w-5" aria-hidden="true" /> : <Eye className="h-5 w-5" aria-hidden="true" />}

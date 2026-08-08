@@ -372,7 +372,7 @@ const Wallets = () => {
   }
 
   return (
-    <div className="min-h-screen space-y-7 pb-24 animate-fade-in">
+    <div className="min-h-screen w-full min-w-0 max-w-full space-y-7 overflow-x-hidden pb-24 animate-fade-in">
       <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-primary/70 dark:text-emerald-300">Money overview</p>
@@ -390,8 +390,8 @@ const Wallets = () => {
       </header>
       <section className="relative overflow-hidden rounded-2xl border border-[#b8d7c9] bg-[#eff8f3] p-6 shadow-[0_12px_30px_rgba(0,53,39,0.06)] dark:border-emerald-900 dark:bg-emerald-950/40 sm:p-7">
         <div className="pointer-events-none absolute -right-10 -top-16 h-44 w-44 rounded-full bg-primary/5 blur-2xl" />
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(28rem,1fr)] lg:items-end">
-          <div>
+        <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(22rem,1fr)] lg:items-end">
+          <div className="min-w-0">
             <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.16em] text-primary dark:text-emerald-300">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
               Portfolio balance
@@ -399,7 +399,7 @@ const Wallets = () => {
             <p className="mt-3 text-4xl font-extrabold tracking-[-0.055em] text-primary dark:text-white sm:text-5xl">{formatCurrency(totalBalance)}</p>
             <p className="mt-3 text-sm font-medium text-on-surface-variant dark:text-slate-300">Across {wallets.length} {wallets.length === 1 ? "account" : "accounts"}</p>
           </div>
-          <dl className="grid grid-cols-3 border-t border-[#c8e0d3] pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0 dark:border-emerald-800">
+          <dl className="grid min-w-0 grid-cols-3 border-t border-[#c8e0d3] pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0 dark:border-emerald-800">
             {[["Active funds", formatCurrency(activeBalance)], ["Active", String(activeWallets.length)], ["Activity", String(transactions.length)]].map(([label, value], index) => (
               <div key={label} className={index ? "border-l border-[#c8e0d3] pl-5 dark:border-emerald-800" : ""}>
                 <dt className="text-[10px] font-extrabold uppercase tracking-wider text-on-surface-variant/70 dark:text-emerald-200/70">{label}</dt>
@@ -411,18 +411,18 @@ const Wallets = () => {
       </section>
       {actionError ? <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-200">{actionError}</div> : null}
       <section aria-labelledby="accounts-heading">
-        <div className="mb-4 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-          <div>
+        <div className="mb-4 flex min-w-0 flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
             <h2 id="accounts-heading" className="text-xl font-extrabold tracking-tight text-on-background dark:text-slate-100">Accounts</h2>
             <p className="mt-1 text-sm text-on-surface-variant dark:text-slate-400">Select an account to manage it and review recent activity.</p>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <label className="relative block sm:w-64">
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row">
+            <label className="relative block min-w-0 sm:w-64">
               <span className="sr-only">Search wallets</span>
               <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-slate-400" aria-hidden="true">search</span>
               <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search accounts" className="h-11 bg-white pl-10 dark:bg-slate-900" />
             </label>
-            <div className="grid grid-cols-3 rounded-xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-800" aria-label="Wallet filters">
+            <div className="grid min-w-0 grid-cols-3 rounded-xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-800" aria-label="Wallet filters">
               {([["ALL", "All", wallets.length], ["ACTIVE", "Active", activeWallets.length], ["ARCHIVED", "Archived", archivedWallets.length]] as const).map(([value, label, count]) => (
                 <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)} className={"min-h-11 rounded-lg px-3 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-[0.98] motion-reduce:transform-none " + (filter === value ? "bg-white text-primary shadow-sm dark:bg-slate-700 dark:text-emerald-200" : "text-slate-500 dark:text-slate-400")}>
                   {label} <span className="opacity-60">{count}</span>
@@ -431,8 +431,8 @@ const Wallets = () => {
             </div>
           </div>
         </div>
-        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:border-slate-800 dark:bg-slate-900">
+        <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
+          <div className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:border-slate-800 dark:bg-slate-900">
             {visibleWallets.length ? <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {visibleWallets.map((wallet) => {
                 const selected = selectedWallet?.wallet_id === wallet.wallet_id;
@@ -470,7 +470,7 @@ const Wallets = () => {
               </div>
             )}
           </div>
-          <aside className="lg:sticky lg:top-24">
+          <aside className="min-w-0 lg:sticky lg:top-24">
             {selectedWallet ? (
               <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <div className="border-b border-slate-100 p-5 dark:border-slate-800">

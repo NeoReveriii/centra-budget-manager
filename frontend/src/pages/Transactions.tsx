@@ -225,13 +225,13 @@ const Transactions = () => {
       </header>
 
       {/* FILTERS */}
-      <section className="flex flex-wrap gap-4">
-        <div className="relative flex-1 min-w-[200px]">
+      <section className="flex flex-col gap-3 md:grid md:grid-cols-[minmax(0,1fr)_minmax(150px,180px)_minmax(170px,210px)] md:items-center">
+        <div className="relative min-w-0">
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
             search
           </span>
           <input
-            className="w-full pl-12 pr-4 py-3 bg-white border border-outline-variant rounded-xl text-body-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+            className="h-11 w-full rounded-xl border border-outline-variant bg-white py-3 pl-12 pr-4 text-body-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
             placeholder="Search transactions..."
             type="text"
             value={search}
@@ -242,14 +242,14 @@ const Transactions = () => {
           value={typeFilter}
           onChange={setTypeFilter}
           options={["All Types", "Expense", "Income", "Transfer"].map((option) => ({ value: option, label: option }))}
-          className="min-w-[150px] rounded-xl border-outline-variant bg-white text-on-surface"
+          className="w-full min-w-0 rounded-xl border-outline-variant bg-white text-on-surface"
           aria-label="Transaction type filter"
         />
         <StyledSelect
           value={walletFilter}
           onChange={setWalletFilter}
           options={[{ value: "All Wallets", label: "All Wallets" }, ...wallets.map((w) => ({ value: w.name, label: w.name }))]}
-          className="min-w-[180px] rounded-xl border-outline-variant bg-white text-on-surface"
+          className="w-full min-w-0 rounded-xl border-outline-variant bg-white text-on-surface"
           aria-label="Wallet filter"
         />
       </section>

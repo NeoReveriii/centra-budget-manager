@@ -237,7 +237,7 @@ export function AddTransactionModal() {
               aria-invalid={Boolean(fieldErrors.description)}
               aria-describedby={fieldErrors.description ? "tx-description-error" : undefined}
               className={cn(
-                "h-11 rounded-xl border-slate-200 bg-slate-50 transition-colors focus:bg-white",
+                "h-11 rounded-xl border-slate-200 bg-slate-50 leading-5 transition-colors focus:bg-white",
                 fieldErrors.description && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
               )}
               required
