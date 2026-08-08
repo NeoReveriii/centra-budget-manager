@@ -21,8 +21,22 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StyledSelect } from "@/components/ui/styled-select";
+import FieldError from "@/components/FieldError";
+import { cn } from "@/lib/utils";
 
 type WalletFilter = "ALL" | "ACTIVE" | "ARCHIVED";
+
+interface WalletFieldErrors {
+  name?: string;
+  initialBalance?: string;
+}
+
+function validateInitialBalance(value: string) {
+  if (!value.trim()) return "";
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || amount < 0) return "Enter zero or a positive starting balance.";
+  return "";
+}
 
 const EMPTY_WALLETS: Wallet[] = [];
 const EMPTY_TRANSACTIONS: Transaction[] = [];
@@ -133,6 +147,7 @@ const Wallets = () => {
     initial_balance: "",
   });
   const [formError, setFormError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<WalletFieldErrors>({});
   const [actionError, setActionError] = useState("");
   const [deleteError, setDeleteError] = useState("");
 
@@ -222,6 +237,7 @@ const Wallets = () => {
     setEditingWallet(null);
     setForm({ name: "", type: "E-Wallet", initial_balance: "" });
     setFormError("");
+    setFieldErrors({});
     setFormOpen(true);
   }
 
@@ -233,17 +249,30 @@ const Wallets = () => {
       initial_balance: String(Number(wallet.initial_balance)),
     });
     setFormError("");
+    setFieldErrors({});
     setFormOpen(true);
   }
 
   async function saveWallet(event: React.FormEvent) {
     event.preventDefault();
     setFormError("");
-    const initialBalance = Number(form.initial_balance || 0);
-    if (!Number.isFinite(initialBalance) || initialBalance < 0) {
-      setFormError("Starting balance must be zero or greater");
+    const nextFieldErrors: WalletFieldErrors = {
+      name: form.name.trim() ? "" : "Enter a name for this wallet.",
+      initialBalance: validateInitialBalance(form.initial_balance),
+    };
+    setFieldErrors(nextFieldErrors);
+
+    const firstInvalidId = nextFieldErrors.name
+      ? "wallet-name"
+      : nextFieldErrors.initialBalance
+        ? "wallet-balance"
+        : "";
+    if (firstInvalidId) {
+      document.getElementById(firstInvalidId)?.focus();
       return;
     }
+
+    const initialBalance = Number(form.initial_balance || 0);
 
     try {
       if (editingWallet) {
@@ -501,7 +530,7 @@ const Wallets = () => {
       </section>
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="max-w-[480px] overflow-hidden p-0 dark:border-slate-800 dark:bg-slate-900">
-          <form onSubmit={saveWallet}>
+          <form onSubmit={saveWallet} noValidate>
             <DialogHeader className="border-b border-slate-100 bg-slate-50 px-6 py-5 text-left dark:border-slate-800 dark:bg-slate-900">
               <DialogTitle className="text-xl font-extrabold text-slate-950 dark:text-white">{editingWallet ? "Edit wallet" : "Add wallet"}</DialogTitle>
               <DialogDescription className="text-slate-500 dark:text-slate-400">{editingWallet ? "Update this account's name, type, or starting balance." : "Create an account to track its balance and activity."}</DialogDescription>
@@ -510,7 +539,30 @@ const Wallets = () => {
               {formError ? <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-200">{formError}</div> : null}
               <div className="space-y-2">
                 <Label htmlFor="wallet-name">Wallet name</Label>
-                <Input id="wallet-name" required autoFocus value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="Everyday account" className="h-11 dark:bg-slate-950" />
+                <Input
+                  id="wallet-name"
+                  required
+                  autoFocus
+                  value={form.name}
+                  onChange={(event) => {
+                    const name = event.target.value;
+                    setForm({ ...form, name });
+                    if (fieldErrors.name) {
+                      setFieldErrors((current) => ({
+                        ...current,
+                        name: name.trim() ? "" : "Enter a name for this wallet.",
+                      }));
+                    }
+                  }}
+                  placeholder="Everyday account"
+                  aria-invalid={Boolean(fieldErrors.name)}
+                  aria-describedby={fieldErrors.name ? "wallet-name-error" : undefined}
+                  className={cn(
+                    "h-11 dark:bg-slate-950",
+                    fieldErrors.name && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
+                  )}
+                />
+                <FieldError id="wallet-name-error" message={fieldErrors.name} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="wallet-type">Account type</Label>
@@ -525,9 +577,36 @@ const Wallets = () => {
                 <Label htmlFor="wallet-balance">Starting balance</Label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">₱</span>
-                  <Input id="wallet-balance" type="number" min="0" step="0.01" inputMode="decimal" value={form.initial_balance} onChange={(event) => setForm({ ...form, initial_balance: event.target.value })} placeholder="0.00" className="h-11 pl-8 dark:bg-slate-950" />
+                  <Input
+                    id="wallet-balance"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    inputMode="decimal"
+                    value={form.initial_balance}
+                    onChange={(event) => {
+                      const initialBalance = event.target.value;
+                      setForm({ ...form, initial_balance: initialBalance });
+                      if (fieldErrors.initialBalance) {
+                        setFieldErrors((current) => ({
+                          ...current,
+                          initialBalance: validateInitialBalance(initialBalance),
+                        }));
+                      }
+                    }}
+                    placeholder="0.00"
+                    aria-invalid={Boolean(fieldErrors.initialBalance)}
+                    aria-describedby={fieldErrors.initialBalance ? "wallet-balance-error" : "wallet-balance-help"}
+                    className={cn(
+                      "h-11 pl-8 dark:bg-slate-950",
+                      fieldErrors.initialBalance && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
+                    )}
+                  />
                 </div>
-                <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">Use the balance from when you began tracking this account.</p>
+                <FieldError id="wallet-balance-error" message={fieldErrors.initialBalance} />
+                {!fieldErrors.initialBalance ? (
+                  <p id="wallet-balance-help" className="text-xs leading-5 text-slate-500 dark:text-slate-400">Use the balance from when you began tracking this account.</p>
+                ) : null}
               </div>
             </div>
             <DialogFooter className="border-t border-slate-100 px-6 py-4 dark:border-slate-800">

@@ -17,6 +17,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StyledSelect } from "@/components/ui/styled-select";
+import FieldError from "@/components/FieldError";
+import { cn } from "@/lib/utils";
 
 const TRANSACTION_CATEGORIES = {
   Expense: [
@@ -43,6 +45,19 @@ const EMPTY_WALLETS: Wallet[] = [];
 type TxType = (typeof TYPE_OPTIONS)[number];
 
 type CategoryOption = (typeof TRANSACTION_CATEGORIES)[keyof typeof TRANSACTION_CATEGORIES][number];
+
+interface AddTransactionFieldErrors {
+  description?: string;
+  amount?: string;
+  wallet?: string;
+}
+
+function validateTransactionAmount(value: string) {
+  if (!value.trim()) return "Enter the transaction amount.";
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || amount <= 0) return "Enter an amount greater than zero.";
+  return "";
+}
 
 function defaultCategoryForType(type: TxType): string {
   if (type === "Income") return TRANSACTION_CATEGORIES.Income[0].key;
@@ -77,6 +92,7 @@ export function AddTransactionModal() {
     category: defaultCategoryForType("Expense" as TxType),
   });
   const [addError, setAddError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<AddTransactionFieldErrors>({});
   const wasOpen = useRef(false);
 
   useEffect(() => {
@@ -104,6 +120,7 @@ export function AddTransactionModal() {
       category: defaultCategoryForType(normalizedType),
     });
     setAddError("");
+    setFieldErrors({});
   }, [open, defaultType, defaultWalletId, activeWallets]);
 
   const categoryOptions = getCategoryOptions(newTx.type);
@@ -112,9 +129,31 @@ export function AddTransactionModal() {
     e.preventDefault();
     setAddError("");
 
-    const wallet = wallets.find((w) => w.wallet_id === Number(newTx.wallet_id));
+    const nextFieldErrors: AddTransactionFieldErrors = {
+      description: newTx.description.trim() ? "" : "Describe this transaction.",
+      amount: validateTransactionAmount(newTx.amount),
+      wallet: newTx.wallet_id ? "" : "Select the wallet this transaction belongs to.",
+    };
+    setFieldErrors(nextFieldErrors);
+
+    const firstInvalidId = [
+      [nextFieldErrors.description, "tx-description"],
+      [nextFieldErrors.amount, "tx-amount"],
+      [nextFieldErrors.wallet, "tx-wallet"],
+    ].find(([message]) => Boolean(message))?.[1];
+
+    if (firstInvalidId) {
+      document.getElementById(firstInvalidId)?.focus();
+      return;
+    }
+
+    const wallet = activeWallets.find((w) => w.wallet_id === Number(newTx.wallet_id));
     if (!wallet) {
-      setAddError("Please select a wallet");
+      setFieldErrors((current) => ({
+        ...current,
+        wallet: "That wallet is not active. Choose another wallet.",
+      }));
+      document.getElementById("tx-wallet")?.focus();
       return;
     }
 
@@ -167,7 +206,7 @@ export function AddTransactionModal() {
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleAddTransaction} className="space-y-5 p-6">
+        <form onSubmit={handleAddTransaction} noValidate className="space-y-5 p-6">
           {addError && (
             <div className="flex items-center gap-2 rounded-2xl border border-error/20 bg-error-container/20 p-3 text-body-sm font-medium text-error">
               <span className="material-symbols-outlined text-[18px]">
@@ -184,13 +223,26 @@ export function AddTransactionModal() {
             <Input
               id="tx-description"
               value={newTx.description}
-              onChange={(e) =>
-                setNewTx({ ...newTx, description: e.target.value })
-              }
+              onChange={(e) => {
+                const description = e.target.value;
+                setNewTx({ ...newTx, description });
+                if (fieldErrors.description) {
+                  setFieldErrors((current) => ({
+                    ...current,
+                    description: description.trim() ? "" : "Describe this transaction.",
+                  }));
+                }
+              }}
               placeholder="e.g. Lunch at Jollibee"
-              className="h-11 rounded-xl border-slate-200 bg-slate-50 transition-colors focus:bg-white"
+              aria-invalid={Boolean(fieldErrors.description)}
+              aria-describedby={fieldErrors.description ? "tx-description-error" : undefined}
+              className={cn(
+                "h-11 rounded-xl border-slate-200 bg-slate-50 transition-colors focus:bg-white",
+                fieldErrors.description && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
+              )}
               required
             />
+            <FieldError id="tx-description-error" message={fieldErrors.description} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -217,11 +269,26 @@ export function AddTransactionModal() {
                 step="0.01"
                 min="0.01"
                 value={newTx.amount}
-                onChange={(e) => setNewTx({ ...newTx, amount: e.target.value })}
+                onChange={(e) => {
+                  const amount = e.target.value;
+                  setNewTx({ ...newTx, amount });
+                  if (fieldErrors.amount) {
+                    setFieldErrors((current) => ({
+                      ...current,
+                      amount: validateTransactionAmount(amount),
+                    }));
+                  }
+                }}
                 placeholder="0.00"
-                className="h-11 rounded-xl border-slate-200 bg-slate-50 transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:bg-white"
+                aria-invalid={Boolean(fieldErrors.amount)}
+                aria-describedby={fieldErrors.amount ? "tx-amount-error" : undefined}
+                className={cn(
+                  "h-11 rounded-xl border-slate-200 bg-slate-50 transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:bg-white",
+                  fieldErrors.amount && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
+                )}
                 required
               />
+              <FieldError id="tx-amount-error" message={fieldErrors.amount} />
             </div>
           </div>
 
@@ -268,14 +335,28 @@ export function AddTransactionModal() {
             <StyledSelect
               id="tx-wallet"
               value={newTx.wallet_id}
-              onChange={(value) => setNewTx({ ...newTx, wallet_id: value })}
+              onChange={(value) => {
+                setNewTx({ ...newTx, wallet_id: value });
+                if (fieldErrors.wallet) {
+                  setFieldErrors((current) => ({
+                    ...current,
+                    wallet: value ? "" : "Select the wallet this transaction belongs to.",
+                  }));
+                }
+              }}
               options={[
                 { value: "", label: "Select wallet" },
                 ...activeWallets.map((wallet) => ({ value: String(wallet.wallet_id), label: wallet.name })),
               ]}
               required
-              className="bg-slate-50"
+              aria-invalid={Boolean(fieldErrors.wallet)}
+              aria-describedby={fieldErrors.wallet ? "tx-wallet-error" : undefined}
+              className={cn(
+                "bg-slate-50",
+                fieldErrors.wallet && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
+              )}
             />
+            <FieldError id="tx-wallet-error" message={fieldErrors.wallet} />
             {activeWallets.length === 0 ? (
               <p className="text-xs font-medium text-error">
                 Create or restore an active wallet before recording a transaction.

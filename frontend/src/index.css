@@ -103,6 +103,10 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-on-background);
@@ -120,6 +124,12 @@
 
   .dark .bg-surface-container-lowest {
     background-color: #1e293b;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
   }
 
   /* Seamless Premium Scrollbar */
@@ -180,6 +190,10 @@
 
   .font-display {
     font-family: "Manrope", sans-serif;
+  }
+
+  .font-landing {
+    font-family: "Outfit", "Manrope", sans-serif;
   }
   .text-display {
     font-size: 48px;

@@ -22,6 +22,8 @@ interface CentraBrandProps {
   to?: string;
   /** Visual size preset — assets have large transparent padding */
   size?: "nav" | "sidebar";
+  /** Keep scaled artwork visually centered or anchored to its leading edge. */
+  align?: "left" | "center";
   /** Force light assets (e.g. white header bar) regardless of app theme */
   surface?: "light" | "dark" | "auto";
 }
@@ -32,6 +34,7 @@ export function CentraBrand({
   alt = "Centra Budget Manager",
   to,
   size = "nav",
+  align = "left",
   surface = "auto",
 }: CentraBrandProps) {
   const theme = useUiStore((s) => s.theme);
@@ -48,8 +51,8 @@ export function CentraBrand({
   const sizeClasses =
     variant === "text"
       ? size === "sidebar"
-        ? "h-9 origin-left scale-[2.4] sm:scale-[2.6]"
-        : "h-10 origin-left scale-[2.8] sm:scale-[3.1]"
+        ? "h-9 scale-[2.4] sm:scale-[2.6]"
+        : "h-10 scale-[2.8] sm:scale-[3.1]"
       : "h-10 w-10";
 
   const img = (
@@ -66,6 +69,7 @@ export function CentraBrand({
         className={cn(
           "w-auto max-w-none object-contain object-left shrink-0",
           sizeClasses,
+          variant === "text" && (align === "center" ? "origin-center" : "origin-left"),
         )}
       />
     </span>

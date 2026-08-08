@@ -8,6 +8,8 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { StyledSelect } from "@/components/ui/styled-select";
+import FieldError from "@/components/FieldError";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +29,18 @@ const CATEGORY_ICONS: Record<string, string> = {
   Education: "school",
   Savings:   "savings",
 };
+
+interface GoalFieldErrors {
+  title?: string;
+  targetAmount?: string;
+}
+
+function validatePositiveAmount(value: string, label: string) {
+  if (!value.trim()) return `Enter the ${label}.`;
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || amount <= 0) return `Enter a ${label} greater than zero.`;
+  return "";
+}
 
 function formatCurrency(n: number) {
   return (
@@ -60,12 +74,14 @@ const SavingsGoals: React.FC = () => {
   const [category,     setCategory]     = useState("Savings");
   const [priority,     setPriority]     = useState<number>(3);
   const [deadline,     setDeadline]     = useState("");
+  const [goalFieldErrors, setGoalFieldErrors] = useState<GoalFieldErrors>({});
 
   // ── Contribute State ──
   const [isContributeOpen, setIsContributeOpen]   = useState(false);
   const [selectedGoalId,   setSelectedGoalId]     = useState<number | null>(null);
   const [contributeAmount, setContributeAmount]   = useState("");
   const [contributeNote,   setContributeNote]     = useState("");
+  const [contributionError, setContributionError] = useState("");
 
   // ── Delete Confirm State ──
   const [deleteGoalId, setDeleteGoalId] = useState<number | null>(null);
@@ -95,6 +111,22 @@ const SavingsGoals: React.FC = () => {
   // ── Handlers ──
   const handleAddGoal = (e: React.FormEvent) => {
     e.preventDefault();
+    const nextFieldErrors: GoalFieldErrors = {
+      title: title.trim() ? "" : "Enter a title for this goal.",
+      targetAmount: validatePositiveAmount(targetAmount, "target amount"),
+    };
+    setGoalFieldErrors(nextFieldErrors);
+
+    const firstInvalidId = nextFieldErrors.title
+      ? "goal-title"
+      : nextFieldErrors.targetAmount
+        ? "goal-target"
+        : "";
+    if (firstInvalidId) {
+      document.getElementById(firstInvalidId)?.focus();
+      return;
+    }
+
     createGoalMut.mutate(
       {
         title,
@@ -113,6 +145,7 @@ const SavingsGoals: React.FC = () => {
           setCategory("Savings");
           setPriority(3);
           setDeadline("");
+          setGoalFieldErrors({});
         },
       }
     );
@@ -121,6 +154,13 @@ const SavingsGoals: React.FC = () => {
   const handleContribute = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedGoalId) return;
+    const amountError = validatePositiveAmount(contributeAmount, "contribution amount");
+    setContributionError(amountError);
+    if (amountError) {
+      document.getElementById("contribute-amount")?.focus();
+      return;
+    }
+
     updateGoalMut.mutate(
       { goal_id: selectedGoalId, add_amount: Number(contributeAmount), note: contributeNote },
       {
@@ -128,6 +168,7 @@ const SavingsGoals: React.FC = () => {
           setIsContributeOpen(false);
           setContributeAmount("");
           setContributeNote("");
+          setContributionError("");
         },
       }
     );
@@ -147,6 +188,7 @@ const SavingsGoals: React.FC = () => {
 
   const openContribute = (id: number) => {
     setSelectedGoalId(id);
+    setContributionError("");
     setIsContributeOpen(true);
   };
 
@@ -172,7 +214,13 @@ const SavingsGoals: React.FC = () => {
           </p>
         </div>
 
-        <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+        <Dialog
+          open={isAddOpen}
+          onOpenChange={(open) => {
+            setIsAddOpen(open);
+            if (!open) setGoalFieldErrors({});
+          }}
+        >
           <DialogTrigger asChild>
             <button className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-body-sm hover:opacity-90 active:scale-[0.98] transition-all shadow-sm flex items-center gap-2 cursor-pointer whitespace-nowrap">
               <span className="material-symbols-outlined text-[20px]">add_circle</span>
@@ -182,7 +230,7 @@ const SavingsGoals: React.FC = () => {
 
           {/* ── Add Goal Dialog ── */}
           <DialogContent className="sm:max-w-[480px]">
-            <form onSubmit={handleAddGoal}>
+            <form onSubmit={handleAddGoal} noValidate>
               <DialogHeader>
                 <DialogTitle>Create New Goal</DialogTitle>
                 <DialogDescription>
@@ -198,9 +246,24 @@ const SavingsGoals: React.FC = () => {
                     id="goal-title"
                     placeholder="e.g. Emergency Fund, Japan Trip…"
                     value={title}
-                    onChange={e => setTitle(e.target.value)}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      setTitle(value);
+                      if (goalFieldErrors.title) {
+                        setGoalFieldErrors((current) => ({
+                          ...current,
+                          title: value.trim() ? "" : "Enter a title for this goal.",
+                        }));
+                      }
+                    }}
+                    aria-invalid={Boolean(goalFieldErrors.title)}
+                    aria-describedby={goalFieldErrors.title ? "goal-title-error" : undefined}
+                    className={cn(
+                      goalFieldErrors.title && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
+                    )}
                     required
                   />
+                  <FieldError id="goal-title-error" message={goalFieldErrors.title} />
                 </div>
 
                 {/* Target Amount */}
@@ -213,9 +276,24 @@ const SavingsGoals: React.FC = () => {
                     min="1"
                     placeholder="0.00"
                     value={targetAmount}
-                    onChange={e => setTargetAmount(e.target.value)}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      setTargetAmount(value);
+                      if (goalFieldErrors.targetAmount) {
+                        setGoalFieldErrors((current) => ({
+                          ...current,
+                          targetAmount: validatePositiveAmount(value, "target amount"),
+                        }));
+                      }
+                    }}
+                    aria-invalid={Boolean(goalFieldErrors.targetAmount)}
+                    aria-describedby={goalFieldErrors.targetAmount ? "goal-target-error" : undefined}
+                    className={cn(
+                      goalFieldErrors.targetAmount && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
+                    )}
                     required
                   />
+                  <FieldError id="goal-target-error" message={goalFieldErrors.targetAmount} />
                 </div>
 
                 {/* Category + Priority row */}
@@ -407,9 +485,15 @@ const SavingsGoals: React.FC = () => {
       </section>
 
       {/* ── Contribute Dialog ──────────────────────────────────── */}
-      <Dialog open={isContributeOpen} onOpenChange={setIsContributeOpen}>
+      <Dialog
+        open={isContributeOpen}
+        onOpenChange={(open) => {
+          setIsContributeOpen(open);
+          if (!open) setContributionError("");
+        }}
+      >
         <DialogContent className="sm:max-w-[420px]">
-          <form onSubmit={handleContribute}>
+          <form onSubmit={handleContribute} noValidate>
             <DialogHeader>
               <DialogTitle>Contribute to Goal</DialogTitle>
               <DialogDescription>Add funds to accelerate your progress.</DialogDescription>
@@ -425,9 +509,21 @@ const SavingsGoals: React.FC = () => {
                   min="0.01"
                   placeholder="0.00"
                   value={contributeAmount}
-                  onChange={e => setContributeAmount(e.target.value)}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setContributeAmount(value);
+                    if (contributionError) {
+                      setContributionError(validatePositiveAmount(value, "contribution amount"));
+                    }
+                  }}
+                  aria-invalid={Boolean(contributionError)}
+                  aria-describedby={contributionError ? "contribute-amount-error" : undefined}
+                  className={cn(
+                    contributionError && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
+                  )}
                   required
                 />
+                <FieldError id="contribute-amount-error" message={contributionError} />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="contribute-note">

@@ -17,6 +17,8 @@ interface StyledSelectProps {
   disabled?: boolean;
   required?: boolean;
   "aria-label"?: string;
+  "aria-invalid"?: boolean;
+  "aria-describedby"?: string;
 }
 
 export function StyledSelect({
@@ -29,6 +31,8 @@ export function StyledSelect({
   disabled = false,
   required = false,
   "aria-label": ariaLabel,
+  "aria-invalid": ariaInvalid,
+  "aria-describedby": ariaDescribedBy,
 }: StyledSelectProps) {
   const [open, setOpen] = useState(false);
   const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
@@ -122,6 +126,8 @@ export function StyledSelect({
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
         aria-required={required || undefined}
+        aria-invalid={ariaInvalid || undefined}
+        aria-describedby={ariaDescribedBy}
         onClick={() => {
           setActiveIndex(Math.max(0, selectedIndex));
           setOpen((current) => !current);

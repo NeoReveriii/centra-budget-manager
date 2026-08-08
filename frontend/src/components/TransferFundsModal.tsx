@@ -7,6 +7,8 @@ import {
 import { useUiStore } from "@/stores/ui-store";
 import { Button } from "@/components/ui/button";
 import { StyledSelect } from "@/components/ui/styled-select";
+import FieldError from "@/components/FieldError";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +29,19 @@ function formatCurrency(amount: number): string {
 }
 
 const EMPTY_WALLETS: Wallet[] = [];
+
+interface TransferFieldErrors {
+  fromWallet?: string;
+  toWallet?: string;
+  amount?: string;
+}
+
+function validateTransferAmount(value: string) {
+  if (!value.trim()) return "Enter the amount you want to transfer.";
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || amount <= 0) return "Enter an amount greater than zero.";
+  return "";
+}
 
 export function TransferFundsModal() {
   const open = useUiStore((s) => s.transferModalOpen);
@@ -49,6 +64,7 @@ export function TransferFundsModal() {
     amount: "",
   });
   const [transferError, setTransferError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<TransferFieldErrors>({});
   const wasOpen = useRef(false);
 
   useEffect(() => {
@@ -65,24 +81,60 @@ export function TransferFundsModal() {
       : "";
     setTransfer({ from_wallet_id: fromWalletId, to_wallet_id: "", amount: "" });
     setTransferError("");
+    setFieldErrors({});
   }, [open, defaultFromWalletId, activeWallets]);
 
   async function handleTransfer(e: React.FormEvent) {
     e.preventDefault();
     setTransferError("");
 
+    const nextFieldErrors: TransferFieldErrors = {
+      fromWallet: transfer.from_wallet_id ? "" : "Select the wallet to move money from.",
+      toWallet: transfer.to_wallet_id ? "" : "Select the wallet to receive the money.",
+      amount: validateTransferAmount(transfer.amount),
+    };
+    setFieldErrors(nextFieldErrors);
+
+    const firstInvalidId = [
+      [nextFieldErrors.fromWallet, "transfer-from-wallet"],
+      [nextFieldErrors.toWallet, "transfer-to-wallet"],
+      [nextFieldErrors.amount, "transfer-amount"],
+    ].find(([message]) => Boolean(message))?.[1];
+
+    if (firstInvalidId) {
+      document.getElementById(firstInvalidId)?.focus();
+      return;
+    }
+
     const sourceWallet = activeWallets.find(
       (wallet) => wallet.wallet_id === Number(transfer.from_wallet_id),
     );
+    const destinationWallet = activeWallets.find(
+      (wallet) => wallet.wallet_id === Number(transfer.to_wallet_id),
+    );
     const amount = Number(transfer.amount);
     if (!sourceWallet) {
-      setTransferError("Select an active source wallet");
+      setFieldErrors((current) => ({
+        ...current,
+        fromWallet: "That source wallet is no longer active. Choose another wallet.",
+      }));
+      document.getElementById("transfer-from-wallet")?.focus();
+      return;
+    }
+    if (!destinationWallet) {
+      setFieldErrors((current) => ({
+        ...current,
+        toWallet: "That destination wallet is no longer active. Choose another wallet.",
+      }));
+      document.getElementById("transfer-to-wallet")?.focus();
       return;
     }
     if (amount > Number(sourceWallet.calculated_balance)) {
-      setTransferError(
-        `Available balance is ${formatCurrency(Number(sourceWallet.calculated_balance))}`,
-      );
+      setFieldErrors((current) => ({
+        ...current,
+        amount: `Enter an amount no greater than the available ${formatCurrency(Number(sourceWallet.calculated_balance))}.`,
+      }));
+      document.getElementById("transfer-amount")?.focus();
       return;
     }
 
@@ -112,7 +164,7 @@ export function TransferFundsModal() {
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleTransfer} className="space-y-4 p-6">
+        <form onSubmit={handleTransfer} noValidate className="space-y-4 p-6">
           {transferError && (
             <div className="flex items-center gap-2 rounded-2xl border border-error/20 bg-error-container/20 p-3 text-body-sm font-medium text-error">
               <span className="material-symbols-outlined text-[18px]">error</span>
@@ -121,10 +173,11 @@ export function TransferFundsModal() {
           )}
 
           <div className="space-y-2">
-            <label className="block text-label-caps font-label-caps text-slate-500 uppercase">
+            <label htmlFor="transfer-from-wallet" className="block text-label-caps font-label-caps text-slate-500 uppercase">
               From Wallet
             </label>
             <StyledSelect
+              id="transfer-from-wallet"
               value={transfer.from_wallet_id}
               onChange={(fromWalletId) => {
                 setTransfer({
@@ -135,6 +188,16 @@ export function TransferFundsModal() {
                       ? ""
                       : transfer.to_wallet_id,
                 });
+                if (fieldErrors.fromWallet || fieldErrors.toWallet) {
+                  setFieldErrors((current) => ({
+                    ...current,
+                    fromWallet: fromWalletId ? "" : "Select the wallet to move money from.",
+                    toWallet:
+                      transfer.to_wallet_id === fromWalletId
+                        ? "Select a different destination wallet."
+                        : current.toWallet,
+                  }));
+                }
               }}
               options={[
                 { value: "", label: "Select source wallet" },
@@ -143,18 +206,33 @@ export function TransferFundsModal() {
                   label: `${wallet.name} - ${formatCurrency(Number(wallet.calculated_balance))}`,
                 })),
               ]}
-              className="bg-slate-50"
+              className={cn(
+                "bg-slate-50",
+                fieldErrors.fromWallet && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
+              )}
               required
+              aria-invalid={Boolean(fieldErrors.fromWallet)}
+              aria-describedby={fieldErrors.fromWallet ? "transfer-from-wallet-error" : undefined}
             />
+            <FieldError id="transfer-from-wallet-error" message={fieldErrors.fromWallet} />
           </div>
 
           <div className="space-y-2">
-            <label className="block text-label-caps font-label-caps text-slate-500 uppercase">
+            <label htmlFor="transfer-to-wallet" className="block text-label-caps font-label-caps text-slate-500 uppercase">
               To Wallet
             </label>
             <StyledSelect
+              id="transfer-to-wallet"
               value={transfer.to_wallet_id}
-              onChange={(value) => setTransfer({ ...transfer, to_wallet_id: value })}
+              onChange={(value) => {
+                setTransfer({ ...transfer, to_wallet_id: value });
+                if (fieldErrors.toWallet) {
+                  setFieldErrors((current) => ({
+                    ...current,
+                    toWallet: value ? "" : "Select the wallet to receive the money.",
+                  }));
+                }
+              }}
               options={[
                 { value: "", label: "Select destination wallet" },
                 ...activeWallets
@@ -164,9 +242,15 @@ export function TransferFundsModal() {
                     label: `${wallet.name} - ${formatCurrency(Number(wallet.calculated_balance))}`,
                   })),
               ]}
-              className="bg-slate-50"
+              className={cn(
+                "bg-slate-50",
+                fieldErrors.toWallet && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
+              )}
               required
+              aria-invalid={Boolean(fieldErrors.toWallet)}
+              aria-describedby={fieldErrors.toWallet ? "transfer-to-wallet-error" : undefined}
             />
+            <FieldError id="transfer-to-wallet-error" message={fieldErrors.toWallet} />
           </div>
 
           {activeWallets.length < 2 ? (
@@ -176,21 +260,35 @@ export function TransferFundsModal() {
           ) : null}
 
           <div className="space-y-2">
-            <label className="block text-label-caps font-label-caps text-slate-500 uppercase">
+            <label htmlFor="transfer-amount" className="block text-label-caps font-label-caps text-slate-500 uppercase">
               Amount (₱)
             </label>
             <input
+              id="transfer-amount"
               type="number"
               step="0.01"
               min="0.01"
               value={transfer.amount}
-              onChange={(e) =>
-                setTransfer({ ...transfer, amount: e.target.value })
-              }
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-body-sm outline-none transition-colors focus:bg-white focus:ring-2 focus:ring-primary/20"
+              onChange={(e) => {
+                const amount = e.target.value;
+                setTransfer({ ...transfer, amount });
+                if (fieldErrors.amount) {
+                  setFieldErrors((current) => ({
+                    ...current,
+                    amount: validateTransferAmount(amount),
+                  }));
+                }
+              }}
+              aria-invalid={Boolean(fieldErrors.amount)}
+              aria-describedby={fieldErrors.amount ? "transfer-amount-error" : undefined}
+              className={cn(
+                "w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-body-sm outline-none transition-colors focus:bg-white focus:ring-2 focus:ring-primary/20",
+                fieldErrors.amount && "border-red-500 focus:border-red-500 focus:ring-red-200",
+              )}
               placeholder="0.00"
               required
             />
+            <FieldError id="transfer-amount-error" message={fieldErrors.amount} />
           </div>
 
           <DialogFooter className="gap-3 pt-2 sm:justify-stretch">

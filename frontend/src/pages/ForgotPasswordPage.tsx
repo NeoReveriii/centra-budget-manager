@@ -1,10 +1,18 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { Mail } from "lucide-react";
 import AuthPageShell from "../components/AuthPageShell";
+import FieldError from "../components/FieldError";
 import { requestPasswordReset } from "../lib/auth-client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { validateEmailAddress } from "@/lib/auth-form-validation";
+import { cn } from "@/lib/utils";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -13,6 +21,14 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setError("");
     setSuccessMessage("");
+
+    const nextEmailError = validateEmailAddress(email);
+    setEmailError(nextEmailError);
+    if (nextEmailError) {
+      document.getElementById("forgot-email")?.focus();
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -52,7 +68,7 @@ export default function ForgotPasswordPage() {
         </>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-lg">
+      <form onSubmit={handleSubmit} noValidate className="space-y-5">
         {error && (
           <div className="flex items-center gap-2 p-3 bg-error-container/20 border border-error/20 rounded-lg text-error text-body-sm font-medium">
             <span className="material-symbols-outlined text-[18px]">error</span>
@@ -67,34 +83,40 @@ export default function ForgotPasswordPage() {
           </div>
         )}
 
-        <div className="space-y-xs">
-          <label
-            className="font-label-caps text-label-caps text-secondary uppercase"
-            htmlFor="email"
-          >
-            Email Address
-          </label>
-          <input
-            className="w-full bg-surface border border-outline-variant px-md py-3 font-body-md text-on-surface hover:border-primary/40 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-full transition-all duration-300 outline-none shadow-sm"
-            id="email"
+        <div className="space-y-2">
+          <Label htmlFor="forgot-email" className="text-sm font-bold text-slate-800">
+            Email address
+          </Label>
+          <Input
+            id="forgot-email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="e.g. you@example.com"
+            onChange={(event) => {
+              const value = event.target.value;
+              setEmail(value);
+              if (emailError) setEmailError(validateEmailAddress(value));
+            }}
+            placeholder="Enter your email address"
             type="email"
             required
             autoComplete="email"
+            aria-invalid={Boolean(emailError)}
+            aria-describedby={emailError ? "forgot-email-error" : undefined}
+            className={cn(
+              "h-12 rounded-lg border-[#aebbb5] bg-white text-slate-950 placeholder:text-slate-400",
+              emailError && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
+            )}
           />
+          <FieldError id="forgot-email-error" message={emailError} />
         </div>
 
-        <button
+        <Button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-primary-container text-on-primary font-bold text-sm py-3 px-xl rounded-full flex items-center justify-center hover:bg-primary hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-300 ease-out active:scale-[0.98] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="h-12 w-full rounded-lg bg-primary font-bold text-white shadow-[0_8px_20px_rgba(0,53,39,0.14)] hover:bg-primary-container hover:shadow-[0_12px_26px_rgba(0,53,39,0.2)]"
         >
-          <span className="uppercase tracking-widest">
-            {isLoading ? "Sending..." : "Send Reset Link"}
-          </span>
-        </button>
+          <Mail className="h-4 w-4" aria-hidden="true" />
+          {isLoading ? "Sending..." : "Send reset link"}
+        </Button>
       </form>
     </AuthPageShell>
   );

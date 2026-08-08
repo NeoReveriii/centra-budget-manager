@@ -1,4 +1,3 @@
-import { Apple } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface SocialAuthButtonsProps {
@@ -14,20 +13,31 @@ export default function SocialAuthButtons({ onSocial, disabled }: SocialAuthButt
         variant="outline"
         onClick={() => onSocial("google")}
         disabled={disabled}
-        className="h-12 rounded-lg border-slate-200 bg-white text-sm font-semibold text-slate-700 shadow-none hover:border-slate-300 hover:bg-slate-50"
+        className="h-12 rounded-lg border-slate-300 bg-white text-sm font-semibold text-slate-900 shadow-none transition-colors hover:border-slate-400 hover:bg-slate-50 focus-visible:ring-primary/30"
       >
-        <span className="text-base font-extrabold text-[#4285f4]" aria-hidden="true">G</span>
-        Google
+        <img
+          src="/assets/brand/google-g-logo.png"
+          alt=""
+          className="h-5 w-5 shrink-0 object-contain"
+          aria-hidden="true"
+        />
+        Continue with Google
       </Button>
       <Button
         type="button"
         variant="outline"
         onClick={() => onSocial("apple")}
         disabled={disabled}
-        className="h-12 rounded-lg border-slate-200 bg-white text-sm font-semibold text-slate-700 shadow-none hover:border-slate-300 hover:bg-slate-50"
+        className="h-12 rounded-lg border-slate-300 bg-white text-sm font-semibold text-slate-900 shadow-none transition-colors hover:border-slate-400 hover:bg-slate-50 focus-visible:ring-primary/30"
       >
-        <Apple className="h-[18px] w-[18px] text-slate-900" aria-hidden="true" />
-        Apple
+        <span className="relative h-5 w-8 shrink-0" aria-hidden="true">
+          <img
+            src="/assets/brand/apple-sign-in-logo.png"
+            alt=""
+            className="absolute left-1/2 top-1/2 h-10 w-10 max-w-none -translate-x-1/2 -translate-y-1/2 object-contain"
+          />
+        </span>
+        Continue with Apple
       </Button>
     </div>
   );
