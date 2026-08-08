@@ -1,0 +1,73 @@
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import AuthPageShell from "../components/AuthPageShell";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+function SocialButtons({ onSocial, disabled }: { onSocial: (provider: "google" | "apple") => void; disabled: boolean }) {
+  return (
+    <div className="space-y-3">
+      <Button type="button" variant="outline" onClick={() => onSocial("google")} disabled={disabled} className="w-full rounded-xl border-slate-200 bg-white">
+        <span className="text-base font-extrabold text-[#4285F4]" aria-hidden="true">G</span>
+        Continue with Google
+      </Button>
+      <Button type="button" onClick={() => onSocial("apple")} disabled={disabled} className="w-full rounded-xl bg-slate-950 hover:bg-slate-800">
+        Continue with Apple
+      </Button>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  const { login, loginWithSocial } = useAuth();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    setError("");
+    setIsLoading(true);
+    try {
+      const result = await login(email.trim(), password);
+      if (result.success) navigate("/dashboard", { replace: true });
+      else setError(result.error || "We could not sign you in.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "We could not sign you in.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleSocial(provider: "google" | "apple") {
+    setError("");
+    setIsLoading(true);
+    try {
+      const result = await loginWithSocial(provider);
+      if (!result.success) setError(result.error || "Social sign-in failed.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Social sign-in failed.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  return (
+    <AuthPageShell mode="login" title="Sign in to Centra" subtitle="Your financial picture is ready when you are.">
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {error && <div role="alert" className="flex gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700"><span className="material-symbols-outlined text-[18px]" aria-hidden="true">error</span>{error}</div>}
+        <div className="space-y-2"><Label htmlFor="login-email" className="text-sm font-semibold text-slate-700">Email address</Label><Input id="login-email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" type="email" autoComplete="email" required className="h-12 rounded-xl bg-white" /></div>
+        <div className="space-y-2"><div className="flex items-center justify-between"><Label htmlFor="login-password" className="text-sm font-semibold text-slate-700">Password</Label><Link to="/forgot-password" className="text-xs font-bold text-primary hover:text-primary-container hover:underline">Forgot password?</Link></div><div className="relative"><Input id="login-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter your password" type={showPassword ? "text" : "password"} autoComplete="current-password" required className="h-12 rounded-xl bg-white pr-12" /><button type="button" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword((visible) => !visible)} className="absolute inset-y-0 right-3 flex w-10 items-center justify-center text-slate-400 hover:text-primary"><span className="material-symbols-outlined text-[20px]" aria-hidden="true">{showPassword ? "visibility_off" : "visibility"}</span></button></div></div>
+        <Button type="submit" disabled={isLoading} className="h-12 w-full rounded-xl bg-primary font-bold shadow-[0_8px_20px_rgba(0,53,39,0.14)] hover:-translate-y-0.5 hover:bg-primary-container hover:shadow-[0_12px_26px_rgba(0,53,39,0.2)]">{isLoading ? "Signing you in..." : "Sign in"}</Button>
+      </form>
+      <div className="my-7 flex items-center gap-3"><div className="h-px flex-1 bg-slate-200" /><span className="text-[11px] font-bold tracking-[0.14em] text-slate-400 uppercase">Or continue with</span><div className="h-px flex-1 bg-slate-200" /></div>
+      <SocialButtons onSocial={handleSocial} disabled={isLoading} />
+      <div className="mt-7 text-center text-sm text-slate-500"><span>New to Centra?</span><Link to="/register" className="ml-1 font-bold text-primary hover:text-primary-container hover:underline">Create an account</Link></div>
+    </AuthPageShell>
+  );
+}

@@ -19,6 +19,8 @@ import KwartaAI from "./pages/KwartaAI";
 import LandingPage from "./pages/LandingPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 
 // Wrapper that redirects to /login if not authenticated
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -57,6 +59,8 @@ function AppRoutes() {
       <Routes>
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
+        <Route path="/register" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <RegisterPage />} />
 
         {/* Public routes */}
         <Route

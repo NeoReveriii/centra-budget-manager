@@ -1,12 +1,7 @@
-import { useState } from "react";
-import LoginModal from "../components/LoginModal";
-import CreateAccountModal from "../components/CreateAccountModal";
+import { Link } from "react-router-dom";
 import { CentraBrand } from "@/components/CentraBrand";
 
 const LandingPage = () => {
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showCreateAccountModal, setShowCreateAccountModal] = useState(false);
-
   return (
     <div className="bg-background min-h-screen text-on-surface font-body-md">
       {/* TopNavBar */}
@@ -17,19 +12,19 @@ const LandingPage = () => {
           </div>
 
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-            <button
-              onClick={() => setShowLoginModal(true)}
+            <Link
+              to="/login"
               className="min-h-11 rounded-full border border-transparent px-4 text-sm font-bold text-primary transition-[background-color,border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-[#c8e0d3] hover:bg-[#eff8f3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 active:translate-y-0"
             >
               Sign In
-            </button>
-            <button
-              onClick={() => setShowCreateAccountModal(true)}
+            </Link>
+            <Link
+              to="/register"
               className="group flex min-h-11 items-center gap-2 rounded-full bg-primary px-5 text-sm font-bold text-white shadow-[0_5px_14px_rgba(0,53,39,0.14)] transition-[background-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:bg-primary-container hover:shadow-[0_9px_22px_rgba(0,53,39,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 active:translate-y-0"
             >
               Get started
               <span className="material-symbols-outlined text-[18px] transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true">arrow_forward</span>
-            </button>
+            </Link>
           </div>
         </div>
       </nav>
@@ -52,15 +47,15 @@ const LandingPage = () => {
               demand institutional-grade reliability.
             </p>
             <div className="flex flex-wrap gap-4">
-              <button
-                onClick={() => setShowLoginModal(true)}
+              <Link
+                to="/register"
                 className="px-8 py-4 bg-primary text-white rounded-lg font-bold text-[18px] flex items-center gap-2 hover:opacity-90 transition-all cursor-pointer"
               >
                 Get Started Free
                 <span className="material-symbols-outlined text-[20px]">
                   arrow_forward
                 </span>
-              </button>
+              </Link>
             </div>
           </div>
 
@@ -170,18 +165,18 @@ const LandingPage = () => {
                 trust Centra for their financial orchestration.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <button
-                  onClick={() => setShowCreateAccountModal(true)}
+                <Link
+                  to="/register"
                   className="px-10 py-4 bg-white text-primary rounded-lg font-bold hover:bg-emerald-50 transition-all cursor-pointer"
                 >
                   Start Free Trial
-                </button>
-                <button
-                  onClick={() => setShowCreateAccountModal(true)}
+                </Link>
+                <Link
+                  to="/register"
                   className="px-10 py-4 border border-primary-fixed text-primary-fixed rounded-lg font-bold hover:bg-white/10 transition-all cursor-pointer"
                 >
                   Create Account
-                </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -219,26 +214,6 @@ const LandingPage = () => {
         </div>
       </footer>
 
-      {/* Modals */}
-      {showLoginModal && (
-        <LoginModal
-          onClose={() => setShowLoginModal(false)}
-          onSwitchToCreateAccount={() => {
-            setShowLoginModal(false);
-            setShowCreateAccountModal(true);
-          }}
-        />
-      )}
-
-      {showCreateAccountModal && (
-        <CreateAccountModal
-          onClose={() => setShowCreateAccountModal(false)}
-          onSwitchToLogin={() => {
-            setShowCreateAccountModal(false);
-            setShowLoginModal(true);
-          }}
-        />
-      )}
     </div>
   );
 };

@@ -44,7 +44,7 @@ export default function ForgotPasswordPage() {
             Remember your password?
           </p>
           <Link
-            to="/"
+            to="/login"
             className="ml-sm font-label-caps text-label-caps text-primary hover:underline transition-all"
           >
             Sign In

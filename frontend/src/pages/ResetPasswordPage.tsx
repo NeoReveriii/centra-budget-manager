@@ -52,7 +52,7 @@ export default function ResetPasswordPage() {
         setSuccessMessage(
           "Your password has been updated. You can now sign in with your new password.",
         );
-        setTimeout(() => navigate("/", { replace: true }), 2500);
+        setTimeout(() => navigate("/login", { replace: true }), 2500);
       } else if (result.error) {
         setError(result.error);
       }
