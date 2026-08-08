@@ -235,11 +235,12 @@ export default function RegisterPage() {
         </Button>
       </form>
 
-      <p className="mt-5 text-center text-xs font-medium leading-5 text-slate-500">
-        By continuing, you agree to our{" "}
-        <a href="/views/terms.html" className="font-bold text-slate-700 transition-colors duration-200 hover:text-primary hover:underline">Terms of Service</a>{" "}
-        and{" "}
-        <a href="/views/privacy.html" className="font-bold text-slate-700 transition-colors duration-200 hover:text-primary hover:underline">Privacy Policy</a>.
+      <p className="mt-5 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-center text-xs font-medium leading-5 text-slate-500">
+        <span>By continuing, you agree to our</span>
+        <a href="/views/terms.html" className="font-bold text-slate-700 transition-colors duration-200 hover:text-primary hover:underline">Terms of Service</a>
+        <span>and</span>
+        <a href="/views/privacy.html" className="font-bold text-slate-700 transition-colors duration-200 hover:text-primary hover:underline">Privacy Policy</a>
+        <span>.</span>
       </p>
       <p className="mt-5 text-center text-sm font-medium text-slate-600">
         Already have an account?
