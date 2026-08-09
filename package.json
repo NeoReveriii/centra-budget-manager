@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vercel dev",
+    "dev": "npm run dev --prefix frontend --",
+    "vercel-dev": "vercel dev",
     "build": "npm install --prefix frontend && npm run build --prefix frontend && rm -rf public && mkdir -p public && cp -r frontend/dist/* public/"
   },
   "dependencies": {

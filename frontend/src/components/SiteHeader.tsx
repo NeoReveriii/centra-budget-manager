@@ -76,10 +76,10 @@ export default function SiteHeader({ mode, headerRef, shellRef }: SiteHeaderProp
               <Contrast className="h-[17px] w-[17px] transition-transform duration-300 group-hover:rotate-12 motion-reduce:transition-none motion-reduce:group-hover:rotate-0" aria-hidden="true" />
             </button>
             <span className="hidden h-5 w-px bg-slate-300/80 sm:block" aria-hidden="true" />
-            <Button asChild variant="ghost" className="hidden h-9 rounded-md border border-transparent px-3 font-bold text-primary transition-[background-color,border-color,color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#b8ddce] hover:bg-[#e8f5ee] hover:text-primary-container hover:shadow-[0_7px_16px_rgba(0,53,39,0.1)] active:translate-y-0 active:scale-[0.975] dark:hover:border-[#343434] dark:hover:bg-[#242424] dark:hover:text-[#6ee7a5] sm:inline-flex">
+            <Button asChild variant="ghost" className="hidden h-9 rounded-md border border-transparent px-3 font-medium text-primary transition-[background-color,border-color,color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#b8ddce] hover:bg-[#e8f5ee] hover:text-primary-container hover:shadow-[0_7px_16px_rgba(0,53,39,0.1)] active:translate-y-0 active:scale-[0.975] dark:hover:border-[#343434] dark:hover:bg-[#242424] dark:hover:text-[#6ee7a5] sm:inline-flex">
               <Link to="/login">Sign in</Link>
             </Button>
-            <Button asChild className="group hidden h-9 rounded-md bg-primary px-4 font-bold text-white shadow-[0_5px_14px_rgba(0,53,39,0.16)] hover:bg-primary-container hover:shadow-[0_8px_18px_rgba(0,53,39,0.22)] sm:inline-flex">
+            <Button asChild className="group hidden h-9 rounded-md bg-primary px-4 font-medium text-white shadow-[0_5px_14px_rgba(0,53,39,0.16)] hover:bg-primary-container hover:shadow-[0_8px_18px_rgba(0,53,39,0.22)] sm:inline-flex">
               <Link to="/register">
                 Get started
                 <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transform-none" aria-hidden="true" />
@@ -129,7 +129,7 @@ export default function SiteHeader({ mode, headerRef, shellRef }: SiteHeaderProp
             <a href="#security" onClick={() => setMobileMenuOpen(false)} className="rounded-lg px-3 py-2.5 transition-colors hover:bg-[#edf7f2] hover:text-primary focus-visible:bg-[#edf7f2] focus-visible:text-primary focus-visible:outline-none dark:hover:bg-[#242424] dark:focus-visible:bg-[#242424]">Security</a>
             <div className="my-2 h-px bg-slate-200" aria-hidden="true" />
             <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="rounded-lg px-3 py-2.5 transition-colors hover:bg-[#edf7f2] hover:text-primary focus-visible:bg-[#edf7f2] focus-visible:text-primary focus-visible:outline-none dark:hover:bg-[#242424] dark:focus-visible:bg-[#242424]">Sign in</Link>
-            <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="mt-1 inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2.5 font-bold text-white transition-colors hover:bg-primary-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
+            <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="mt-1 inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2.5 font-medium text-white transition-colors hover:bg-primary-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
               Get started
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>

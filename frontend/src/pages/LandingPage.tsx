@@ -1,459 +1,314 @@
-import { useRef } from "react";
-import { ArrowRight, ChartNoAxesCombined, ShieldCheck, WalletCards } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useGSAP } from "@gsap/react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useRef, useState } from "react";
+import { Bot, ChartNoAxesCombined, Target, WalletCards } from "lucide-react";
+import {
+  LazyMotion,
+  MotionConfig,
+  domAnimation,
+  m,
+  useScroll,
+  useSpring,
+  useTransform,
+  type Variants,
+} from "framer-motion";
+import flowMesh from "@/assets/landing/centra-flow-mesh.webp";
+import CentraDashboardPreview from "@/components/landing/CentraDashboardPreview";
+import LandingFooter from "@/components/landing/LandingFooter";
 import LandingHeader from "@/components/landing/LandingHeader";
-import { Button } from "@/components/ui/button";
-import { useUiStore } from "@/stores/ui-store";
+import {
+  LandingMotionPreferenceProvider,
+  useLandingReducedMotion,
+} from "@/components/landing/LandingMotionPreference";
+import {
+  FinalCta,
+  KwartaSection,
+  PlatformShowcase,
+  ProductPairSection,
+  SecuritySection,
+} from "@/components/landing/LandingShowcase";
 
-gsap.registerPlugin(useGSAP, ScrollTrigger);
+const EASE_OUT = [0.22, 1, 0.36, 1] as const;
+const EASE_WIPE = [0.76, 0, 0.24, 1] as const;
 
-const LandingPage = () => {
-  const pageRef = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLElement>(null);
-  const headerShellRef = useRef<HTMLDivElement>(null);
-  const theme = useUiStore((state) => state.theme);
-
-  useGSAP(
-    () => {
-      const header = headerRef.current;
-      const headerShell = headerShellRef.current;
-      if (!header || !headerShell) return;
-      const isDark = theme === "dark";
-
-      const media = gsap.matchMedia();
-
-      const setHeaderCompact = (compact: boolean, animate: boolean) => {
-        gsap.to(header, {
-          paddingTop: compact ? "12px" : "0px",
-          paddingBottom: compact ? "12px" : "0px",
-          duration: animate ? 0.5 : 0,
-          ease: "power3.out",
-          overwrite: true,
-        });
-        gsap.to(headerShell, {
-          maxWidth: compact ? "1280px" : "none",
-          paddingLeft: compact ? "clamp(16px, 2vw, 24px)" : "clamp(16px, 4vw, 48px)",
-          paddingRight: compact ? "clamp(16px, 2vw, 24px)" : "clamp(16px, 4vw, 48px)",
-          borderRadius: compact ? "16px" : "12px",
-          backgroundColor: compact
-            ? isDark
-              ? "rgba(18,18,18,0.94)"
-              : "rgba(255,255,255,0.92)"
-            : "transparent",
-          borderColor: compact
-            ? isDark
-              ? "rgba(52,52,52,0.96)"
-              : "rgba(226,232,240,0.9)"
-            : "transparent",
-          backdropFilter: compact ? "blur(20px)" : "none",
-          boxShadow: compact
-            ? isDark
-              ? "0 18px 50px rgba(0,0,0,0.5)"
-              : "0 18px 50px rgba(15,23,42,0.13)"
-            : "none",
-          duration: animate ? 0.5 : 0,
-          ease: "power3.out",
-          overwrite: true,
-        });
-      };
-
-      media.add("(prefers-reduced-motion: no-preference)", () => {
-        gsap.set(header, { autoAlpha: 1, y: 0, scale: 1, pointerEvents: "auto" });
-        gsap.set(header, { paddingTop: "0px", paddingBottom: "0px" });
-        gsap.set(headerShell, {
-          maxWidth: "none",
-          paddingLeft: "clamp(16px, 4vw, 48px)",
-          paddingRight: "clamp(16px, 4vw, 48px)",
-          borderRadius: "12px",
-          backgroundColor: "transparent",
-          borderColor: "transparent",
-          backdropFilter: "none",
-          boxShadow: "none",
-        });
-
-        ScrollTrigger.create({
-          trigger: pageRef.current,
-          start: "top -112",
-          end: "bottom top",
-          onToggle: (trigger) => setHeaderCompact(trigger.isActive, true),
-        });
-        setHeaderCompact(window.scrollY > 112, false);
-
-        const intro = gsap.timeline({ defaults: { ease: "power3.out" } });
-        intro
-          .from("[data-hero-item]", {
-            autoAlpha: 0,
-            y: 24,
-            duration: 0.68,
-            stagger: 0.11,
-          })
-          .from(
-            "[data-terminal-shell]",
-            { autoAlpha: 0, y: 38, scale: 0.96, duration: 0.9 },
-            "-=0.42",
-          )
-          .from(
-            "[data-terminal-part]",
-            { autoAlpha: 0, y: 16, duration: 0.5, stagger: 0.075 },
-            "-=0.58",
-          )
-          .from(
-            "[data-chart-line]",
-            { strokeDasharray: 520, strokeDashoffset: 520, duration: 1.05 },
-            "-=0.64",
-          )
-          .from(
-            "[data-allocation-bar]",
-            { scaleX: 0, transformOrigin: "left center", duration: 0.72, stagger: 0.1 },
-            "-=0.88",
-          )
-          .from(
-            "[data-security-badge]",
-            { autoAlpha: 0, y: 14, scale: 0.93, duration: 0.55 },
-            "-=0.48",
-          );
-
-        gsap.to("[data-hero-copy]", {
-          y: -32,
-          opacity: 0.74,
-          ease: "none",
-          scrollTrigger: {
-            trigger: "[data-hero]",
-            start: "top top",
-            end: "bottom top",
-            scrub: 0.7,
-          },
-        });
-
-        gsap.to("[data-terminal-shell]", {
-          y: -18,
-          scale: 0.985,
-          ease: "none",
-          scrollTrigger: {
-            trigger: "[data-hero]",
-            start: "top top",
-            end: "bottom top",
-            scrub: 0.7,
-          },
-        });
-
-        gsap.from("[data-build-heading] > *", {
-          autoAlpha: 0,
-          y: 30,
-          duration: 0.72,
-          stagger: 0.12,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: "[data-build-section]",
-            start: "top 76%",
-            once: true,
-          },
-        });
-
-        gsap.from("[data-build-card]", {
-          autoAlpha: 0,
-          y: 38,
-          duration: 0.72,
-          stagger: 0.18,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: "[data-build-sequence]",
-            start: "top 74%",
-            once: true,
-          },
-        });
-
-        gsap.fromTo(
-          "[data-build-line]",
-          { scaleX: 0, transformOrigin: "left center" },
-          {
-            scaleX: 1,
-            ease: "none",
-            scrollTrigger: {
-              trigger: "[data-build-sequence]",
-              start: "top 78%",
-              end: "bottom 48%",
-              scrub: 0.65,
-            },
-          },
-        );
-
-        gsap.from("[data-cta-reveal] > *", {
-          autoAlpha: 0,
-          y: 32,
-          duration: 0.72,
-          stagger: 0.12,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: "[data-cta-reveal]",
-            start: "top 78%",
-            once: true,
-          },
-        });
-
-        gsap.from("[data-footer-reveal] > *", {
-          autoAlpha: 0,
-          y: 22,
-          duration: 0.58,
-          stagger: 0.1,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: "[data-footer-reveal]",
-            start: "top 92%",
-            once: true,
-          },
-        });
-      });
-
-      media.add("(prefers-reduced-motion: reduce)", () => {
-        gsap.set(header, { autoAlpha: 1, y: 0, scale: 1, pointerEvents: "auto" });
-        gsap.set(header, { paddingTop: "0px", paddingBottom: "0px" });
-        gsap.set(headerShell, {
-          maxWidth: "none",
-          paddingLeft: "clamp(16px, 4vw, 48px)",
-          paddingRight: "clamp(16px, 4vw, 48px)",
-          borderRadius: "12px",
-          backgroundColor: "transparent",
-          borderColor: "transparent",
-          backdropFilter: "none",
-          boxShadow: "none",
-        });
-        gsap.set("[data-build-line]", { scaleX: 1, transformOrigin: "left center" });
-
-        ScrollTrigger.create({
-          trigger: pageRef.current,
-          start: "top -112",
-          end: "bottom top",
-          onToggle: (trigger) => setHeaderCompact(trigger.isActive, false),
-        });
-        setHeaderCompact(window.scrollY > 112, false);
-      });
-
-      media.add("(max-width: 767px)", () => {
-        setHeaderCompact(true, false);
-      });
-
-      return () => media.revert();
+const heroCopyVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      delayChildren: 1.8,
+      staggerChildren: 0.09,
     },
-    { scope: pageRef, dependencies: [theme], revertOnUpdate: true },
-  );
-
-  return (
-    <div ref={pageRef} className="font-landing min-h-screen w-full max-w-full overflow-x-hidden bg-[#f7f8f7] text-slate-950 dark:bg-[#0a0a0a] dark:text-[#f5f5f5]">
-      <a
-        href="#overview"
-        className="fixed left-4 top-4 z-[60] -translate-y-24 rounded-lg bg-primary px-4 py-3 text-sm font-bold text-white shadow-lg transition-transform duration-200 focus:translate-y-0 focus:outline-none focus:ring-2 focus:ring-emerald-200 motion-reduce:transition-none"
-      >
-        Skip to main content
-      </a>
-      <LandingHeader headerRef={headerRef} shellRef={headerShellRef} />
-
-      <main className="w-full max-w-full overflow-x-hidden">
-        <section
-          id="overview"
-          data-hero
-          className="mx-auto grid min-h-[100svh] w-full max-w-7xl grid-cols-1 items-center gap-16 px-6 py-20 lg:grid-cols-[minmax(0,0.96fr)_minmax(0,1.04fr)] lg:py-24"
-        >
-          <div data-hero-copy className="max-w-[640px]">
-            <div data-hero-item className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.16em] text-secondary">
-              <span className="h-px w-10 bg-secondary" aria-hidden="true" />
-              Institutional wealth management
-            </div>
-
-            <h1 data-hero-item className="mt-8 max-w-[640px] text-[clamp(2.25rem,4.4vw,4.5rem)] font-semibold leading-[1.02] tracking-[-0.045em] text-primary">
-              The next evolution in
-              <span className="block text-secondary">personal finance.</span>
-            </h1>
-
-            <p data-hero-item className="mt-8 max-w-[560px] text-lg font-normal leading-8 text-slate-600">
-              A focused, intelligence-driven workspace for understanding your money, planning your next move, and building lasting momentum.
-            </p>
-
-            <div data-hero-item className="mt-9 flex flex-wrap gap-3">
-              <Button
-                asChild
-                size="lg"
-                className="group h-14 rounded-lg bg-primary px-7 text-base font-bold text-white shadow-[0_10px_24px_rgba(0,53,39,0.16)] hover:bg-primary-container hover:shadow-[0_14px_30px_rgba(0,53,39,0.22)]"
-              >
-                <Link to="/register">
-                  Get started free
-                  <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transform-none" aria-hidden="true" />
-                </Link>
-              </Button>
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="h-14 rounded-lg border-[#afc9bd] bg-white px-7 text-base font-bold text-primary shadow-none hover:border-primary/45 hover:bg-[#edf7f2] hover:shadow-[0_8px_20px_rgba(0,53,39,0.08)] dark:border-[#343434] dark:bg-[#181818] dark:hover:bg-[#242424]"
-              >
-                <Link to="/login">Sign in</Link>
-              </Button>
-            </div>
-          </div>
-
-          <div id="platform" className="relative scroll-mt-28" data-terminal-shell>
-            <div className="overflow-hidden rounded-xl border border-[#b9c6c0] bg-white shadow-[0_28px_70px_rgba(15,23,42,0.15)] dark:border-[#343434] dark:shadow-[0_28px_70px_rgba(0,0,0,0.55)]">
-              <div data-terminal-part className="flex items-center justify-between bg-primary px-4 py-3.5">
-                <div className="flex gap-2" aria-hidden="true">
-                  <span className="h-3 w-3 rounded-full bg-[#e24d4d]" />
-                  <span className="h-3 w-3 rounded-full bg-[#a9dfc8]" />
-                  <span className="h-3 w-3 rounded-full bg-[#77b29d]" />
-                </div>
-                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-100">
-                  Centra workspace
-                </div>
-              </div>
-
-              <div className="grid grid-flow-dense grid-cols-1 gap-4 bg-[#f1f3f2] p-5 dark:bg-[#101010] sm:grid-cols-3">
-                <div className="space-y-4 sm:col-span-2">
-                  <div data-terminal-part className="rounded-lg border border-[#c5cec9] bg-white p-4 dark:border-[#343434]">
-                    <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Total balance</p>
-                    <p className="mt-2 text-[32px] font-semibold tracking-[-0.035em] text-primary">$428,950.00</p>
-                    <div className="relative mt-4 h-24 overflow-hidden rounded-md bg-emerald-50">
-                      <div className="absolute inset-0 bg-gradient-to-t from-secondary-container/40 to-transparent dark:from-[#242424]" />
-                      <svg className="relative h-full w-full fill-none stroke-primary stroke-2" viewBox="0 0 400 100" preserveAspectRatio="none" aria-hidden="true">
-                        <path data-chart-line d="M0,80 Q50,40 100,70 T200,30 T300,50 T400,10" />
-                      </svg>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div data-terminal-part className="rounded-lg border border-[#c5cec9] bg-white p-4 dark:border-[#343434]">
-                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Investments</p>
-                      <p className="mt-2 text-xl font-semibold text-secondary">+12.4%</p>
-                    </div>
-                    <div data-terminal-part className="rounded-lg border border-[#c5cec9] bg-white p-4 dark:border-[#343434]">
-                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Liquidity</p>
-                      <p className="mt-2 text-xl font-semibold text-primary">84.2%</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div data-terminal-part className="rounded-lg border border-[#c5cec9] bg-white p-4 dark:border-[#343434] sm:col-span-1">
-                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Asset allocation</p>
-                  <div className="mt-5 space-y-4">
-                    <div className="h-2 overflow-hidden rounded-full bg-emerald-100">
-                      <div data-allocation-bar className="h-full w-[62%] rounded-full bg-primary" />
-                    </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-emerald-100">
-                      <div data-allocation-bar className="h-full w-[36%] rounded-full bg-secondary" />
-                    </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-emerald-100">
-                      <div data-allocation-bar className="h-full w-[18%] rounded-full bg-[#7bb59e]" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div
-              id="security"
-              data-security-badge
-              className="absolute -bottom-6 -left-5 hidden scroll-mt-28 items-center gap-3 rounded-xl border border-[#bdc9c3] bg-white px-4 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.14)] dark:border-[#343434] dark:shadow-[0_18px_40px_rgba(0,0,0,0.5)] sm:flex"
-            >
-              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary-container text-primary">
-                <ShieldCheck className="h-5 w-5" aria-hidden="true" />
-              </span>
-              <span>
-                <span className="block text-sm font-bold text-slate-900">Secure access</span>
-                <span className="block text-[11px] font-medium text-slate-500">Encrypted account protection</span>
-              </span>
-            </div>
-          </div>
-        </section>
-
-        <section data-build-section className="border-y border-slate-200 bg-white py-28 md:py-36">
-          <div className="mx-auto w-full max-w-7xl px-6">
-            <div data-build-heading className="max-w-[760px]">
-              <p className="text-sm font-bold uppercase tracking-[0.14em] text-secondary">One connected view</p>
-              <h2 className="mt-5 text-[clamp(2.25rem,4vw,4rem)] font-semibold leading-[1.05] tracking-[-0.04em] text-primary">
-                Your financial picture builds with every decision.
-              </h2>
-              <p className="mt-6 max-w-[620px] text-lg leading-8 text-slate-600">
-                Centra keeps accounts, movement, and goals in sequence, so every next step starts with context.
-              </p>
-            </div>
-
-            <div data-build-sequence className="relative mt-16 grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8">
-              <div className="absolute left-[8%] right-[8%] top-7 hidden h-px bg-slate-200 md:block" aria-hidden="true">
-                <div data-build-line className="h-full w-full bg-secondary" />
-              </div>
-
-              <article data-build-card className="relative pr-5">
-                <span className="relative z-10 flex h-14 w-14 items-center justify-center rounded-xl border border-[#bcd1c7] bg-[#edf7f2] text-primary dark:border-[#343434] dark:bg-[#181818]">
-                  <WalletCards className="h-6 w-6" aria-hidden="true" />
-                </span>
-                <h3 className="mt-7 text-2xl font-semibold tracking-[-0.025em] text-slate-950">Bring accounts together</h3>
-                <p className="mt-3 text-base leading-7 text-slate-600">Start with one dependable view of the balances and activity that matter.</p>
-              </article>
-
-              <article data-build-card className="relative pr-5">
-                <span className="relative z-10 flex h-14 w-14 items-center justify-center rounded-xl border border-[#bcd1c7] bg-[#edf7f2] text-primary dark:border-[#343434] dark:bg-[#181818]">
-                  <ChartNoAxesCombined className="h-6 w-6" aria-hidden="true" />
-                </span>
-                <h3 className="mt-7 text-2xl font-semibold tracking-[-0.025em] text-slate-950">See movement clearly</h3>
-                <p className="mt-3 text-base leading-7 text-slate-600">Understand income, spending, and momentum without sorting through noise.</p>
-              </article>
-
-              <article data-build-card className="relative pr-5">
-                <span className="relative z-10 flex h-14 w-14 items-center justify-center rounded-xl border border-[#bcd1c7] bg-[#edf7f2] text-primary dark:border-[#343434] dark:bg-[#181818]">
-                  <ShieldCheck className="h-6 w-6" aria-hidden="true" />
-                </span>
-                <h3 className="mt-7 text-2xl font-semibold tracking-[-0.025em] text-slate-950">Move with confidence</h3>
-                <p className="mt-3 text-base leading-7 text-slate-600">Make each decision with secure access and the right context already in place.</p>
-              </article>
-            </div>
-          </div>
-        </section>
-
-        <section className="mx-auto w-full max-w-7xl px-6 py-28 md:py-36">
-          <div data-cta-reveal className="relative overflow-hidden rounded-2xl bg-primary px-6 py-20 text-center shadow-[0_28px_70px_rgba(0,53,39,0.18)] sm:px-12">
-            <div className="pointer-events-none absolute inset-0 opacity-30" aria-hidden="true">
-              <div className="absolute -left-28 -top-28 h-72 w-72 rounded-full bg-emerald-300/35 blur-3xl" />
-              <div className="absolute -bottom-32 -right-24 h-80 w-80 rounded-full bg-secondary/40 blur-3xl" />
-            </div>
-            <h2 className="relative mx-auto max-w-[760px] text-[clamp(2.4rem,4.5vw,4.4rem)] font-semibold leading-[1.03] tracking-[-0.045em] text-white">
-              Make your next money decision with clarity.
-            </h2>
-            <p className="relative mx-auto mt-6 max-w-[620px] text-lg leading-8 text-emerald-50/80">
-              Create your Centra workspace and bring your wallets, goals, income, and everyday spending into focus.
-            </p>
-            <div className="relative mt-9 flex flex-col justify-center gap-3 sm:flex-row">
-              <Button asChild size="lg" variant="outline" className="h-14 rounded-lg border-white bg-white px-9 text-base font-bold text-primary hover:border-emerald-50 hover:bg-emerald-50 hover:shadow-lg">
-                <Link to="/register">Create account</Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="h-14 rounded-lg border-emerald-200/60 bg-transparent px-9 text-base font-bold text-white shadow-none hover:border-white hover:bg-white/10 hover:text-white">
-                <Link to="/login">Sign in</Link>
-              </Button>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer className="border-t border-slate-200 bg-white py-14">
-        <div data-footer-reveal className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
-          <div className="w-full max-w-[440px]">
-            <div className="text-lg font-bold tracking-tight text-slate-950">Centra Financial Systems</div>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
-              Calm, intelligent tools for keeping your money organized and moving with intention.
-            </p>
-            <div className="mt-5 border-t border-slate-200 pt-5 text-xs font-medium text-slate-500">
-              © 2026 Centra Financial Systems. All rights reserved.
-            </div>
-          </div>
-          <nav aria-label="Footer navigation" className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm font-semibold text-slate-600 sm:grid-cols-4 md:justify-items-end">
-            <a href="#overview" className="transition-colors duration-200 hover:text-primary focus-visible:outline-none focus-visible:text-primary">Overview</a>
-            <a href="/views/privacy.html" className="transition-colors duration-200 hover:text-primary focus-visible:outline-none focus-visible:text-primary">Privacy</a>
-            <a href="/views/terms.html" className="transition-colors duration-200 hover:text-primary focus-visible:outline-none focus-visible:text-primary">Terms</a>
-            <a href="#security" className="transition-colors duration-200 hover:text-primary focus-visible:outline-none focus-visible:text-primary">Security</a>
-          </nav>
-        </div>
-      </footer>
-    </div>
-  );
+  },
 };
 
-export default LandingPage;
+const heroItemVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    y: 18,
+    filter: "blur(12px)",
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: {
+      duration: 0.65,
+      ease: EASE_OUT,
+    },
+  },
+};
+
+const capabilities = [
+  { label: "Wallets", detail: "One combined balance", Icon: WalletCards },
+  { label: "Cash flow", detail: "Income and expenses", Icon: ChartNoAxesCombined },
+  { label: "Goals", detail: "Progress that stays visible", Icon: Target },
+  { label: "Kwarta AI", detail: "Answers with context", Icon: Bot },
+] as const;
+
+function IntroReveal() {
+  const reduceMotion = useLandingReducedMotion();
+  const [visible, setVisible] = useState(true);
+
+  if (reduceMotion || !visible) {
+    return null;
+  }
+
+  return (
+    <m.div
+      aria-hidden="true"
+      initial={{ clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)" }}
+      animate={{
+        clipPath: [
+          "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+          "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+          "polygon(0% 0%, 100% 0%, 100% 0%, 0% 20%)",
+          "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
+        ],
+      }}
+      transition={{ duration: 2.15, times: [0, 0.48, 0.9, 1], ease: EASE_WIPE }}
+      onAnimationComplete={() => setVisible(false)}
+      className="pointer-events-none fixed inset-0 z-[80] overflow-hidden bg-[#050806]"
+    >
+      <img
+        src={flowMesh}
+        alt=""
+        width="1672"
+        height="941"
+        className="absolute inset-0 h-full w-full scale-110 object-cover opacity-70"
+        decoding="async"
+      />
+      <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(3,7,5,0.82)_0%,rgba(3,7,5,0.12)_58%,rgba(3,7,5,0.66)_100%)]" />
+
+      <m.div
+        data-intro-wave
+        initial={{
+          clipPath: "circle(0% at 18% 100%)",
+          y: "18%",
+          scale: 0.9,
+          opacity: 0.76,
+        }}
+        animate={{
+          clipPath: "circle(150% at 18% 100%)",
+          y: "0%",
+          scale: 1.16,
+          opacity: 1,
+        }}
+        transition={{ duration: 1.18, ease: EASE_WIPE }}
+        style={{
+          background:
+            "radial-gradient(ellipse 92% 76% at 8% 112%, rgba(214,255,118,0.98) 0%, rgba(132,244,168,0.9) 26%, rgba(38,173,104,0.62) 48%, rgba(8,85,52,0.2) 64%, transparent 76%)",
+        }}
+        className="absolute inset-0 mix-blend-screen"
+      />
+
+      <m.div
+        initial={{ opacity: 0, y: 18, filter: "blur(10px)" }}
+        animate={{ opacity: [0, 1, 1, 0], y: [18, 0, 0, -12], filter: ["blur(10px)", "blur(0px)", "blur(0px)", "blur(6px)"] }}
+        transition={{ duration: 1.7, times: [0, 0.28, 0.7, 1], ease: EASE_OUT }}
+        className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-[#f1f7f2]"
+      >
+        <span className="text-sm font-semibold uppercase tracking-[0.24em] text-[#a8e9c2]">Centra</span>
+        <span className="mt-4 text-balance text-[clamp(2.5rem,7vw,6.5rem)] font-semibold leading-[0.92] tracking-[-0.065em]">
+          Your money, in motion.
+        </span>
+      </m.div>
+    </m.div>
+  );
+}
+
+function AnimatedScrollProgress() {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 120,
+    damping: 30,
+    restDelta: 0.001,
+  });
+
+  return (
+    <m.div
+      aria-hidden="true"
+      style={{ scaleX, transformOrigin: "left center" }}
+      className="fixed inset-x-0 top-0 z-[70] h-0.5 bg-[#75dda3]"
+    />
+  );
+}
+
+function ScrollProgress() {
+  const reduceMotion = useLandingReducedMotion();
+  return reduceMotion ? null : <AnimatedScrollProgress />;
+}
+
+function Hero() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const reduceMotion = useLandingReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end end"],
+  });
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 90,
+    damping: 28,
+    mass: 0.8,
+    restDelta: 0.001,
+  });
+  const copyY = useTransform(smoothProgress, [0, 0.56, 1], [0, 0, -140]);
+  const copyOpacity = useTransform(smoothProgress, [0, 0.66, 0.94], [1, 1, 0]);
+  const dashboardY = useTransform(smoothProgress, [0, 0.48, 1], [0, 0, -220]);
+  const dashboardOpacity = useTransform(smoothProgress, [0, 0.72, 0.98], [1, 1, 0]);
+  const backgroundY = useTransform(smoothProgress, [0, 1], [0, -70]);
+
+  return (
+    <section ref={sectionRef} id="overview" className={`relative min-h-[100dvh] scroll-mt-24 ${reduceMotion ? "" : "lg:min-h-[165dvh]"}`}>
+      <div className={`relative flex min-h-[100dvh] items-center overflow-hidden px-4 pb-16 pt-28 sm:px-6 sm:pt-32 lg:px-8 lg:pb-10 ${reduceMotion ? "" : "lg:sticky lg:top-0"}`}>
+        <m.div
+          aria-hidden="true"
+          style={reduceMotion ? undefined : { y: backgroundY }}
+          className="pointer-events-none absolute inset-x-0 -top-32 h-[75rem] bg-[radial-gradient(circle_at_76%_18%,rgba(128,190,166,0.32),transparent_28%),radial-gradient(circle_at_28%_52%,rgba(223,248,233,0.7),transparent_30%)] dark:bg-[radial-gradient(circle_at_76%_18%,rgba(0,83,61,0.34),transparent_28%),radial-gradient(circle_at_28%_52%,rgba(35,72,54,0.34),transparent_30%)]"
+        />
+
+        <div className="relative mx-auto grid w-full min-w-0 max-w-[1500px] grid-cols-[minmax(0,1fr)] items-center gap-12 lg:grid-cols-[minmax(0,0.66fr)_minmax(0,1.34fr)] lg:gap-8 xl:gap-12">
+          <m.div
+            style={reduceMotion ? undefined : { y: copyY, opacity: copyOpacity }}
+            variants={heroCopyVariants}
+            initial={reduceMotion ? false : "hidden"}
+            animate="visible"
+            className="mx-auto min-w-0 max-w-[42rem] text-center lg:mx-0 lg:text-left"
+          >
+            <m.p
+              variants={heroItemVariants}
+              className="font-['Manrope'] text-sm font-semibold tracking-[-0.01em] text-[#2f6b50] dark:text-[#9dddb9]"
+            >
+              Personal finance, made legible
+            </m.p>
+            <m.h1
+              variants={heroItemVariants}
+              className="mt-5 font-['Outfit'] text-[clamp(3.25rem,5.6vw,6.2rem)] font-semibold leading-[0.9] tracking-[-0.064em] text-[#132018] dark:text-[#f0f5f1]"
+            >
+              <span className="whitespace-nowrap">Every peso,</span>
+              <span className="block text-[#19704f] dark:text-[#9cf0bf]">in context.</span>
+            </m.h1>
+            <m.p
+              variants={heroItemVariants}
+              className="mx-auto mt-7 max-w-[31rem] font-['Manrope'] text-base leading-7 tracking-[-0.012em] text-[#53665b] dark:text-white/64 sm:text-lg lg:mx-0"
+            >
+              Wallets, cash flow, goals, and Kwarta AI. One calm financial view.
+            </m.p>
+          </m.div>
+
+          <m.div style={reduceMotion ? undefined : { y: dashboardY, opacity: dashboardOpacity }} className="relative min-w-0">
+            <m.div
+              initial={reduceMotion ? false : { opacity: 0, y: "28vh" }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={
+                reduceMotion
+                  ? { duration: 0 }
+                  : { delay: 2.05, duration: 0.9, ease: EASE_OUT }
+              }
+              className="mx-auto w-full max-w-[68rem]"
+            >
+              <CentraDashboardPreview className="w-full" />
+            </m.div>
+          </m.div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CapabilityRail() {
+  const reduceMotion = useLandingReducedMotion();
+
+  return (
+    <section aria-label="Centra capabilities" className="border-y border-[#dce4dd] bg-[#f0f4ef] dark:border-white/9 dark:bg-[#111411]">
+      <m.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: false, amount: 0.45 }}
+        variants={{
+          hidden: {},
+          visible: { transition: { staggerChildren: reduceMotion ? 0 : 0.06 } },
+        }}
+        className="mx-auto grid w-full max-w-[1400px] grid-cols-2 px-4 sm:px-6 lg:grid-cols-4 lg:px-8"
+      >
+        {capabilities.map(({ label, detail, Icon }, index) => (
+          <m.div
+            key={label}
+            variants={{
+              hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 18 },
+              visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE_OUT } },
+            }}
+            className={`flex min-h-[8.5rem] items-center gap-3 px-3 py-6 sm:px-5 ${index % 2 ? "border-l border-[#dce4dd] dark:border-white/9" : ""} ${index >= 2 ? "border-t border-[#dce4dd] dark:border-white/9 lg:border-t-0" : ""} ${index > 0 ? "lg:border-l lg:border-[#dce4dd] lg:dark:border-white/9" : ""}`}
+          >
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#dff8e9] text-[#0d5038] dark:bg-[#183c2d] dark:text-[#9cf0bf]">
+              <Icon className="h-5 w-5" strokeWidth={1.8} aria-hidden="true" />
+            </span>
+            <span>
+              <span className="block text-sm font-semibold text-[#142019] dark:text-white/88">{label}</span>
+              <span className="mt-1 block text-xs leading-5 text-[#6b7a71] dark:text-white/45">{detail}</span>
+            </span>
+          </m.div>
+        ))}
+      </m.div>
+    </section>
+  );
+}
+
+function LandingExperience() {
+  const reduceMotion = useLandingReducedMotion();
+
+  return (
+    <LazyMotion features={domAnimation} strict>
+      <MotionConfig reducedMotion={reduceMotion ? "always" : "never"}>
+        <div id="top" className="centra-landing min-h-[100dvh] w-full overflow-x-clip bg-[#f8faf7] font-landing text-[#142019] selection:bg-[#9cf0bf] selection:text-[#062117] dark:bg-[#0b0e0c] dark:text-[#eff5f0]">
+          <ScrollProgress />
+          <IntroReveal />
+          <a
+            href="#overview"
+            className="fixed left-4 top-4 z-[100] -translate-y-24 rounded-full bg-[#9cf0bf] px-5 py-3 text-sm font-semibold text-[#062117] shadow-lg transition-transform duration-200 focus:translate-y-0 focus:outline-none focus:ring-2 focus:ring-white motion-reduce:transition-none"
+          >
+            Skip to main content
+          </a>
+          <LandingHeader />
+
+          <main>
+            <Hero />
+            <CapabilityRail />
+            <PlatformShowcase />
+            <ProductPairSection />
+            <KwartaSection />
+            <SecuritySection />
+            <FinalCta />
+          </main>
+
+          <LandingFooter />
+        </div>
+      </MotionConfig>
+    </LazyMotion>
+  );
+}
+
+export default function LandingPage() {
+  return (
+    <LandingMotionPreferenceProvider>
+      <LandingExperience />
+    </LandingMotionPreferenceProvider>
+  );
+}

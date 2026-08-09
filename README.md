@@ -121,6 +121,8 @@ Neon hosts both application data (`public` schema) and auth data (`neon_auth` sc
    npm run dev
    ```
 
+   This starts the Vite frontend. To run the app through Vercel's local runtime, including local serverless functions, use `npm run vercel-dev`.
+
 5. **Production build**
    ```bash
    npm run build
