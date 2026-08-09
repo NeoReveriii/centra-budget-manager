@@ -114,28 +114,28 @@
   }
 
   .dark body {
-    background-color: #0f172a;
-    color: #f1f5f9;
+    background-color: #111513;
+    color: #f1f6f2;
   }
 
   /* Shared application dark theme tokens keep every tab on the same surface and contrast scale. */
   .dark {
     color-scheme: dark;
-    --color-background: #0f172a;
-    --color-surface: #0f172a;
-    --color-surface-bright: #1e293b;
-    --color-surface-container-lowest: #1e293b;
-    --color-surface-container-low: #172033;
-    --color-surface-container: #1e293b;
-    --color-surface-container-high: #273449;
-    --color-surface-container-highest: #334155;
-    --color-surface-variant: #334155;
-    --color-surface-dim: #111827;
-    --color-on-background: #f1f5f9;
-    --color-on-surface: #f1f5f9;
-    --color-on-surface-variant: #cbd5e1;
-    --color-outline: #64748b;
-    --color-outline-variant: #334155;
+    --color-background: #111513;
+    --color-surface: #111513;
+    --color-surface-bright: #29332e;
+    --color-surface-container-lowest: #202522;
+    --color-surface-container-low: #1a211e;
+    --color-surface-container: #202522;
+    --color-surface-container-high: #29332e;
+    --color-surface-container-highest: #35423a;
+    --color-surface-variant: #35423a;
+    --color-surface-dim: #0d110f;
+    --color-on-background: #f1f6f2;
+    --color-on-surface: #f1f6f2;
+    --color-on-surface-variant: #b7c4bb;
+    --color-outline: #718078;
+    --color-outline-variant: #3b4941;
   }
 
   /* Existing tabs use a few utility surfaces directly; normalize those surfaces in dark mode. */
@@ -180,11 +180,11 @@
   }
 
   .dark .bg-background {
-    background-color: #0f172a;
+    background-color: #111513;
   }
 
   .dark .bg-surface-container-lowest {
-    background-color: #1e293b;
+    background-color: #202522;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -312,5 +312,88 @@
     line-height: 1;
     letter-spacing: -0.02em;
     font-weight: 600;
+  }
+
+  /* These rules live in the utilities layer so they win over the imported
+     Tailwind utility colors already used by the tab implementations. */
+  .dark .bg-white,
+  .dark .dark\:bg-white {
+    background-color: #202522;
+  }
+
+  .dark .bg-slate-50,
+  .dark .dark\:bg-slate-50 {
+    background-color: #1a211e;
+  }
+
+  .dark .bg-slate-100,
+  .dark .dark\:bg-slate-100 {
+    background-color: #252e29;
+  }
+
+  .dark .bg-slate-200,
+  .dark .dark\:bg-slate-200 {
+    background-color: #35423a;
+  }
+
+  .dark .bg-slate-700,
+  .dark .dark\:bg-slate-700 {
+    background-color: #35423a;
+  }
+
+  .dark .bg-slate-800,
+  .dark .dark\:bg-slate-800 {
+    background-color: #29332e;
+  }
+
+  .dark .bg-slate-900,
+  .dark .dark\:bg-slate-900 {
+    background-color: #1a211e;
+  }
+
+  .dark .bg-slate-950,
+  .dark .dark\:bg-slate-950 {
+    background-color: #111513;
+  }
+
+  .dark .text-slate-100,
+  .dark .text-slate-200,
+  .dark .text-slate-300,
+  .dark .text-slate-950,
+  .dark .text-slate-900,
+  .dark .text-slate-800,
+  .dark .text-slate-700,
+  .dark .text-slate-600 {
+    color: #e5eee8;
+  }
+
+  .dark .text-slate-400,
+  .dark .text-slate-500 {
+    color: #9eaea4;
+  }
+
+  .dark .border-slate-100,
+  .dark .border-slate-200,
+  .dark .border-slate-300,
+  .dark .dark\:border-slate-700,
+  .dark .dark\:border-slate-800 {
+    border-color: #3b4941;
+  }
+
+  .dark .divide-slate-100 > :not(:last-child),
+  .dark .divide-slate-200 > :not(:last-child) {
+    border-color: #3b4941;
+  }
+
+  .dark .text-primary {
+    color: #75e8aa;
+  }
+
+  .dark .bg-primary {
+    background-color: #004b39;
+  }
+
+  .dark .dark\:bg-primary {
+    background-color: #004b39;
   }
 }
