@@ -222,8 +222,8 @@ const SavingsGoals: React.FC = () => {
           }}
         >
           <DialogTrigger asChild>
-            <button className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-body-sm hover:opacity-90 active:scale-[0.98] transition-all shadow-sm flex items-center gap-2 cursor-pointer whitespace-nowrap">
-              <span className="material-symbols-outlined text-[20px]">add_circle</span>
+            <button className="flex h-11 items-center gap-2 whitespace-nowrap rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 active:scale-[0.98]">
+              <span className="material-symbols-outlined text-[18px]">add_circle</span>
               New Goal
             </button>
           </DialogTrigger>

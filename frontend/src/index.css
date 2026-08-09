@@ -118,6 +118,67 @@
     color: #f1f5f9;
   }
 
+  /* Shared application dark theme tokens keep every tab on the same surface and contrast scale. */
+  .dark {
+    color-scheme: dark;
+    --color-background: #0f172a;
+    --color-surface: #0f172a;
+    --color-surface-bright: #1e293b;
+    --color-surface-container-lowest: #1e293b;
+    --color-surface-container-low: #172033;
+    --color-surface-container: #1e293b;
+    --color-surface-container-high: #273449;
+    --color-surface-container-highest: #334155;
+    --color-surface-variant: #334155;
+    --color-surface-dim: #111827;
+    --color-on-background: #f1f5f9;
+    --color-on-surface: #f1f5f9;
+    --color-on-surface-variant: #cbd5e1;
+    --color-outline: #64748b;
+    --color-outline-variant: #334155;
+  }
+
+  /* Existing tabs use a few utility surfaces directly; normalize those surfaces in dark mode. */
+  .dark .bg-white {
+    background-color: #1e293b;
+  }
+
+  .dark .bg-slate-50 {
+    background-color: #172033;
+  }
+
+  .dark .bg-slate-100 {
+    background-color: #1e293b;
+  }
+
+  .dark .bg-slate-200 {
+    background-color: #334155;
+  }
+
+  .dark .text-slate-950,
+  .dark .text-slate-900,
+  .dark .text-slate-800,
+  .dark .text-slate-700,
+  .dark .text-slate-600 {
+    color: #e2e8f0;
+  }
+
+  .dark .text-slate-500,
+  .dark .text-slate-400 {
+    color: #94a3b8;
+  }
+
+  .dark .border-slate-100,
+  .dark .border-slate-200,
+  .dark .border-slate-300 {
+    border-color: #334155;
+  }
+
+  .dark .divide-slate-100 > :not(:last-child),
+  .dark .divide-slate-200 > :not(:last-child) {
+    border-color: #334155;
+  }
+
   .dark .bg-background {
     background-color: #0f172a;
   }

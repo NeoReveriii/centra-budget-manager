@@ -512,7 +512,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="animate-fade-in space-y-lg">
+    <div className="animate-fade-in space-y-md">
       <section className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
         <div className="min-w-0">
           <h1 className="font-h1 text-h1 text-on-background">Welcome back, {displayName}</h1>

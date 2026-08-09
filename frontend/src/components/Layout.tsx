@@ -33,11 +33,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className={`min-h-screen w-full bg-background transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${isSidebarCollapsed ? "md:pl-[80px]" : "md:pl-[300px]"}`}>
+    <div className={`min-h-screen w-full bg-background transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] dark:bg-slate-950 ${isSidebarCollapsed ? "md:pl-[80px]" : "md:pl-[300px]"}`}>
       <Sidebar />
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-background dark:bg-slate-950">
         {/* Mobile Header */}
-        <header className="md:hidden flex items-center justify-between p-4 border-b border-outline-variant bg-white sticky top-0 z-40">
+        <header className="sticky top-0 z-40 flex items-center justify-between border-b border-outline-variant bg-white p-4 dark:border-slate-800 dark:bg-slate-950 md:hidden">
           <button 
             onClick={() => setMobileSidebarOpen(true)}
             className="p-2 text-slate-600 hover:bg-slate-100 rounded-full flex items-center justify-center cursor-pointer"

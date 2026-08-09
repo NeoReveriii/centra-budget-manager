@@ -2,7 +2,6 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useUiStore } from "@/stores/ui-store";
-import { CentraBrand } from "./CentraBrand";
 
 interface NavItem {
   to: string;
@@ -91,26 +90,24 @@ const Sidebar = () => {
             className={`flex items-center gap-2 ${isCollapsed ? "cursor-pointer" : "pointer-events-none"}`}
             aria-hidden={isCollapsed}
           >
-            {isCollapsed ? (
-              <div className="relative flex h-7 w-7 shrink-0 items-center justify-center">
-                <img
-                  src={sidebarLogoSrc}
-                  alt="Centra logo"
-                  className={`absolute h-full w-full object-contain transition-opacity ${btnHover ? "opacity-0" : "opacity-100"}`}
-                />
-                {btnHover && (
-                  <span className="material-symbols-outlined absolute text-[22px] text-[#3d4a40] dark:text-[#c6c9d0]">menu</span>
-                )}
-              </div>
-            ) : (
-              <CentraBrand
-                variant="text"
-                size="sidebar"
-                align="left"
-                surface={theme === "dark" ? "dark" : "light"}
-                className="h-11 w-[150px] shrink-0"
+            <div className="relative flex h-7 w-7 shrink-0 items-center justify-center">
+              <img
+                src={sidebarLogoSrc}
+                alt="Centra logo"
+                className={`absolute h-full w-full object-contain transition-opacity ${btnHover ? "opacity-0" : "opacity-100"}`}
               />
-            )}
+              {isCollapsed && btnHover && (
+                <span className="material-symbols-outlined absolute text-[22px] text-[#3d4a40] dark:text-[#c6c9d0]">menu</span>
+              )}
+            </div>
+            <span
+              className={`text-[19px] font-bold whitespace-nowrap text-[#1a7a5e] dark:text-[#75f0ad] transition-all duration-150 ${
+                isCollapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"
+              }`}
+              style={{ letterSpacing: "-0.3px" }}
+            >
+              centra
+            </span>
           </button>
 
           {/* Desktop toggle — ml-auto when expanded, hidden when collapsed */}
