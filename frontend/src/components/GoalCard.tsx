@@ -1,4 +1,5 @@
 import React from "react";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 
 export type PriorityLevel = "High" | "Medium" | "Low";
 
@@ -13,14 +14,6 @@ export interface GoalCardProps {
   onContribute?: () => void;
   onDelete?: () => void;
 }
-
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
 
 // Priority drives the progress bar and badge color only — no structural gimmicks
 const PRIORITY_STYLES: Record<
@@ -73,6 +66,10 @@ const GoalCard: React.FC<GoalCardProps> = ({
   onContribute,
   onDelete,
 }) => {
+  const formatCurrency = useCurrencyFormatter({
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
   const progressPct = Math.min(
     Math.round((currentAmount / targetAmount) * 100),
     100

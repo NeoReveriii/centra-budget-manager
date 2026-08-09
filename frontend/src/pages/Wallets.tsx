@@ -24,6 +24,7 @@ import { Label } from "@/components/ui/label";
 import { StyledSelect } from "@/components/ui/styled-select";
 import FieldError from "@/components/FieldError";
 import { cn } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 
 type WalletFilter = "ALL" | "ACTIVE" | "ARCHIVED";
 
@@ -72,16 +73,6 @@ const WALLET_VISUALS: Record<string, { icon: string; surface: string }> = {
   },
 };
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-    currencyDisplay: "narrowSymbol",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
-}
-
 function formatDate(date: string): string {
   return new Date(date).toLocaleDateString("en-PH", {
     month: "short",
@@ -102,7 +93,11 @@ function walletHasTransaction(transaction: Transaction, walletId: number) {
   );
 }
 
-function transactionAmountLabel(transaction: Transaction, walletId: number) {
+function transactionAmountLabel(
+  transaction: Transaction,
+  walletId: number,
+  formatCurrency: (amount: number) => string,
+) {
   const amount = formatCurrency(Number(transaction.amount));
   if (transaction.type === "Income") {
     return { label: `+${amount}`, tone: "text-emerald-700 dark:text-emerald-300" };
@@ -117,6 +112,8 @@ function transactionAmountLabel(transaction: Transaction, walletId: number) {
 }
 
 const Wallets = () => {
+  const formatCurrency = useCurrencyFormatter();
+  const showCurrencySymbol = useUiStore((state) => state.showCurrencySymbol);
   const walletQuery = useWallets();
   const transactionQuery = useTransactions();
   const wallets = walletQuery.data ?? EMPTY_WALLETS;
@@ -508,7 +505,7 @@ const Wallets = () => {
                   {selectedTransactions.length ? (
                     <ul className="mt-3 space-y-1">
                       {selectedTransactions.map((transaction) => {
-                        const amount = transactionAmountLabel(transaction, selectedWallet.wallet_id);
+                        const amount = transactionAmountLabel(transaction, selectedWallet.wallet_id, formatCurrency);
                         return (
                           <li key={transaction.trans_id} className="flex items-center justify-between gap-3 rounded-xl px-2 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/70">
                             <span className="min-w-0"><span className="block truncate text-sm font-bold text-slate-800 dark:text-slate-100">{transaction.description || transaction.type}</span><span className="mt-0.5 block text-[11px] text-slate-400">{transaction.type}, {formatDate(transaction.dateoftrans)}</span></span>
@@ -577,7 +574,7 @@ const Wallets = () => {
               <div className="space-y-2">
                 <Label htmlFor="wallet-balance">Starting balance</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">₱</span>
+                  {showCurrencySymbol ? <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">₱</span> : null}
                   <Input
                     id="wallet-balance"
                     type="number"
@@ -599,7 +596,7 @@ const Wallets = () => {
                     aria-invalid={Boolean(fieldErrors.initialBalance)}
                     aria-describedby={fieldErrors.initialBalance ? "wallet-balance-error" : "wallet-balance-help"}
                     className={cn(
-                      "h-11 pl-8 dark:bg-slate-950",
+                      showCurrencySymbol ? "h-11 pl-8 dark:bg-slate-950" : "h-11 dark:bg-slate-950",
                       fieldErrors.initialBalance && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
                     )}
                   />

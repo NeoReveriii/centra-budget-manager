@@ -73,6 +73,7 @@ export function AddTransactionModal() {
   const setOpen = useUiStore((s) => s.setAddModalOpen);
   const defaultType = useUiStore((s) => s.addModalDefaultType);
   const defaultWalletId = useUiStore((s) => s.addModalDefaultWalletId);
+  const showCurrencySymbol = useUiStore((s) => s.showCurrencySymbol);
 
   const { data: wallets = EMPTY_WALLETS } = useWallets();
   const createTx = useCreateTransaction();
@@ -261,7 +262,7 @@ export function AddTransactionModal() {
 
             <div className="space-y-2">
               <Label htmlFor="tx-amount" className="font-bold text-slate-600">
-                Amount (₱)
+                Amount{showCurrencySymbol ? " (₱)" : ""}
               </Label>
               <Input
                 id="tx-amount"

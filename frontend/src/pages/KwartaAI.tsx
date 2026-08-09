@@ -17,6 +17,7 @@ import {
   type Transaction,
 } from "@/hooks/use-budget-data";
 import { getAccessToken } from "../lib/auth-client";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 
 interface ChatMessage {
   id: string;
@@ -42,11 +43,6 @@ type AiConnectionState = "checking" | "online" | "offline";
 interface AiAvailability {
   state: AiConnectionState;
 }
-const currencyFormatter = new Intl.NumberFormat(undefined, {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-
 const markdownComponents: Components = {
   p: ({ children }) => (
     <p className="mb-3 last:mb-0 text-sm leading-relaxed text-slate-700">{children}</p>
@@ -157,6 +153,7 @@ function ChatVisualization({
   chartType: ChartType;
   transactions: Transaction[];
 }) {
+  const formatCurrency = useCurrencyFormatter();
   const data = useMemo(() => buildChartData(transactions, chartType), [transactions, chartType]);
   const total = useMemo(() => data.reduce((sum, item) => sum + item.amount, 0), [data]);
   const palette = ["#0f766e", "#14b8a6", "#f59e0b", "#ef4444", "#334155", "#84cc16"];
@@ -180,7 +177,7 @@ function ChatVisualization({
             {title}
           </p>
           <p className="text-sm font-semibold text-primary">
-            Total {chartType}: {currencyFormatter.format(total)}
+            Total {chartType}: {formatCurrency(total)}
           </p>
         </div>
         <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
@@ -231,7 +228,7 @@ function ChatVisualization({
                     <span className="truncate font-semibold text-slate-700">{item.label}</span>
                   </div>
                   <span className="shrink-0 font-mono text-slate-500">
-                    {currencyFormatter.format(item.amount)}
+                    {formatCurrency(item.amount)}
                   </span>
                 </div>
                 <div className="h-2 overflow-hidden rounded-full bg-slate-100">

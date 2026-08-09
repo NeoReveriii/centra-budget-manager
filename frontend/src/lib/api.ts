@@ -60,6 +60,16 @@ export async function fetchCurrentUser(): Promise<UserProfile> {
   return request<UserProfile>("/accounts");
 }
 
+export async function deleteAccount(accountId: number): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  return request("/accounts", {
+    method: "DELETE",
+    body: JSON.stringify({ id: accountId }),
+  });
+}
+
 // ──────────────────────────────────────────────
 // Transactions
 // ──────────────────────────────────────────────

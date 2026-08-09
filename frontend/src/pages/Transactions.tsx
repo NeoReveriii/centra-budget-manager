@@ -5,6 +5,7 @@ import {
   useWallets,
 } from "@/hooks/use-budget-data";
 import { useUiStore } from "@/stores/ui-store";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { Button } from "@/components/ui/button";
 import { StyledSelect } from "@/components/ui/styled-select";
 import {
@@ -15,16 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-function formatCurrency(amount: number): string {
-  return (
-    "₱" +
-    amount.toLocaleString("en-PH", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })
-  );
-}
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-US", {
@@ -151,6 +142,7 @@ function getIconStyle(desc: string, type: string) {
 const ITEMS_PER_PAGE = 10;
 
 const Transactions = () => {
+  const formatCurrency = useCurrencyFormatter();
   const { data: transactions = [], isLoading: loading } = useTransactions();
   const { data: wallets = [] } = useWallets();
 

@@ -21,6 +21,8 @@ interface UiState {
   mobileSidebarOpen: boolean;
   fabOpen: boolean;
   theme: ThemeMode;
+  highContrast: boolean;
+  showCurrencySymbol: boolean;
   txSearch: string;
   txTypeFilter: string;
   txWalletFilter: string;
@@ -31,6 +33,8 @@ interface UiState {
   setFabOpen: (open: boolean) => void;
   toggleFab: () => void;
   setTheme: (theme: ThemeMode) => void;
+  setHighContrast: (enabled: boolean) => void;
+  setShowCurrencySymbol: (enabled: boolean) => void;
   setTxSearch: (search: string) => void;
   setTxTypeFilter: (filter: string) => void;
   setTxWalletFilter: (filter: string) => void;
@@ -55,6 +59,8 @@ export const useUiStore = create<UiState>()(
       mobileSidebarOpen: false,
       fabOpen: false,
       theme: "light",
+      highContrast: false,
+      showCurrencySymbol: true,
       txSearch: "",
       txTypeFilter: "All Types",
       txWalletFilter: "All Wallets",
@@ -69,6 +75,11 @@ export const useUiStore = create<UiState>()(
         applyDocumentTheme(theme);
         set({ theme });
       },
+      setHighContrast: (highContrast) => {
+        document.documentElement.classList.toggle("high-contrast", highContrast);
+        set({ highContrast });
+      },
+      setShowCurrencySymbol: (showCurrencySymbol) => set({ showCurrencySymbol }),
       setTxSearch: (txSearch) => set({ txSearch, txPage: 1 }),
       setTxTypeFilter: (txTypeFilter) => set({ txTypeFilter, txPage: 1 }),
       setTxWalletFilter: (txWalletFilter) => set({ txWalletFilter, txPage: 1 }),
@@ -97,6 +108,8 @@ export const useUiStore = create<UiState>()(
       name: "centra-ui",
       partialize: (state) => ({
         theme: state.theme,
+        highContrast: state.highContrast,
+        showCurrencySymbol: state.showCurrencySymbol,
         sidebarCollapsed: state.sidebarCollapsed,
       }),
     },

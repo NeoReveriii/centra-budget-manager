@@ -18,6 +18,7 @@ import {
 } from "recharts";
 import { StyledSelect } from "@/components/ui/styled-select";
 import { useUiStore } from "@/stores/ui-store";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 
 interface CategoryStyle {
   icon: string;
@@ -173,16 +174,6 @@ function getCategoryStyle(category: string | null | undefined, description: stri
     return CATEGORY_STYLES.transfer;
   }
   return CATEGORY_STYLES.other;
-}
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-    currencyDisplay: "narrowSymbol",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
 }
 
 function formatDisplayName(username?: string | null): string {
@@ -388,6 +379,8 @@ function buildCashflowData(
 const Dashboard = () => {
   const { user } = useAuth();
   const theme = useUiStore((state) => state.theme);
+  const showCurrencySymbol = useUiStore((state) => state.showCurrencySymbol);
+  const formatCurrency = useCurrencyFormatter();
   const walletQuery = useWallets();
   const transactionQuery = useTransactions();
   const wallets = walletQuery.data ?? EMPTY_WALLETS;
@@ -472,7 +465,7 @@ const Dashboard = () => {
           percent: String(percent) + "%",
         };
       });
-  }, [filteredTransactions, periodExpenses]);
+  }, [filteredTransactions, formatCurrency, periodExpenses]);
 
   const recentTx = [...filteredTransactions]
     .sort((a, b) => new Date(b.dateoftrans).getTime() - new Date(a.dateoftrans).getTime())
@@ -707,7 +700,7 @@ const Dashboard = () => {
                   axisLine={false}
                   tickLine={false}
                   tick={{ fill: theme === "dark" ? "#a3a3a3" : "#94a3b8", fontSize: 12 }}
-                  tickFormatter={(val) => `₱${Number(val) > 1000 ? `${(Number(val) / 1000).toFixed(0)}k` : Number(val)}`}
+                  tickFormatter={(val) => `${showCurrencySymbol ? "₱" : ""}${Number(val) > 1000 ? `${(Number(val) / 1000).toFixed(0)}k` : Number(val)}`}
                 />
                 <Tooltip
                   contentStyle={{

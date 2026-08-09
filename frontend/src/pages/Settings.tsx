@@ -1,11 +1,101 @@
 import { useState } from "react";
 import { useUiStore } from "@/stores/ui-store";
 import { StyledSelect } from "@/components/ui/styled-select";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useAuth } from "@/context/AuthContext";
+import { deleteAccount, fetchTransactions } from "@/lib/api";
+
+function escapeCsvCell(value: unknown): string {
+  const text = String(value ?? "");
+  return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+function buildTransactionCsv(
+  transactions: Awaited<ReturnType<typeof fetchTransactions>>,
+): string {
+  const rows = transactions.map((transaction) => [
+    transaction.dateoftrans,
+    transaction.description,
+    transaction.type,
+    transaction.category ?? "",
+    transaction.wallet_type,
+    Number(transaction.amount).toFixed(2),
+  ]);
+
+  return [
+    ["Date", "Description", "Type", "Category", "Wallet", "Amount"],
+    ...rows,
+  ]
+    .map((row) => row.map(escapeCsvCell).join(","))
+    .join("\r\n");
+}
 
 const Settings = () => {
   const theme = useUiStore((s) => s.theme);
   const setTheme = useUiStore((s) => s.setTheme);
+  const highContrast = useUiStore((s) => s.highContrast);
+  const setHighContrast = useUiStore((s) => s.setHighContrast);
+  const showCurrencySymbol = useUiStore((s) => s.showCurrencySymbol);
+  const setShowCurrencySymbol = useUiStore((s) => s.setShowCurrencySymbol);
+  const { user, logout } = useAuth();
   const [language, setLanguage] = useState("English");
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportStatus, setExportStatus] = useState("");
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [deleteError, setDeleteError] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  async function handleExport() {
+    setIsExporting(true);
+    setExportStatus("");
+    try {
+      const transactions = await fetchTransactions();
+      const csv = `\uFEFF${buildTransactionCsv(transactions)}`;
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `centra-transactions-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setExportStatus(
+        transactions.length
+          ? `Exported ${transactions.length} transaction${transactions.length === 1 ? "" : "s"}.`
+          : "Exported an empty transaction file.",
+      );
+    } catch (error) {
+      setExportStatus(error instanceof Error ? error.message : "Unable to export transactions.");
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
+  async function handleDeleteAccount() {
+    if (!user || deleteConfirmation.trim() !== "DELETE") return;
+    setIsDeleting(true);
+    setDeleteError("");
+    try {
+      await deleteAccount(user.acc_id);
+      await logout();
+      window.location.assign("/");
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : "Unable to delete the account.");
+      setIsDeleting(false);
+    }
+  }
 
   return (
     <div className="mx-auto w-full max-w-[800px] animate-fade-in">
@@ -58,8 +148,13 @@ const Settings = () => {
                 Toggle between normal and high contrast modes.
               </p>
             </div>
-            <button className="shrink-0 rounded-lg border border-outline-variant bg-surface-container-high px-3 py-2 text-xs font-bold text-primary transition-all hover:bg-surface-dim hover:text-primary-container hover:shadow-sm active:scale-95">
-              Normal Contrast
+            <button
+              type="button"
+              aria-pressed={highContrast}
+              onClick={() => setHighContrast(!highContrast)}
+              className="shrink-0 rounded-lg border border-outline-variant bg-surface-container-high px-3 py-2 text-xs font-bold text-primary transition-all hover:bg-surface-dim hover:text-primary-container hover:shadow-sm active:scale-95"
+            >
+              {highContrast ? "High Contrast" : "Normal Contrast"}
             </button>
           </div>
 
@@ -97,7 +192,12 @@ const Settings = () => {
               </p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer hover:scale-105 transition-transform">
-              <input defaultChecked className="sr-only peer" type="checkbox" />
+              <input
+                checked={showCurrencySymbol}
+                onChange={(event) => setShowCurrencySymbol(event.target.checked)}
+                className="sr-only peer"
+                type="checkbox"
+              />
               <div className="h-5 w-10 rounded-full bg-surface-container-high peer-focus:outline-none peer peer-checked:after:translate-x-full peer-checked:after:border-white after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-outline-variant after:bg-white after:content-[''] after:transition-all peer-checked:bg-primary"></div>
             </label>
           </div>
@@ -124,16 +224,26 @@ const Settings = () => {
                 Download a CSV file containing all your transaction records.
               </p>
             </div>
-            <button className="flex shrink-0 items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-primary hover:shadow-md active:scale-95">
+            <button
+              type="button"
+              onClick={handleExport}
+              disabled={isExporting}
+              className="flex shrink-0 items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-primary hover:shadow-md active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+            >
               <span
                 className="material-symbols-outlined"
                 style={{ fontSize: "16px" }}
               >
                 download
               </span>
-              Download CSV
+              {isExporting ? "Preparing..." : "Download CSV"}
             </button>
           </div>
+          {exportStatus ? (
+            <p role="status" className="border-t border-outline-variant/30 px-4 py-3 text-xs text-on-surface-variant">
+              {exportStatus}
+            </p>
+          ) : null}
         </div>
       </section>
 
@@ -199,7 +309,15 @@ const Settings = () => {
                 Permanently remove your account and all associated budget data.
               </p>
             </div>
-            <button className="shrink-0 rounded-lg bg-error px-3 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-[#93000a] hover:shadow-md active:scale-95">
+            <button
+              type="button"
+              onClick={() => {
+                setDeleteConfirmation("");
+                setDeleteError("");
+                setDeleteOpen(true);
+              }}
+              className="shrink-0 rounded-lg bg-error px-3 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-[#93000a] hover:shadow-md active:scale-95"
+            >
               Delete Account
             </button>
           </div>
@@ -212,6 +330,61 @@ const Settings = () => {
           Centra Institutional Suite v4.2.0
         </p>
       </footer>
+
+      <Dialog
+        open={deleteOpen}
+        onOpenChange={(open) => {
+          if (isDeleting) return;
+          setDeleteOpen(open);
+          if (!open) {
+            setDeleteConfirmation("");
+            setDeleteError("");
+          }
+        }}
+      >
+        <DialogContent className="max-w-[460px]">
+          <DialogHeader>
+            <DialogTitle>Delete your account?</DialogTitle>
+            <DialogDescription>
+              This permanently deletes your wallets, transactions, goals, and saved financial data. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2 py-2">
+            <Label htmlFor="delete-account-confirmation">
+              Type <span className="font-extrabold text-error">DELETE</span> to confirm
+            </Label>
+            <Input
+              id="delete-account-confirmation"
+              value={deleteConfirmation}
+              onChange={(event) => setDeleteConfirmation(event.target.value)}
+              placeholder="DELETE"
+              autoComplete="off"
+              aria-describedby={deleteError ? "delete-account-error" : undefined}
+              aria-invalid={Boolean(deleteError)}
+            />
+            {deleteError ? (
+              <p id="delete-account-error" role="alert" className="text-xs font-semibold text-error">
+                {deleteError}
+              </p>
+            ) : null}
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setDeleteOpen(false)} disabled={isDeleting}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDeleteAccount}
+              disabled={deleteConfirmation.trim() !== "DELETE" || isDeleting}
+            >
+              {isDeleting ? "Deleting..." : "Delete permanently"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

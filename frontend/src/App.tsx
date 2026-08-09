@@ -99,8 +99,10 @@ function AppRoutes() {
 
 function ThemeInit() {
   const theme = useUiStore((s) => s.theme);
+  const highContrast = useUiStore((s) => s.highContrast);
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
+    document.documentElement.classList.toggle("high-contrast", highContrast);
     const faviconBySize: Record<string, string> = {
       "32x32": theme === "dark" ? "/favicon-dark-32.png?v=4" : "/favicon-32.png?v=4",
       "48x48": theme === "dark" ? "/favicon-dark-48.png?v=4" : "/favicon-48.png?v=4",
@@ -110,7 +112,7 @@ function ThemeInit() {
       const href = faviconBySize[link.sizes.value];
       if (href) link.href = href;
     });
-  }, [theme]);
+  }, [theme, highContrast]);
   return null;
 }
 

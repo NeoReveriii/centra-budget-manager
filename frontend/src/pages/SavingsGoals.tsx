@@ -10,6 +10,8 @@ import { Label } from "../components/ui/label";
 import { StyledSelect } from "@/components/ui/styled-select";
 import FieldError from "@/components/FieldError";
 import { cn } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { useUiStore } from "@/stores/ui-store";
 import {
   Dialog,
   DialogContent,
@@ -42,13 +44,6 @@ function validatePositiveAmount(value: string, label: string) {
   return "";
 }
 
-function formatCurrency(n: number) {
-  return (
-    "₱" +
-    n.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  );
-}
-
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function getMonthsRemaining(deadline: string): number {
@@ -61,6 +56,8 @@ function getMonthsRemaining(deadline: string): number {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 const SavingsGoals: React.FC = () => {
+  const formatCurrency = useCurrencyFormatter();
+  const showCurrencySymbol = useUiStore((state) => state.showCurrencySymbol);
   const queryClient = useQueryClient();
   const { data: goals = [], isLoading } = useGoals();
   const createGoalMut  = useCreateGoal();
@@ -268,7 +265,7 @@ const SavingsGoals: React.FC = () => {
 
                 {/* Target Amount */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="goal-target">Target Amount (₱)</Label>
+                  <Label htmlFor="goal-target">Target Amount{showCurrencySymbol ? " (₱)" : ""}</Label>
                   <Input
                     id="goal-target"
                     type="number"
@@ -501,7 +498,7 @@ const SavingsGoals: React.FC = () => {
 
             <div className="grid gap-4 py-4">
               <div className="space-y-1.5">
-                <Label htmlFor="contribute-amount">Amount (₱)</Label>
+                <Label htmlFor="contribute-amount">Amount{showCurrencySymbol ? " (₱)" : ""}</Label>
                 <Input
                   id="contribute-amount"
                   type="number"

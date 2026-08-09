@@ -3,6 +3,7 @@ import Sidebar from "./Sidebar";
 import { useUiStore } from "@/stores/ui-store";
 import { AddTransactionModal } from "./AddTransactionModal";
 import { TransferFundsModal } from "./TransferFundsModal";
+import { ArrowRightLeft, Plus, TrendingDown, TrendingUp, X } from "lucide-react";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -70,7 +71,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           >
             <span className="text-sm font-extrabold text-slate-800">Add expenses</span>
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-700 transition-transform duration-200 group-hover:scale-105">
-              <span className="material-symbols-outlined text-[20px]" aria-hidden="true">trending_down</span>
+              <TrendingDown className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
             </span>
           </button>
           <button
@@ -81,7 +82,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           >
             <span className="text-sm font-extrabold text-slate-800">Add income</span>
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 transition-transform duration-200 group-hover:scale-105">
-              <span className="material-symbols-outlined text-[20px]" aria-hidden="true">trending_up</span>
+              <TrendingUp className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
             </span>
           </button>
           <button
@@ -92,7 +93,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           >
             <span className="text-sm font-extrabold text-slate-800">Add transfer</span>
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700 transition-transform duration-200 group-hover:scale-105">
-              <span className="material-symbols-outlined text-[20px]" aria-hidden="true">sync_alt</span>
+              <ArrowRightLeft className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
             </span>
           </button>
         </div>
@@ -104,11 +105,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           aria-expanded={isFabOpen}
           className={`flex h-16 w-16 items-center justify-center rounded-2xl bg-[#003527] text-white shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer group ${isFabOpen ? "ring-4 ring-primary/20" : ""}`}
         >
-          <span
-            className={`material-symbols-outlined text-[32px] transition-transform duration-500 ${isFabOpen ? "rotate-135" : "rotate-0"}`}
-          >
-            add
-          </span>
+          {isFabOpen ? (
+            <X className="h-7 w-7" strokeWidth={2} aria-hidden="true" />
+          ) : (
+            <Plus className="h-7 w-7" strokeWidth={2} aria-hidden="true" />
+          )}
         </button>
       </div>
 

@@ -118,6 +118,12 @@
     color: #f5f5f5;
   }
 
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    color: #8f8f8f;
+    opacity: 1;
+  }
+
   /* Shared application dark theme tokens keep every tab on the same surface and contrast scale. */
   .dark {
     color-scheme: dark;
@@ -177,6 +183,30 @@
   .theme-changing *::after {
     transition-duration: 0s !important;
     transition-delay: 0s !important;
+  }
+
+  .high-contrast {
+    --color-on-background: #000000;
+    --color-on-surface: #000000;
+    --color-on-surface-variant: #242424;
+    --color-outline: #333333;
+    --color-outline-variant: #555555;
+  }
+
+  .dark.high-contrast {
+    --color-background: #000000;
+    --color-surface: #000000;
+    --color-surface-container-lowest: #101010;
+    --color-surface-container-low: #080808;
+    --color-surface-container: #101010;
+    --color-surface-container-high: #1b1b1b;
+    --color-surface-container-highest: #242424;
+    --color-on-background: #ffffff;
+    --color-on-surface: #ffffff;
+    --color-on-surface-variant: #dedede;
+    --color-outline: #b8b8b8;
+    --color-outline-variant: #707070;
+    --color-primary: #83f6b6;
   }
 
   /* Existing tabs use a few utility surfaces directly; normalize those surfaces in dark mode. */
@@ -553,5 +583,39 @@
 
   .dark .fill-slate-500 {
     fill: #a3a3a3;
+  }
+
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    color: #8f8f8f;
+    opacity: 1;
+  }
+
+  .dark.high-contrast .bg-white,
+  .dark.high-contrast .bg-surface-container-lowest {
+    background-color: #101010;
+  }
+
+  .dark.high-contrast .text-slate-950,
+  .dark.high-contrast .text-slate-900,
+  .dark.high-contrast .text-slate-800,
+  .dark.high-contrast .text-slate-700,
+  .dark.high-contrast .text-slate-600,
+  .dark.high-contrast .text-slate-300,
+  .dark.high-contrast .text-slate-200,
+  .dark.high-contrast .text-slate-100 {
+    color: #ffffff;
+  }
+
+  .dark.high-contrast .text-slate-500,
+  .dark.high-contrast .text-slate-400 {
+    color: #dedede;
+  }
+
+  .dark.high-contrast .border-slate-100,
+  .dark.high-contrast .border-slate-200,
+  .dark.high-contrast .border-slate-300,
+  .dark.high-contrast .border-outline-variant {
+    border-color: #707070;
   }
 }

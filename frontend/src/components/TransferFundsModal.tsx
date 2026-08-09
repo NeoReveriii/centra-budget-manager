@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { StyledSelect } from "@/components/ui/styled-select";
 import FieldError from "@/components/FieldError";
 import { cn } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import {
   Dialog,
   DialogContent,
@@ -17,16 +18,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-    currencyDisplay: "narrowSymbol",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
-}
 
 const EMPTY_WALLETS: Wallet[] = [];
 
@@ -44,6 +35,8 @@ function validateTransferAmount(value: string) {
 }
 
 export function TransferFundsModal() {
+  const formatCurrency = useCurrencyFormatter();
+  const showCurrencySymbol = useUiStore((s) => s.showCurrencySymbol);
   const open = useUiStore((s) => s.transferModalOpen);
   const setOpen = useUiStore((s) => s.setTransferModalOpen);
   const defaultFromWalletId = useUiStore((s) => s.transferModalFromWalletId);
@@ -261,7 +254,7 @@ export function TransferFundsModal() {
 
           <div className="space-y-2">
             <label htmlFor="transfer-amount" className="block text-label-caps font-label-caps text-slate-500 uppercase">
-              Amount (₱)
+              Amount{showCurrencySymbol ? " (₱)" : ""}
             </label>
             <input
               id="transfer-amount"
