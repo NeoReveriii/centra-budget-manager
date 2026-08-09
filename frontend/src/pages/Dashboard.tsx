@@ -516,9 +516,6 @@ const Dashboard = () => {
       <section className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
         <div className="min-w-0">
           <h1 className="font-h1 text-h1 text-on-background">Welcome back, {displayName}</h1>
-          <p className="mt-1 text-body-sm text-slate-500">
-            Viewing {selectedWalletLabel.toLowerCase()}.
-          </p>
         </div>
 
         <div className="flex w-full min-w-0 flex-wrap items-center gap-3 md:w-auto md:max-w-[384px] md:flex-1">
@@ -527,7 +524,7 @@ const Dashboard = () => {
               value={selectedDateRange}
               onChange={(value) => setSelectedDateRange(value as DateRangeOption)}
               options={DATE_RANGE_OPTIONS.map((option) => ({ value: option, label: option }))}
-              className="rounded-xl border-slate-200 bg-slate-50 pl-10 pr-2 text-xs font-medium text-slate-600 shadow-none hover:bg-white"
+              className="h-11 md:h-10 rounded-xl border-slate-200 bg-slate-50 pl-10 pr-2 text-xs font-medium text-slate-600 shadow-none hover:bg-white"
               aria-label="Date range"
             />
             <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-slate-400">
@@ -540,7 +537,7 @@ const Dashboard = () => {
               value={selectedWalletId}
               onChange={setSelectedWalletId}
               options={[{ value: "all", label: "All Wallets" }, ...wallets.map((wallet) => ({ value: String(wallet.wallet_id), label: wallet.name }))]}
-              className="rounded-xl border-slate-200 bg-slate-50 pl-10 pr-2 text-xs font-medium text-slate-600 shadow-none hover:bg-white"
+              className="h-11 md:h-10 rounded-xl border-slate-200 bg-slate-50 pl-10 pr-2 text-xs font-medium text-slate-600 shadow-none hover:bg-white"
               aria-label="Wallet filter"
             />
             <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-slate-400">

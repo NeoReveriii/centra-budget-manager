@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useUiStore } from "@/stores/ui-store";
+import { CentraBrand } from "./CentraBrand";
 
 interface NavItem {
   to: string;
@@ -46,8 +47,8 @@ const Sidebar = () => {
       isCollapsed ? "w-10" : "w-full"
     } ${
       isActive
-        ? "bg-white shadow-sm text-[#0f5a5c] font-semibold"
-        : "text-[#3d4a40] hover:bg-[#e0e3e5] font-medium"
+        ? "bg-white shadow-sm text-[#0f5a5c] font-semibold dark:bg-[#262a2d] dark:text-[#75f0ad]"
+        : "text-[#3d4a40] hover:bg-[#e0e3e5] font-medium dark:text-[#c6c9d0] dark:hover:bg-[#262a2d]"
     }`;
 
   // Opacity transitions are handled inline now
@@ -67,7 +68,7 @@ const Sidebar = () => {
         className={`
           group/sidebar
           fixed left-0 top-0 h-[100dvh]
-          bg-[#f2f4f6] border-r border-[#bccabe]
+          bg-[#f2f4f6] border-r border-[#bccabe] dark:bg-[#1a1b20] dark:border-[#34363e]
           flex flex-col z-50
           overflow-hidden
           transition-[width] duration-300 ease-[cubic-bezier(0.2,0,0,1)]
@@ -90,24 +91,26 @@ const Sidebar = () => {
             className={`flex items-center gap-2 ${isCollapsed ? "cursor-pointer" : "pointer-events-none"}`}
             aria-hidden={isCollapsed}
           >
-            <div className="relative w-7 h-7 shrink-0 flex items-center justify-center">
-              <img 
-                src={sidebarLogoSrc}
-                alt="Centra logo" 
-                className={`absolute transition-opacity w-full h-full object-contain ${isCollapsed && btnHover ? "opacity-0" : "opacity-100"}`} 
+            {isCollapsed ? (
+              <div className="relative flex h-7 w-7 shrink-0 items-center justify-center">
+                <img
+                  src={sidebarLogoSrc}
+                  alt="Centra logo"
+                  className={`absolute h-full w-full object-contain transition-opacity ${btnHover ? "opacity-0" : "opacity-100"}`}
+                />
+                {btnHover && (
+                  <span className="material-symbols-outlined absolute text-[22px] text-[#3d4a40] dark:text-[#c6c9d0]">menu</span>
+                )}
+              </div>
+            ) : (
+              <CentraBrand
+                variant="text"
+                size="sidebar"
+                align="left"
+                surface={theme === "dark" ? "dark" : "light"}
+                className="h-11 w-[150px] shrink-0"
               />
-              {isCollapsed && btnHover && (
-                <span className="material-symbols-outlined text-[22px] absolute text-[#3d4a40]">menu</span>
-              )}
-            </div>
-            <span
-              className={`text-[19px] font-bold whitespace-nowrap transition-all duration-150 ${
-                isCollapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"
-              }`}
-              style={{ color: "#1a7a5e", letterSpacing: "-0.3px" }}
-            >
-              centra
-            </span>
+            )}
           </button>
 
           {/* Desktop toggle — ml-auto when expanded, hidden when collapsed */}
@@ -116,7 +119,7 @@ const Sidebar = () => {
               onClick={toggleSidebar}
               title="Collapse sidebar"
               className="hidden md:flex w-10 h-10 shrink-0 items-center justify-center rounded-full
-                         text-[#3d4a40] hover:bg-[#e0e3e5] transition-colors cursor-pointer ml-auto"
+                         text-[#3d4a40] hover:bg-[#e0e3e5] dark:text-[#c6c9d0] dark:hover:bg-[#262a2d] transition-colors cursor-pointer ml-auto"
             >
               <span className="material-symbols-outlined text-[22px]">menu_open</span>
             </button>
@@ -126,14 +129,14 @@ const Sidebar = () => {
           <button
             onClick={() => setMobileSidebarOpen(false)}
             className="md:hidden w-10 h-10 shrink-0 flex items-center justify-center rounded-full
-                       text-[#3d4a40] hover:bg-[#e0e3e5] transition-colors cursor-pointer ml-auto"
+                       text-[#3d4a40] hover:bg-[#e0e3e5] dark:text-[#c6c9d0] dark:hover:bg-[#262a2d] transition-colors cursor-pointer ml-auto"
           >
             <span className="material-symbols-outlined text-[22px]">close</span>
           </button>
         </div>
 
         {/* Divider */}
-        <div className="mx-3 mb-1 border-b border-[#bccabe]/30 shrink-0" />
+        <div className="mx-3 mb-1 border-b border-[#bccabe]/30 dark:border-[#34363e] shrink-0" />
 
         {/* ── NAVIGATION ──────────────────────────────────────────
             Each item: [fixed 40px icon zone] [label that fades].
@@ -167,7 +170,7 @@ const Sidebar = () => {
         </nav>
 
         {/* ── FOOTER ──────────────────────────────────────────── */}
-        <div className="px-2 py-2 shrink-0 border-t border-[#bccabe]/30 space-y-0.5">
+        <div className="px-2 py-2 shrink-0 border-t border-[#bccabe]/30 dark:border-[#34363e] space-y-0.5">
           <NavLink
             to="/settings"
             className={navLinkClass}
@@ -193,7 +196,7 @@ const Sidebar = () => {
             }}
             title={isCollapsed ? "Sign Out" : undefined}
             className={`flex items-center h-10 rounded-2xl cursor-pointer transition-all
-                       duration-300 text-[#3d4a40] hover:text-rose-600 hover:bg-rose-50 font-medium ${
+                       duration-300 text-[#3d4a40] hover:text-rose-600 hover:bg-rose-50 dark:text-[#c6c9d0] dark:hover:bg-rose-950/40 font-medium ${
                          isCollapsed ? "w-10" : "w-full"
                        }`}
           >
@@ -216,7 +219,7 @@ const Sidebar = () => {
         ──────────────────────────────────────────────────────── */}
         <div className="px-2 pb-4 shrink-0">
           <div
-            className={`flex items-center h-12 rounded-2xl hover:bg-[#e0e3e5]
+            className={`flex items-center h-12 rounded-2xl hover:bg-[#e0e3e5] dark:hover:bg-[#262a2d]
                        cursor-pointer transition-all duration-300 ${
                          isCollapsed ? "w-10" : "w-full"
                        }`}
@@ -238,14 +241,14 @@ const Sidebar = () => {
               aria-hidden={isCollapsed}
             >
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-bold text-[#191c1e] truncate">
+                <p className="text-[13px] font-bold text-[#191c1e] dark:text-[#f1f5f9] truncate">
                   {user?.username ?? "Account"}
                 </p>
-                <p className="text-[12px] text-[#3d4a40] truncate">
+                <p className="text-[12px] text-[#3d4a40] dark:text-[#c6c9d0] truncate">
                   {user?.email ?? ""}
                 </p>
               </div>
-              <span className="material-symbols-outlined text-[#3d4a40] text-[18px] shrink-0 mr-1">
+              <span className="material-symbols-outlined text-[#3d4a40] dark:text-[#c6c9d0] text-[18px] shrink-0 mr-1">
                 unfold_more
               </span>
             </div>
