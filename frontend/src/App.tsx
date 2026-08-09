@@ -101,13 +101,15 @@ function ThemeInit() {
   const theme = useUiStore((s) => s.theme);
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
-    const favicon32 = document.querySelector<HTMLLinkElement>(
-      "link[rel='icon'][sizes='32x32']",
-    );
-    if (favicon32) {
-      favicon32.href =
-        theme === "dark" ? "/favicon-dark-32.png" : "/favicon-32.png";
-    }
+    const faviconBySize: Record<string, string> = {
+      "32x32": theme === "dark" ? "/favicon-dark-32.png?v=4" : "/favicon-32.png?v=4",
+      "48x48": theme === "dark" ? "/favicon-dark-48.png?v=4" : "/favicon-48.png?v=4",
+    };
+
+    document.querySelectorAll<HTMLLinkElement>("link[rel='icon'][sizes]").forEach((link) => {
+      const href = faviconBySize[link.sizes.value];
+      if (href) link.href = href;
+    });
   }, [theme]);
   return null;
 }

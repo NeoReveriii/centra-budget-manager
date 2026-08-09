@@ -137,8 +137,9 @@ export function StyledSelect({
           "flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 text-left text-sm font-semibold text-slate-800 shadow-sm outline-none transition-[border-color,box-shadow,background-color] hover:border-slate-300 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50",
           className,
         )}
+        title={selectedOption?.label ?? placeholder}
       >
-        <span className={selectedOption ? "truncate" : "truncate text-slate-400"}>
+        <span className={cn("min-w-0 flex-1 truncate", !selectedOption && "text-slate-400")}>
           {selectedOption?.label ?? placeholder}
         </span>
         <span className={cn("material-symbols-outlined shrink-0 text-[20px] text-slate-400 transition-transform", open && "rotate-180 text-primary")} aria-hidden="true">

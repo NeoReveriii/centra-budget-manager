@@ -23,6 +23,13 @@ const LandingPage = () => {
       const media = gsap.matchMedia();
 
       const setHeaderCompact = (compact: boolean, animate: boolean) => {
+        gsap.to(header, {
+          paddingTop: compact ? "12px" : "0px",
+          paddingBottom: compact ? "12px" : "0px",
+          duration: animate ? 0.5 : 0,
+          ease: "power3.out",
+          overwrite: true,
+        });
         gsap.to(headerShell, {
           maxWidth: compact ? "1280px" : "none",
           paddingLeft: compact ? "clamp(16px, 2vw, 24px)" : "clamp(16px, 4vw, 48px)",
@@ -42,6 +49,7 @@ const LandingPage = () => {
 
       media.add("(prefers-reduced-motion: no-preference)", () => {
         gsap.set(header, { autoAlpha: 1, y: 0, scale: 1, pointerEvents: "auto" });
+        gsap.set(header, { paddingTop: "0px", paddingBottom: "0px" });
         gsap.set(headerShell, {
           maxWidth: "none",
           paddingLeft: "clamp(16px, 4vw, 48px)",
@@ -59,6 +67,7 @@ const LandingPage = () => {
           end: "bottom top",
           onToggle: (trigger) => setHeaderCompact(trigger.isActive, true),
         });
+        setHeaderCompact(window.scrollY > 112, false);
 
         const intro = gsap.timeline({ defaults: { ease: "power3.out" } });
         intro
@@ -188,6 +197,7 @@ const LandingPage = () => {
 
       media.add("(prefers-reduced-motion: reduce)", () => {
         gsap.set(header, { autoAlpha: 1, y: 0, scale: 1, pointerEvents: "auto" });
+        gsap.set(header, { paddingTop: "0px", paddingBottom: "0px" });
         gsap.set(headerShell, {
           maxWidth: "none",
           paddingLeft: "clamp(16px, 4vw, 48px)",
@@ -206,6 +216,11 @@ const LandingPage = () => {
           end: "bottom top",
           onToggle: (trigger) => setHeaderCompact(trigger.isActive, false),
         });
+        setHeaderCompact(window.scrollY > 112, false);
+      });
+
+      media.add("(max-width: 767px)", () => {
+        setHeaderCompact(true, false);
       });
 
       return () => media.revert();

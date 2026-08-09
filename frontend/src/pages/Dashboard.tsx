@@ -529,16 +529,16 @@ const Dashboard = () => {
 
   return (
     <div className="animate-fade-in space-y-lg">
-      <section className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-        <div>
+      <section className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
+        <div className="min-w-0">
           <h1 className="font-h1 text-h1 text-on-background">Welcome back, {displayName}</h1>
           <p className="mt-1 text-body-sm text-slate-500">
             Viewing {selectedWalletLabel.toLowerCase()}.
           </p>
         </div>
 
-        <div className="flex w-full flex-wrap items-center gap-3 md:w-auto">
-          <div className="relative w-full md:w-[150px]">
+        <div className="flex w-full min-w-0 flex-wrap items-center gap-3 md:w-auto md:max-w-[560px] md:flex-1">
+          <div className="relative min-w-[180px] flex-[1_1_180px]">
             <StyledSelect
               value={selectedDateRange}
               onChange={(value) => setSelectedDateRange(value as DateRangeOption)}
@@ -551,7 +551,7 @@ const Dashboard = () => {
             </span>
           </div>
 
-          <div className="relative w-full md:w-[164px]">
+          <div className="relative min-w-[180px] flex-[1_1_180px]">
             <StyledSelect
               value={selectedWalletId}
               onChange={setSelectedWalletId}
