@@ -79,7 +79,7 @@ const Settings = () => {
                 { value: "Filipino", label: "Filipino" },
                 { value: "Spanish", label: "Spanish" },
               ]}
-              className="min-w-[140px] rounded-lg bg-white text-on-surface"
+              className="min-w-[140px] rounded-xl bg-white text-on-surface"
               aria-label="Language"
             />
           </div>

@@ -521,13 +521,13 @@ const Dashboard = () => {
           </p>
         </div>
 
-        <div className="flex w-full min-w-0 flex-wrap items-center gap-3 md:w-auto md:max-w-[440px] md:flex-1">
+        <div className="flex w-full min-w-0 flex-wrap items-center gap-3 md:w-auto md:max-w-[412px] md:flex-1">
           <div className="relative min-w-[160px] flex-[1_1_160px]">
             <StyledSelect
               value={selectedDateRange}
               onChange={(value) => setSelectedDateRange(value as DateRangeOption)}
               options={DATE_RANGE_OPTIONS.map((option) => ({ value: option, label: option }))}
-              className="rounded-lg border-outline-variant bg-white pl-10 pr-6 font-bold text-body-sm text-slate-600"
+              className="rounded-xl border-outline-variant bg-white pl-10 pr-6 text-sm font-semibold text-slate-600"
               aria-label="Date range"
             />
             <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">
@@ -540,7 +540,7 @@ const Dashboard = () => {
               value={selectedWalletId}
               onChange={setSelectedWalletId}
               options={[{ value: "all", label: "All Wallets" }, ...wallets.map((wallet) => ({ value: String(wallet.wallet_id), label: wallet.name }))]}
-              className="rounded-lg border-outline-variant bg-white pl-10 pr-6 font-bold text-body-sm text-slate-600"
+              className="rounded-xl border-outline-variant bg-white pl-10 pr-6 text-sm font-semibold text-slate-600"
               aria-label="Wallet filter"
             />
             <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">

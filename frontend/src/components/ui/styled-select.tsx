@@ -168,7 +168,7 @@ export function StyledSelect({
                   onMouseEnter={() => setActiveIndex(index)}
                   onClick={() => choose(index)}
                   className={cn(
-                    "flex min-h-10 w-full items-center justify-between rounded-lg px-3 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-[#eff8f3] hover:text-primary focus-visible:bg-[#eff8f3] focus-visible:text-primary focus-visible:outline-none",
+                    "flex min-h-11 w-full items-center justify-between rounded-lg px-3 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-[#eff8f3] hover:text-primary focus-visible:bg-[#eff8f3] focus-visible:text-primary focus-visible:outline-none",
                     index === activeIndex && "bg-slate-50",
                     option.value === value && "font-bold text-primary",
                   )}
