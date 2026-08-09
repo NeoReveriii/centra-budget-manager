@@ -370,12 +370,11 @@ const Wallets = () => {
   }
 
   return (
-    <div className="min-h-screen w-full min-w-0 max-w-full space-y-7 overflow-x-hidden pb-24 animate-fade-in">
-      <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+    <div className="min-h-screen w-full min-w-0 max-w-full space-y-3 overflow-x-hidden pb-24 animate-fade-in">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-primary/70 dark:text-emerald-300">Money overview</p>
-          <h1 className="text-3xl font-extrabold tracking-[-0.045em] text-on-background dark:text-slate-100 sm:text-4xl">Wallets</h1>
-          <p className="mt-2 max-w-[36rem] text-sm leading-6 text-on-surface-variant dark:text-slate-300">See where your money lives, review activity, and move funds between accounts.</p>
+          <h1 className="font-h1 text-h1 text-on-surface">Wallets</h1>
+          <p className="font-body-sm text-body-sm text-on-surface-variant">See where your money lives, review activity, and move funds between accounts.</p>
         </div>
         <div className="flex flex-wrap gap-3">
           <Button variant="outline" className="min-h-11" onClick={() => openTransfer()} disabled={activeWallets.length < 2}>
@@ -420,9 +419,9 @@ const Wallets = () => {
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
               <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search accounts" className="h-11 md:h-10 bg-slate-50 pl-10 text-xs font-medium text-slate-600 shadow-none placeholder:text-slate-400 hover:bg-white dark:bg-slate-900 dark:hover:bg-slate-800" />
             </label>
-            <div className="grid h-11 md:h-10 min-w-0 grid-cols-3 rounded-xl border border-slate-200 bg-slate-50 p-1 dark:border-slate-700 dark:bg-slate-800 sm:w-[272px]" aria-label="Wallet filters">
+          <div className="grid h-11 md:h-10 min-w-0 grid-cols-3 rounded-xl border border-slate-300 bg-slate-50 p-1 dark:border-slate-600 dark:bg-slate-800 sm:w-[272px]" aria-label="Wallet filters">
               {([["ALL", "All", wallets.length], ["ACTIVE", "Active", activeWallets.length], ["ARCHIVED", "Archived", archivedWallets.length]] as const).map(([value, label, count]) => (
-                <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)} className={"h-full min-h-0 whitespace-nowrap rounded-lg px-2 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-[0.98] motion-reduce:transform-none " + (filter === value ? "bg-white text-primary shadow-sm dark:bg-slate-700 dark:text-emerald-200" : "text-slate-500 dark:text-slate-400")}>
+                <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)} className={"h-full min-h-0 whitespace-nowrap rounded-xl px-2 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-[0.98] motion-reduce:transform-none " + (filter === value ? "bg-white text-primary shadow-sm dark:bg-slate-700 dark:text-emerald-200" : "text-slate-500 dark:text-slate-400")}>
                   {label} <span className="opacity-60">{count}</span>
                 </button>
               ))}

@@ -131,10 +131,11 @@ const Settings = () => {
               <input
                 className="sr-only peer"
                 type="checkbox"
+                aria-label="Dark Mode"
                 checked={theme === "dark"}
                 onChange={(e) => setTheme(e.target.checked ? "dark" : "light")}
               />
-              <div className="h-5 w-10 rounded-full bg-surface-container-high peer-focus:outline-none peer peer-checked:after:translate-x-full peer-checked:after:border-white after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-outline-variant after:bg-white after:content-[''] after:transition-all peer-checked:bg-primary"></div>
+              <div className="h-5 w-10 rounded-full bg-surface-container-high peer-focus:outline-none peer peer-checked:after:translate-x-5 peer-checked:after:border-white after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-outline-variant after:bg-white after:content-[''] after:transition-all peer-checked:bg-primary"></div>
             </label>
           </div>
 
@@ -197,8 +198,9 @@ const Settings = () => {
                 onChange={(event) => setShowCurrencySymbol(event.target.checked)}
                 className="sr-only peer"
                 type="checkbox"
+                aria-label="Currency Display"
               />
-              <div className="h-5 w-10 rounded-full bg-surface-container-high peer-focus:outline-none peer peer-checked:after:translate-x-full peer-checked:after:border-white after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-outline-variant after:bg-white after:content-[''] after:transition-all peer-checked:bg-primary"></div>
+              <div className="h-5 w-10 rounded-full bg-surface-container-high peer-focus:outline-none peer peer-checked:after:translate-x-5 peer-checked:after:border-white after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-outline-variant after:bg-white after:content-[''] after:transition-all peer-checked:bg-primary"></div>
             </label>
           </div>
         </div>

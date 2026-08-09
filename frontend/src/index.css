@@ -152,6 +152,18 @@
     cursor: not-allowed;
   }
 
+  /* Amount fields use numeric keyboards without exposing browser stepper arrows. */
+  input[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    margin: 0;
+    -webkit-appearance: none;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     :where(button) {
       transition-duration: 0.01ms !important;
@@ -670,8 +682,28 @@
     border-color: #707070;
   }
 
-  /* Browser autofill defaults are often navy in dark mode. Keep saved
-     credentials inside the same charcoal form surface as normal inputs. */
+  /* Keep browser-saved values on the same form surfaces as normal inputs. */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--color-on-surface);
+    -webkit-box-shadow: 0 0 0 1000px var(--color-surface-container-lowest) inset;
+    box-shadow: 0 0 0 1000px var(--color-surface-container-lowest) inset;
+    caret-color: var(--color-on-surface);
+    transition: background-color 9999s ease-in-out 0s;
+  }
+
+  input:-moz-autofill,
+  textarea:-moz-autofill {
+    background-color: var(--color-surface-container-lowest) !important;
+    color: var(--color-on-surface) !important;
+    caret-color: var(--color-on-surface);
+  }
+
+  /* Dark mode uses the same charcoal surface as an untouched field. */
   .dark input:-webkit-autofill,
   .dark input:-webkit-autofill:hover,
   .dark input:-webkit-autofill:focus,

@@ -85,22 +85,22 @@ const Sidebar = () => {
             onClick={isCollapsed ? toggleSidebar : undefined}
             onMouseEnter={() => setBtnHover(true)}
             onMouseLeave={() => setBtnHover(false)}
-            className={`flex items-center gap-2 ${isCollapsed ? "cursor-pointer" : "pointer-events-none"}`}
+            className={`flex items-center gap-1 ${isCollapsed ? "cursor-pointer" : "pointer-events-none"}`}
             aria-hidden={isCollapsed}
           >
-            <div className="relative flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden">
+            <div className="relative flex h-7 w-7 shrink-0 translate-x-1 items-center justify-center overflow-hidden">
               <img
                 src="/assets/images/CentraTextDefault_Only.png"
                 alt="Centra logo"
-                className={`absolute h-[170px] w-[170px] max-w-none object-contain transition-opacity ${btnHover || theme === "dark" ? "opacity-0" : "opacity-100"}`}
-                style={{ left: "-127.5px", top: "-71.3px" }}
+                className={`absolute h-[150px] w-[150px] max-w-none object-contain transition-opacity ${btnHover || theme === "dark" ? "opacity-0" : "opacity-100"}`}
+                style={{ left: "-112.5px", top: "-62.9px" }}
               />
               <img
                 src="/assets/images/CentraTextDark_Only.png"
                 alt=""
                 aria-hidden="true"
-                className={`absolute h-[170px] w-[170px] max-w-none object-contain transition-opacity ${btnHover || theme !== "dark" ? "opacity-0" : "opacity-100"}`}
-                style={{ left: "-127.5px", top: "-71.3px" }}
+                className={`absolute h-[150px] w-[150px] max-w-none object-contain transition-opacity ${btnHover || theme !== "dark" ? "opacity-0" : "opacity-100"}`}
+                style={{ left: "-112.5px", top: "-62.9px" }}
               />
               {isCollapsed && btnHover && (
                 <span className="material-symbols-outlined absolute text-[22px] text-[#3d4a40] dark:text-[#c2c2c2]">menu</span>
@@ -108,7 +108,7 @@ const Sidebar = () => {
             </div>
             <span
               className={`text-[19px] font-bold whitespace-nowrap text-[#1a7a5e] dark:text-[#75f0ad] transition-all duration-150 ${
-                isCollapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"
+                isCollapsed ? "w-0 opacity-0 overflow-hidden ml-0" : "w-auto opacity-100 ml-2"
               }`}
               style={{ letterSpacing: "-0.3px" }}
             >
@@ -162,7 +162,7 @@ const Sidebar = () => {
 
               {/* Label — layout collapses to 0 width when sidebar collapses */}
               <span
-                className={`ml-2 text-[14px] whitespace-nowrap transition-all duration-150 ${
+                className={`ml-1 text-[14px] whitespace-nowrap transition-all duration-150 ${
                   isCollapsed ? "w-0 opacity-0 overflow-hidden ml-0" : "w-auto opacity-100"
                 }`}
               >
@@ -184,7 +184,7 @@ const Sidebar = () => {
               <span className="material-symbols-outlined text-[20px]">settings</span>
             </span>
             <span
-              className={`ml-2 text-[14px] whitespace-nowrap transition-all duration-150 ${
+                className={`ml-1 text-[14px] whitespace-nowrap transition-all duration-150 ${
                 isCollapsed ? "w-0 opacity-0 overflow-hidden ml-0" : "w-auto opacity-100"
               }`}
             >
@@ -207,7 +207,7 @@ const Sidebar = () => {
               <span className="material-symbols-outlined text-[20px]">logout</span>
             </span>
             <span
-              className={`ml-2 text-[14px] whitespace-nowrap transition-all duration-150 ${
+                className={`ml-1 text-[14px] whitespace-nowrap transition-all duration-150 ${
                 isCollapsed ? "w-0 opacity-0 overflow-hidden ml-0" : "w-auto opacity-100"
               }`}
             >

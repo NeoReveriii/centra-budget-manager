@@ -186,7 +186,9 @@ export function AddTransactionModal() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent
-        className="max-w-[520px] p-0 gap-0 overflow-hidden shadow-2xl"
+        className="max-h-[calc(100dvh-2rem)] max-w-[520px] grid-rows-[auto_minmax(0,1fr)] gap-0 overflow-hidden p-0 shadow-2xl"
+        onPointerDownOutside={(event) => event.preventDefault()}
+        onInteractOutside={(event) => event.preventDefault()}
         showCloseButton={false}
       >
         <DialogHeader className="border-b border-slate-100 bg-[linear-gradient(180deg,rgba(248,250,252,0.98),rgba(255,255,255,0.92))] p-6 pb-5 text-left dark:bg-none dark:bg-[#181818]">
@@ -207,7 +209,7 @@ export function AddTransactionModal() {
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleAddTransaction} noValidate className="space-y-5 p-6">
+        <form onSubmit={handleAddTransaction} noValidate className="min-h-0 space-y-5 overflow-y-auto overscroll-contain p-6">
           {addError && (
             <div className="flex items-center gap-2 rounded-2xl border border-error/20 bg-error-container/20 p-3 text-body-sm font-medium text-error">
               <span className="material-symbols-outlined text-[18px]">

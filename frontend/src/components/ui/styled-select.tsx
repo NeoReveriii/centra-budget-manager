@@ -55,7 +55,14 @@ export function StyledSelect({
       const top = roomBelow < menuHeight && rect.top > menuHeight
         ? rect.top - menuHeight - 6
         : rect.bottom + 6;
-      setMenuStyle({ top, left: rect.left, width: rect.width });
+      setMenuStyle({
+        top,
+        left: Math.min(rect.left, Math.max(8, window.innerWidth - rect.width - 8)),
+        width: rect.width,
+        minWidth: rect.width,
+        maxWidth: `calc(100vw - 16px)`,
+        boxSizing: "border-box",
+      });
     };
     updatePosition();
     window.addEventListener("resize", updatePosition);
@@ -134,7 +141,7 @@ export function StyledSelect({
         }}
         onKeyDown={handleKeyDown}
         className={cn(
-          "flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 text-left text-sm font-semibold text-slate-800 shadow-sm outline-none transition-[border-color,box-shadow,background-color] hover:border-slate-300 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#343434] dark:bg-[#181818] dark:text-[#ededed] dark:hover:border-[#555]",
+          "flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-4 text-left text-sm font-semibold text-slate-800 shadow-sm outline-none transition-[border-color,box-shadow,background-color] hover:border-slate-400 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#454545] dark:bg-[#181818] dark:text-[#ededed] dark:hover:border-[#666]",
           className,
         )}
         title={selectedOption?.label ?? placeholder}
@@ -142,7 +149,7 @@ export function StyledSelect({
         <span className={cn("min-w-0 flex-1 truncate", !selectedOption && "text-slate-400")}>
           {selectedOption?.label ?? placeholder}
         </span>
-        <span className={cn("material-symbols-outlined shrink-0 text-[18px] text-slate-400 transition-transform", open && "rotate-180 text-primary")} aria-hidden="true">
+        <span className={cn("material-symbols-outlined shrink-0 text-[18px] text-slate-500 transition-transform", open && "rotate-180 text-primary")} aria-hidden="true">
           expand_more
         </span>
       </button>
@@ -156,7 +163,7 @@ export function StyledSelect({
               aria-labelledby={id}
               onPointerDown={(event) => event.stopPropagation()}
               onMouseDown={(event) => event.stopPropagation()}
-              className="fixed z-[300] max-h-[280px] overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-[0_16px_38px_rgba(15,23,42,0.16)] dark:border-[#343434] dark:bg-[#181818] dark:shadow-[0_18px_44px_rgba(0,0,0,0.65)]"
+              className="pointer-events-auto fixed z-[300] max-h-[280px] overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-[0_16px_38px_rgba(15,23,42,0.16)] dark:border-[#343434] dark:bg-[#181818] dark:shadow-[0_18px_44px_rgba(0,0,0,0.65)]"
               style={menuStyle}
             >
               {options.map((option, index) => (
@@ -165,15 +172,20 @@ export function StyledSelect({
                   type="button"
                   role="option"
                   aria-selected={option.value === value}
+                  onPointerDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    choose(index);
+                  }}
                   onMouseEnter={() => setActiveIndex(index)}
                   onClick={() => choose(index)}
                   className={cn(
-                    "flex min-h-11 w-full items-center justify-between rounded-lg px-3 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-[#eff8f3] hover:text-primary focus-visible:bg-[#eff8f3] focus-visible:text-primary focus-visible:outline-none dark:text-[#ededed] dark:hover:bg-[#242424] dark:focus-visible:bg-[#242424]",
+                    "flex min-h-11 w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-[#eff8f3] hover:text-primary focus-visible:bg-[#eff8f3] focus-visible:text-primary focus-visible:outline-none dark:text-[#ededed] dark:hover:bg-[#242424] dark:focus-visible:bg-[#242424]",
                     index === activeIndex && "bg-slate-50",
                     option.value === value && "font-bold text-primary",
                   )}
                 >
-                  <span className="truncate">{option.label}</span>
+                  <span className="min-w-0 flex-1 break-words leading-5">{option.label}</span>
                   {option.value === value ? <span className="material-symbols-outlined text-[18px]" aria-hidden="true">check</span> : null}
                 </button>
               ))}

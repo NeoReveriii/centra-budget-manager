@@ -50,6 +50,16 @@ function ResetTokenRedirect() {
   return null;
 }
 
+function ScrollToTop() {
+  const { pathname, search } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname, search]);
+
+  return null;
+}
+
 function AppRoutes() {
   const { isAuthenticated } = useAuth();
 
@@ -119,6 +129,7 @@ function ThemeInit() {
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <AuthProvider>
         <ThemeInit />
         <AppRoutes />

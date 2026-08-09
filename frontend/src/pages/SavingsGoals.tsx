@@ -201,13 +201,13 @@ const SavingsGoals: React.FC = () => {
   const todayStr = new Date().toISOString().split("T")[0];
 
   return (
-    <div className="flex flex-col min-h-full animate-fade-in space-y-8">
+    <div className="flex min-h-full flex-col space-y-3 animate-fade-in">
 
       {/* ── Header ─────────────────────────────────────────────── */}
-      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-h1 text-h1 text-on-surface">Savings Goals</h1>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-1">
+          <p className="font-body-sm text-body-sm text-on-surface-variant">
             Track your financial milestones and stay on target.
           </p>
         </div>

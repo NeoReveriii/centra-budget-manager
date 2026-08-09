@@ -507,7 +507,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="animate-fade-in space-y-md">
+    <div className="animate-fade-in space-y-3">
       <section className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
         <div className="min-w-0">
           <h1 className="font-h1 text-h1 text-on-background">Welcome back, {displayName}</h1>
@@ -519,10 +519,10 @@ const Dashboard = () => {
               value={selectedDateRange}
               onChange={(value) => setSelectedDateRange(value as DateRangeOption)}
               options={DATE_RANGE_OPTIONS.map((option) => ({ value: option, label: option }))}
-              className="h-11 md:h-10 rounded-xl border-slate-200 bg-slate-50 pl-10 pr-2 text-xs font-medium text-slate-600 shadow-none hover:bg-white"
+              className="h-11 md:h-10 rounded-xl border-slate-300 bg-slate-50 pl-9 pr-2 text-sm font-semibold text-slate-800 shadow-none hover:bg-white"
               aria-label="Date range"
             />
-            <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-slate-400">
+            <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-slate-500">
               calendar_month
             </span>
           </div>
@@ -532,10 +532,10 @@ const Dashboard = () => {
               value={selectedWalletId}
               onChange={setSelectedWalletId}
               options={[{ value: "all", label: "All Wallets" }, ...wallets.map((wallet) => ({ value: String(wallet.wallet_id), label: wallet.name }))]}
-              className="h-11 md:h-10 rounded-xl border-slate-200 bg-slate-50 pl-10 pr-2 text-xs font-medium text-slate-600 shadow-none hover:bg-white"
+              className="h-11 md:h-10 rounded-xl border-slate-300 bg-slate-50 pl-9 pr-2 text-sm font-semibold text-slate-800 shadow-none hover:bg-white"
               aria-label="Wallet filter"
             />
-            <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-slate-400">
+            <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-slate-500">
               account_balance_wallet
             </span>
           </div>

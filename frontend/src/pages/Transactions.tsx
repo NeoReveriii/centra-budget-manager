@@ -205,7 +205,7 @@ const Transactions = () => {
   }
 
   return (
-    <div className="min-h-screen pb-20 space-y-8 animate-fade-in">
+    <div className="min-h-screen space-y-3 pb-20 animate-fade-in">
       {/* HEADER */}
       <header className="flex justify-between items-center">
         <div>
@@ -223,7 +223,7 @@ const Transactions = () => {
             search
           </span>
           <input
-            className="h-11 md:h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 pl-10 text-xs font-medium text-slate-600 shadow-none transition-colors placeholder:text-slate-400 hover:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20"
+            className="h-11 md:h-10 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2 pl-10 text-sm font-semibold text-slate-800 shadow-none transition-colors placeholder:text-slate-500 hover:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20"
             placeholder="Search transactions..."
             type="text"
             value={search}
@@ -234,14 +234,14 @@ const Transactions = () => {
           value={typeFilter}
           onChange={setTypeFilter}
           options={["All Types", "Expense", "Income", "Transfer"].map((option) => ({ value: option, label: option }))}
-          className="w-full min-w-0 h-11 md:h-10 rounded-xl border-slate-200 bg-slate-50 text-xs font-medium text-slate-600 shadow-none hover:bg-white"
+          className="w-full min-w-0 h-11 md:h-10 rounded-xl border-slate-300 bg-slate-50 text-sm font-semibold text-slate-800 shadow-none hover:bg-white"
           aria-label="Transaction type filter"
         />
         <StyledSelect
           value={walletFilter}
           onChange={setWalletFilter}
           options={[{ value: "All Wallets", label: "All Wallets" }, ...wallets.map((w) => ({ value: w.name, label: w.name }))]}
-          className="w-full min-w-0 h-11 md:h-10 rounded-xl border-slate-200 bg-slate-50 text-xs font-medium text-slate-600 shadow-none hover:bg-white"
+          className="w-full min-w-0 h-11 md:h-10 rounded-xl border-slate-300 bg-slate-50 text-sm font-semibold text-slate-800 shadow-none hover:bg-white"
           aria-label="Wallet filter"
         />
       </section>
@@ -382,7 +382,7 @@ const Transactions = () => {
               <button
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="px-4 py-2 border border-outline-variant rounded-lg text-body-sm font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                className="px-4 py-2 border border-outline-variant rounded-xl text-body-sm font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
               >
                 Previous
               </button>
@@ -394,7 +394,7 @@ const Transactions = () => {
                   <button
                     key={p}
                     onClick={() => setPage(p)}
-                    className={`w-9 h-9 flex items-center justify-center rounded-lg font-bold text-sm cursor-pointer ${p === page ? "bg-primary text-white" : "hover:bg-slate-100 text-slate-600"}`}
+                    className={`w-9 h-9 flex items-center justify-center rounded-xl font-bold text-sm cursor-pointer ${p === page ? "bg-primary text-white" : "hover:bg-slate-100 text-slate-600"}`}
                   >
                     {p}
                   </button>
@@ -403,7 +403,7 @@ const Transactions = () => {
               <button
                 onClick={() => setPage(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
-                className="px-4 py-2 border border-outline-variant rounded-lg text-body-sm font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                className="px-4 py-2 border border-outline-variant rounded-xl text-body-sm font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
               >
                 Next
               </button>
