@@ -20,6 +20,7 @@ const NAV_ITEMS: NavItem[] = [
 const Sidebar = () => {
   const { logout, user } = useAuth();
   const isCollapsed = useUiStore((s) => s.sidebarCollapsed);
+  const theme = useUiStore((s) => s.theme);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
   const mobileSidebarOpen = useUiStore((s) => s.mobileSidebarOpen);
   const setMobileSidebarOpen = useUiStore((s) => s.setMobileSidebarOpen);
@@ -27,6 +28,7 @@ const Sidebar = () => {
   const [btnHover, setBtnHover] = useState(false);
 
   const initials = user?.username?.slice(0, 2).toUpperCase() ?? "U";
+  const sidebarLogoSrc = theme === "dark" ? "/favicon-dark-32.png" : "/favicon-32.png";
 
   // Expand sidebar on clicking empty space when collapsed
   const handleSidebarClick = (e: React.MouseEvent<HTMLElement>) => {
@@ -90,7 +92,7 @@ const Sidebar = () => {
           >
             <div className="relative w-7 h-7 shrink-0 flex items-center justify-center">
               <img 
-                src="/favicon-32.png" 
+                src={sidebarLogoSrc}
                 alt="Centra logo" 
                 className={`absolute transition-opacity w-full h-full object-contain ${isCollapsed && btnHover ? "opacity-0" : "opacity-100"}`} 
               />

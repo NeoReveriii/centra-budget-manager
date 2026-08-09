@@ -225,13 +225,13 @@ const Transactions = () => {
       </header>
 
       {/* FILTERS */}
-      <section className="flex flex-col gap-3 md:grid md:grid-cols-[minmax(0,1fr)_200px_200px] md:items-center">
+      <section className="flex flex-col gap-3 md:grid md:grid-cols-[minmax(0,1fr)_186px_186px] md:items-center">
         <div className="relative min-w-0">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-slate-400">
             search
           </span>
           <input
-            className="h-11 w-full rounded-xl border border-outline-variant bg-white px-4 py-2 pl-10 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
+            className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 pl-10 text-xs font-medium text-slate-600 shadow-none transition-colors placeholder:text-slate-400 hover:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20"
             placeholder="Search transactions..."
             type="text"
             value={search}
@@ -242,14 +242,14 @@ const Transactions = () => {
           value={typeFilter}
           onChange={setTypeFilter}
           options={["All Types", "Expense", "Income", "Transfer"].map((option) => ({ value: option, label: option }))}
-          className="w-full min-w-0 rounded-xl border-outline-variant bg-white text-on-surface"
+          className="w-full min-w-0 rounded-xl border-slate-200 bg-slate-50 text-xs font-medium text-slate-600 shadow-none hover:bg-white"
           aria-label="Transaction type filter"
         />
         <StyledSelect
           value={walletFilter}
           onChange={setWalletFilter}
           options={[{ value: "All Wallets", label: "All Wallets" }, ...wallets.map((w) => ({ value: w.name, label: w.name }))]}
-          className="w-full min-w-0 rounded-xl border-outline-variant bg-white text-on-surface"
+          className="w-full min-w-0 rounded-xl border-slate-200 bg-slate-50 text-xs font-medium text-slate-600 shadow-none hover:bg-white"
           aria-label="Wallet filter"
         />
       </section>

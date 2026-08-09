@@ -521,29 +521,29 @@ const Dashboard = () => {
           </p>
         </div>
 
-        <div className="flex w-full min-w-0 flex-wrap items-center gap-3 md:w-auto md:max-w-[412px] md:flex-1">
-          <div className="relative min-w-[160px] flex-[1_1_160px]">
+        <div className="flex w-full min-w-0 flex-wrap items-center gap-3 md:w-auto md:max-w-[384px] md:flex-1">
+          <div className="relative min-w-[150px] flex-[1_1_150px]">
             <StyledSelect
               value={selectedDateRange}
               onChange={(value) => setSelectedDateRange(value as DateRangeOption)}
               options={DATE_RANGE_OPTIONS.map((option) => ({ value: option, label: option }))}
-              className="rounded-xl border-outline-variant bg-white pl-10 pr-6 text-sm font-semibold text-slate-600"
+              className="rounded-xl border-slate-200 bg-slate-50 pl-10 pr-2 text-xs font-medium text-slate-600 shadow-none hover:bg-white"
               aria-label="Date range"
             />
-            <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">
+            <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-slate-400">
               calendar_month
             </span>
           </div>
 
-          <div className="relative min-w-[160px] flex-[1_1_160px]">
+          <div className="relative min-w-[150px] flex-[1_1_150px]">
             <StyledSelect
               value={selectedWalletId}
               onChange={setSelectedWalletId}
               options={[{ value: "all", label: "All Wallets" }, ...wallets.map((wallet) => ({ value: String(wallet.wallet_id), label: wallet.name }))]}
-              className="rounded-xl border-outline-variant bg-white pl-10 pr-6 text-sm font-semibold text-slate-600"
+              className="rounded-xl border-slate-200 bg-slate-50 pl-10 pr-2 text-xs font-medium text-slate-600 shadow-none hover:bg-white"
               aria-label="Wallet filter"
             />
-            <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">
+            <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-slate-400">
               account_balance_wallet
             </span>
           </div>

@@ -142,7 +142,7 @@ export function StyledSelect({
         <span className={cn("min-w-0 flex-1 truncate", !selectedOption && "text-slate-400")}>
           {selectedOption?.label ?? placeholder}
         </span>
-        <span className={cn("material-symbols-outlined shrink-0 text-[20px] text-slate-400 transition-transform", open && "rotate-180 text-primary")} aria-hidden="true">
+        <span className={cn("material-symbols-outlined shrink-0 text-[18px] text-slate-400 transition-transform", open && "rotate-180 text-primary")} aria-hidden="true">
           expand_more
         </span>
       </button>
