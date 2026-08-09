@@ -17,6 +17,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { StyledSelect } from "@/components/ui/styled-select";
+import { useUiStore } from "@/stores/ui-store";
 
 interface CategoryStyle {
   icon: string;
@@ -386,6 +387,7 @@ function buildCashflowData(
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const theme = useUiStore((state) => state.theme);
   const walletQuery = useWallets();
   const transactionQuery = useTransactions();
   const wallets = walletQuery.data ?? EMPTY_WALLETS;
@@ -693,26 +695,32 @@ const Dashboard = () => {
                     <stop offset="100%" stopColor="#0f766e" stopOpacity={0.85} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme === "dark" ? "#343434" : "#f1f5f9"} />
                 <XAxis
                   dataKey="label"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "#94a3b8", fontSize: 12 }}
+                  tick={{ fill: theme === "dark" ? "#a3a3a3" : "#94a3b8", fontSize: 12 }}
                   
                 />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "#94a3b8", fontSize: 12 }}
+                  tick={{ fill: theme === "dark" ? "#a3a3a3" : "#94a3b8", fontSize: 12 }}
                   tickFormatter={(val) => `₱${Number(val) > 1000 ? `${(Number(val) / 1000).toFixed(0)}k` : Number(val)}`}
                 />
                 <Tooltip
                   contentStyle={{
                     borderRadius: "16px",
-                    border: "1px solid #e2e8f0",
-                    boxShadow: "0 20px 40px rgba(15, 23, 42, 0.12)",
+                    border: `1px solid ${theme === "dark" ? "#343434" : "#e2e8f0"}`,
+                    backgroundColor: theme === "dark" ? "#181818" : "#ffffff",
+                    color: theme === "dark" ? "#f5f5f5" : "#131b2e",
+                    boxShadow: theme === "dark"
+                      ? "0 20px 40px rgba(0, 0, 0, 0.45)"
+                      : "0 20px 40px rgba(15, 23, 42, 0.12)",
                   }}
+                  labelStyle={{ color: theme === "dark" ? "#f5f5f5" : "#131b2e" }}
+                  itemStyle={{ color: theme === "dark" ? "#ededed" : "#131b2e" }}
                   formatter={(value: number | string, name) => {
                     const label = name === "Income" ? "Income" : name === "Expenses" ? "Expenses" : "Net";
                     return [formatCurrency(Number(value)), label];

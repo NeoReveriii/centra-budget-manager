@@ -28,8 +28,6 @@ const Sidebar = () => {
   const [btnHover, setBtnHover] = useState(false);
 
   const initials = user?.username?.slice(0, 2).toUpperCase() ?? "U";
-  const sidebarLogoSrc = theme === "dark" ? "/favicon-dark-32.png" : "/favicon-32.png";
-
   // Expand sidebar on clicking empty space when collapsed
   const handleSidebarClick = (e: React.MouseEvent<HTMLElement>) => {
     if (!isCollapsed) return;
@@ -46,8 +44,8 @@ const Sidebar = () => {
       isCollapsed ? "w-10" : "w-full"
     } ${
       isActive
-        ? "bg-white shadow-sm text-[#0f5a5c] font-semibold dark:bg-[#262a2d] dark:text-[#75f0ad]"
-        : "text-[#3d4a40] hover:bg-[#e0e3e5] font-medium dark:text-[#c6c9d0] dark:hover:bg-[#262a2d]"
+        ? "bg-white shadow-sm text-[#0f5a5c] font-semibold dark:bg-[#242424] dark:text-[#75f0ad]"
+        : "text-[#3d4a40] hover:bg-[#e0e3e5] font-medium dark:text-[#c2c2c2] dark:hover:bg-[#242424]"
     }`;
 
   // Opacity transitions are handled inline now
@@ -67,7 +65,7 @@ const Sidebar = () => {
         className={`
           group/sidebar
           fixed left-0 top-0 h-[100dvh]
-          bg-[#f2f4f6] border-r border-[#bccabe] dark:bg-[#1a1b20] dark:border-[#34363e]
+          bg-[#f2f4f6] border-r border-[#bccabe] dark:bg-[#121212] dark:border-[#343434]
           flex flex-col z-50
           overflow-hidden
           transition-[width] duration-300 ease-[cubic-bezier(0.2,0,0,1)]
@@ -90,14 +88,22 @@ const Sidebar = () => {
             className={`flex items-center gap-2 ${isCollapsed ? "cursor-pointer" : "pointer-events-none"}`}
             aria-hidden={isCollapsed}
           >
-            <div className="relative flex h-7 w-7 shrink-0 items-center justify-center">
+            <div className="relative flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden">
               <img
-                src={sidebarLogoSrc}
+                src="/assets/images/CentraTextDefault_Only.png"
                 alt="Centra logo"
-                className={`absolute h-full w-full object-contain transition-opacity ${btnHover ? "opacity-0" : "opacity-100"}`}
+                className={`absolute h-[170px] w-[170px] max-w-none object-contain transition-opacity ${btnHover || theme === "dark" ? "opacity-0" : "opacity-100"}`}
+                style={{ left: "-127.5px", top: "-71.3px" }}
+              />
+              <img
+                src="/assets/images/CentraTextDark_Only.png"
+                alt=""
+                aria-hidden="true"
+                className={`absolute h-[170px] w-[170px] max-w-none object-contain transition-opacity ${btnHover || theme !== "dark" ? "opacity-0" : "opacity-100"}`}
+                style={{ left: "-127.5px", top: "-71.3px" }}
               />
               {isCollapsed && btnHover && (
-                <span className="material-symbols-outlined absolute text-[22px] text-[#3d4a40] dark:text-[#c6c9d0]">menu</span>
+                <span className="material-symbols-outlined absolute text-[22px] text-[#3d4a40] dark:text-[#c2c2c2]">menu</span>
               )}
             </div>
             <span
@@ -116,7 +122,7 @@ const Sidebar = () => {
               onClick={toggleSidebar}
               title="Collapse sidebar"
               className="hidden md:flex w-10 h-10 shrink-0 items-center justify-center rounded-full
-                         text-[#3d4a40] hover:bg-[#e0e3e5] dark:text-[#c6c9d0] dark:hover:bg-[#262a2d] transition-colors cursor-pointer ml-auto"
+                         text-[#3d4a40] hover:bg-[#e0e3e5] dark:text-[#c2c2c2] dark:hover:bg-[#242424] transition-colors cursor-pointer ml-auto"
             >
               <span className="material-symbols-outlined text-[22px]">menu_open</span>
             </button>
@@ -126,14 +132,14 @@ const Sidebar = () => {
           <button
             onClick={() => setMobileSidebarOpen(false)}
             className="md:hidden w-10 h-10 shrink-0 flex items-center justify-center rounded-full
-                       text-[#3d4a40] hover:bg-[#e0e3e5] dark:text-[#c6c9d0] dark:hover:bg-[#262a2d] transition-colors cursor-pointer ml-auto"
+                       text-[#3d4a40] hover:bg-[#e0e3e5] dark:text-[#c2c2c2] dark:hover:bg-[#242424] transition-colors cursor-pointer ml-auto"
           >
             <span className="material-symbols-outlined text-[22px]">close</span>
           </button>
         </div>
 
         {/* Divider */}
-        <div className="mx-3 mb-1 border-b border-[#bccabe]/30 dark:border-[#34363e] shrink-0" />
+        <div className="mx-3 mb-1 border-b border-[#bccabe]/30 dark:border-[#343434] shrink-0" />
 
         {/* ── NAVIGATION ──────────────────────────────────────────
             Each item: [fixed 40px icon zone] [label that fades].
@@ -167,7 +173,7 @@ const Sidebar = () => {
         </nav>
 
         {/* ── FOOTER ──────────────────────────────────────────── */}
-        <div className="px-2 py-2 shrink-0 border-t border-[#bccabe]/30 dark:border-[#34363e] space-y-0.5">
+        <div className="px-2 py-2 shrink-0 border-t border-[#bccabe]/30 dark:border-[#343434] space-y-0.5">
           <NavLink
             to="/settings"
             className={navLinkClass}
@@ -193,7 +199,7 @@ const Sidebar = () => {
             }}
             title={isCollapsed ? "Sign Out" : undefined}
             className={`flex items-center h-10 rounded-2xl cursor-pointer transition-all
-                       duration-300 text-[#3d4a40] hover:text-rose-600 hover:bg-rose-50 dark:text-[#c6c9d0] dark:hover:bg-rose-950/40 font-medium ${
+                       duration-300 text-[#3d4a40] hover:text-rose-600 hover:bg-rose-50 dark:text-[#c2c2c2] dark:hover:bg-rose-950/40 font-medium ${
                          isCollapsed ? "w-10" : "w-full"
                        }`}
           >
@@ -216,7 +222,7 @@ const Sidebar = () => {
         ──────────────────────────────────────────────────────── */}
         <div className="px-2 pb-4 shrink-0">
           <div
-            className={`flex items-center h-12 rounded-2xl hover:bg-[#e0e3e5] dark:hover:bg-[#262a2d]
+            className={`flex items-center h-12 rounded-2xl hover:bg-[#e0e3e5] dark:hover:bg-[#242424]
                        cursor-pointer transition-all duration-300 ${
                          isCollapsed ? "w-10" : "w-full"
                        }`}
@@ -241,11 +247,11 @@ const Sidebar = () => {
                 <p className="text-[13px] font-bold text-[#191c1e] dark:text-[#f1f5f9] truncate">
                   {user?.username ?? "Account"}
                 </p>
-                <p className="text-[12px] text-[#3d4a40] dark:text-[#c6c9d0] truncate">
+                <p className="text-[12px] text-[#3d4a40] dark:text-[#a3a3a3] truncate">
                   {user?.email ?? ""}
                 </p>
               </div>
-              <span className="material-symbols-outlined text-[#3d4a40] dark:text-[#c6c9d0] text-[18px] shrink-0 mr-1">
+              <span className="material-symbols-outlined text-[#3d4a40] dark:text-[#a3a3a3] text-[18px] shrink-0 mr-1">
                 unfold_more
               </span>
             </div>

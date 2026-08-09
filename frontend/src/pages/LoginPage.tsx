@@ -112,7 +112,7 @@ export default function LoginPage() {
             aria-invalid={Boolean(fieldErrors.email)}
             aria-describedby={fieldErrors.email ? "login-email-error" : undefined}
             className={cn(
-              "h-12 rounded-lg border-[#aebbb5] bg-white text-slate-950 shadow-[0_2px_8px_rgba(15,23,42,0.05)] placeholder:text-slate-400",
+              "h-12 rounded-lg border-[#aebbb5] bg-white text-slate-950 shadow-[0_2px_8px_rgba(15,23,42,0.05)] placeholder:text-slate-400 dark:border-[#343434]",
               fieldErrors.email && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
             )}
           />
@@ -144,7 +144,7 @@ export default function LoginPage() {
               aria-invalid={Boolean(fieldErrors.password)}
               aria-describedby={fieldErrors.password ? "login-password-error" : undefined}
               className={cn(
-                "h-12 rounded-lg border-[#aebbb5] bg-white pr-12 text-slate-950 shadow-[0_2px_8px_rgba(15,23,42,0.05)] placeholder:text-slate-400",
+                "h-12 rounded-lg border-[#aebbb5] bg-white pr-12 text-slate-950 shadow-[0_2px_8px_rgba(15,23,42,0.05)] placeholder:text-slate-400 dark:border-[#343434]",
                 fieldErrors.password && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
               )}
             />

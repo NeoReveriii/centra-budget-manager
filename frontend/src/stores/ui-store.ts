@@ -3,6 +3,19 @@ import { persist } from "zustand/middleware";
 
 type ThemeMode = "light" | "dark";
 
+let themeTransitionTimer: number | undefined;
+
+function applyDocumentTheme(theme: ThemeMode) {
+  const root = document.documentElement;
+  root.classList.add("theme-changing");
+  root.classList.toggle("dark", theme === "dark");
+
+  window.clearTimeout(themeTransitionTimer);
+  themeTransitionTimer = window.setTimeout(() => {
+    root.classList.remove("theme-changing");
+  }, 80);
+}
+
 interface UiState {
   sidebarCollapsed: boolean;
   mobileSidebarOpen: boolean;
@@ -53,7 +66,7 @@ export const useUiStore = create<UiState>()(
       setFabOpen: (fabOpen) => set({ fabOpen }),
       toggleFab: () => set((s) => ({ fabOpen: !s.fabOpen })),
       setTheme: (theme) => {
-        document.documentElement.classList.toggle("dark", theme === "dark");
+        applyDocumentTheme(theme);
         set({ theme });
       },
       setTxSearch: (txSearch) => set({ txSearch, txPage: 1 }),

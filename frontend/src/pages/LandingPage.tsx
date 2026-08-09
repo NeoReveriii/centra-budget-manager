@@ -6,6 +6,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import LandingHeader from "@/components/landing/LandingHeader";
 import { Button } from "@/components/ui/button";
+import { useUiStore } from "@/stores/ui-store";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -13,12 +14,14 @@ const LandingPage = () => {
   const pageRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const headerShellRef = useRef<HTMLDivElement>(null);
+  const theme = useUiStore((state) => state.theme);
 
   useGSAP(
     () => {
       const header = headerRef.current;
       const headerShell = headerShellRef.current;
       if (!header || !headerShell) return;
+      const isDark = theme === "dark";
 
       const media = gsap.matchMedia();
 
@@ -35,11 +38,21 @@ const LandingPage = () => {
           paddingLeft: compact ? "clamp(16px, 2vw, 24px)" : "clamp(16px, 4vw, 48px)",
           paddingRight: compact ? "clamp(16px, 2vw, 24px)" : "clamp(16px, 4vw, 48px)",
           borderRadius: compact ? "16px" : "12px",
-          backgroundColor: compact ? "rgba(255,255,255,0.92)" : "transparent",
-          borderColor: compact ? "rgba(226,232,240,0.9)" : "transparent",
+          backgroundColor: compact
+            ? isDark
+              ? "rgba(18,18,18,0.94)"
+              : "rgba(255,255,255,0.92)"
+            : "transparent",
+          borderColor: compact
+            ? isDark
+              ? "rgba(52,52,52,0.96)"
+              : "rgba(226,232,240,0.9)"
+            : "transparent",
           backdropFilter: compact ? "blur(20px)" : "none",
           boxShadow: compact
-            ? "0 18px 50px rgba(15,23,42,0.13)"
+            ? isDark
+              ? "0 18px 50px rgba(0,0,0,0.5)"
+              : "0 18px 50px rgba(15,23,42,0.13)"
             : "none",
           duration: animate ? 0.5 : 0,
           ease: "power3.out",
@@ -225,11 +238,11 @@ const LandingPage = () => {
 
       return () => media.revert();
     },
-    { scope: pageRef },
+    { scope: pageRef, dependencies: [theme], revertOnUpdate: true },
   );
 
   return (
-    <div ref={pageRef} className="font-landing min-h-screen w-full max-w-full overflow-x-hidden bg-[#f7f8f7] text-slate-950">
+    <div ref={pageRef} className="font-landing min-h-screen w-full max-w-full overflow-x-hidden bg-[#f7f8f7] text-slate-950 dark:bg-[#0a0a0a] dark:text-[#f5f5f5]">
       <a
         href="#overview"
         className="fixed left-4 top-4 z-[60] -translate-y-24 rounded-lg bg-primary px-4 py-3 text-sm font-bold text-white shadow-lg transition-transform duration-200 focus:translate-y-0 focus:outline-none focus:ring-2 focus:ring-emerald-200 motion-reduce:transition-none"
@@ -274,7 +287,7 @@ const LandingPage = () => {
                 asChild
                 size="lg"
                 variant="outline"
-                className="h-14 rounded-lg border-[#afc9bd] bg-white px-7 text-base font-bold text-primary shadow-none hover:border-primary/45 hover:bg-[#edf7f2] hover:shadow-[0_8px_20px_rgba(0,53,39,0.08)]"
+                className="h-14 rounded-lg border-[#afc9bd] bg-white px-7 text-base font-bold text-primary shadow-none hover:border-primary/45 hover:bg-[#edf7f2] hover:shadow-[0_8px_20px_rgba(0,53,39,0.08)] dark:border-[#343434] dark:bg-[#181818] dark:hover:bg-[#242424]"
               >
                 <Link to="/login">Sign in</Link>
               </Button>
@@ -282,7 +295,7 @@ const LandingPage = () => {
           </div>
 
           <div id="platform" className="relative scroll-mt-28" data-terminal-shell>
-            <div className="overflow-hidden rounded-xl border border-[#b9c6c0] bg-white shadow-[0_28px_70px_rgba(15,23,42,0.15)]">
+            <div className="overflow-hidden rounded-xl border border-[#b9c6c0] bg-white shadow-[0_28px_70px_rgba(15,23,42,0.15)] dark:border-[#343434] dark:shadow-[0_28px_70px_rgba(0,0,0,0.55)]">
               <div data-terminal-part className="flex items-center justify-between bg-primary px-4 py-3.5">
                 <div className="flex gap-2" aria-hidden="true">
                   <span className="h-3 w-3 rounded-full bg-[#e24d4d]" />
@@ -294,13 +307,13 @@ const LandingPage = () => {
                 </div>
               </div>
 
-              <div className="grid grid-flow-dense grid-cols-1 gap-4 bg-[#f1f3f2] p-5 sm:grid-cols-3">
+              <div className="grid grid-flow-dense grid-cols-1 gap-4 bg-[#f1f3f2] p-5 dark:bg-[#101010] sm:grid-cols-3">
                 <div className="space-y-4 sm:col-span-2">
-                  <div data-terminal-part className="rounded-lg border border-[#c5cec9] bg-white p-4">
+                  <div data-terminal-part className="rounded-lg border border-[#c5cec9] bg-white p-4 dark:border-[#343434]">
                     <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Total balance</p>
                     <p className="mt-2 text-[32px] font-semibold tracking-[-0.035em] text-primary">$428,950.00</p>
                     <div className="relative mt-4 h-24 overflow-hidden rounded-md bg-emerald-50">
-                      <div className="absolute inset-0 bg-gradient-to-t from-secondary-container/40 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-secondary-container/40 to-transparent dark:from-[#242424]" />
                       <svg className="relative h-full w-full fill-none stroke-primary stroke-2" viewBox="0 0 400 100" preserveAspectRatio="none" aria-hidden="true">
                         <path data-chart-line d="M0,80 Q50,40 100,70 T200,30 T300,50 T400,10" />
                       </svg>
@@ -308,18 +321,18 @@ const LandingPage = () => {
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <div data-terminal-part className="rounded-lg border border-[#c5cec9] bg-white p-4">
+                    <div data-terminal-part className="rounded-lg border border-[#c5cec9] bg-white p-4 dark:border-[#343434]">
                       <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Investments</p>
                       <p className="mt-2 text-xl font-semibold text-secondary">+12.4%</p>
                     </div>
-                    <div data-terminal-part className="rounded-lg border border-[#c5cec9] bg-white p-4">
+                    <div data-terminal-part className="rounded-lg border border-[#c5cec9] bg-white p-4 dark:border-[#343434]">
                       <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Liquidity</p>
                       <p className="mt-2 text-xl font-semibold text-primary">84.2%</p>
                     </div>
                   </div>
                 </div>
 
-                <div data-terminal-part className="rounded-lg border border-[#c5cec9] bg-white p-4 sm:col-span-1">
+                <div data-terminal-part className="rounded-lg border border-[#c5cec9] bg-white p-4 dark:border-[#343434] sm:col-span-1">
                   <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Asset allocation</p>
                   <div className="mt-5 space-y-4">
                     <div className="h-2 overflow-hidden rounded-full bg-emerald-100">
@@ -339,7 +352,7 @@ const LandingPage = () => {
             <div
               id="security"
               data-security-badge
-              className="absolute -bottom-6 -left-5 hidden scroll-mt-28 items-center gap-3 rounded-xl border border-[#bdc9c3] bg-white px-4 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.14)] sm:flex"
+              className="absolute -bottom-6 -left-5 hidden scroll-mt-28 items-center gap-3 rounded-xl border border-[#bdc9c3] bg-white px-4 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.14)] dark:border-[#343434] dark:shadow-[0_18px_40px_rgba(0,0,0,0.5)] sm:flex"
             >
               <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary-container text-primary">
                 <ShieldCheck className="h-5 w-5" aria-hidden="true" />
@@ -370,7 +383,7 @@ const LandingPage = () => {
               </div>
 
               <article data-build-card className="relative pr-5">
-                <span className="relative z-10 flex h-14 w-14 items-center justify-center rounded-xl border border-[#bcd1c7] bg-[#edf7f2] text-primary">
+                <span className="relative z-10 flex h-14 w-14 items-center justify-center rounded-xl border border-[#bcd1c7] bg-[#edf7f2] text-primary dark:border-[#343434] dark:bg-[#181818]">
                   <WalletCards className="h-6 w-6" aria-hidden="true" />
                 </span>
                 <h3 className="mt-7 text-2xl font-semibold tracking-[-0.025em] text-slate-950">Bring accounts together</h3>
@@ -378,7 +391,7 @@ const LandingPage = () => {
               </article>
 
               <article data-build-card className="relative pr-5">
-                <span className="relative z-10 flex h-14 w-14 items-center justify-center rounded-xl border border-[#bcd1c7] bg-[#edf7f2] text-primary">
+                <span className="relative z-10 flex h-14 w-14 items-center justify-center rounded-xl border border-[#bcd1c7] bg-[#edf7f2] text-primary dark:border-[#343434] dark:bg-[#181818]">
                   <ChartNoAxesCombined className="h-6 w-6" aria-hidden="true" />
                 </span>
                 <h3 className="mt-7 text-2xl font-semibold tracking-[-0.025em] text-slate-950">See movement clearly</h3>
@@ -386,7 +399,7 @@ const LandingPage = () => {
               </article>
 
               <article data-build-card className="relative pr-5">
-                <span className="relative z-10 flex h-14 w-14 items-center justify-center rounded-xl border border-[#bcd1c7] bg-[#edf7f2] text-primary">
+                <span className="relative z-10 flex h-14 w-14 items-center justify-center rounded-xl border border-[#bcd1c7] bg-[#edf7f2] text-primary dark:border-[#343434] dark:bg-[#181818]">
                   <ShieldCheck className="h-6 w-6" aria-hidden="true" />
                 </span>
                 <h3 className="mt-7 text-2xl font-semibold tracking-[-0.025em] text-slate-950">Move with confidence</h3>

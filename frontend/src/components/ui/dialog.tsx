@@ -57,7 +57,7 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "fixed left-[50%] top-[50%] z-[110] grid w-full max-w-[520px] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl duration-200",
+        "fixed left-[50%] top-[50%] z-[110] grid w-full max-w-[520px] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-3xl border border-slate-200 bg-white p-6 text-slate-950 shadow-2xl duration-200 dark:border-[#343434] dark:bg-[#181818] dark:text-[#f5f5f5] dark:shadow-[0_24px_70px_rgba(0,0,0,0.65)]",
           "data-[state=open]:animate-dialog-in",
           className,
         )}
@@ -65,7 +65,7 @@ function DialogContent({
       >
         {children}
         {showCloseButton && (
-          <DialogPrimitive.Close className="absolute top-4 right-4 rounded-full p-2 text-slate-400 transition-colors hover:text-slate-900 hover:bg-slate-100 cursor-pointer">
+          <DialogPrimitive.Close className="absolute top-4 right-4 rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-[#a3a3a3] dark:hover:bg-[#2c2c2c] dark:hover:text-white cursor-pointer">
             <X className="h-5 w-5" />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
@@ -105,7 +105,7 @@ function DialogTitle({
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("text-lg font-semibold text-slate-900", className)}
+      className={cn("text-lg font-semibold text-slate-900 dark:text-[#f5f5f5]", className)}
       {...props}
     />
   );
@@ -118,7 +118,7 @@ function DialogDescription({
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn("text-sm text-slate-600", className)}
+      className={cn("text-sm text-slate-600 dark:text-[#b8b8b8]", className)}
       {...props}
     />
   );

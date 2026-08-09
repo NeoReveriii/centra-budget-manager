@@ -188,7 +188,7 @@ export function AddTransactionModal() {
         className="max-w-[520px] p-0 gap-0 overflow-hidden shadow-2xl"
         showCloseButton={false}
       >
-        <DialogHeader className="border-b border-slate-100 bg-[linear-gradient(180deg,rgba(248,250,252,0.98),rgba(255,255,255,0.92))] p-6 pb-5 text-left">
+        <DialogHeader className="border-b border-slate-100 bg-[linear-gradient(180deg,rgba(248,250,252,0.98),rgba(255,255,255,0.92))] p-6 pb-5 text-left dark:bg-none dark:bg-[#181818]">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner">
               <span className="material-symbols-outlined text-[20px]">

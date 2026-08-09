@@ -21,12 +21,12 @@ export default function AuthPageShell({
   const isRegister = mode === "register";
 
   return (
-    <div className="min-h-[100dvh] bg-[#f2f6f4] text-slate-950">
+    <div className="min-h-[100dvh] bg-[#f2f6f4] text-slate-950 dark:bg-[#0a0a0a] dark:text-[#f5f5f5]">
       <SiteHeader mode="auth" />
 
       <main className="mx-auto w-full max-w-[1560px] p-4 sm:p-6">
-        <div className="grid min-h-[calc(100dvh-116px)] overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.09)] lg:grid-cols-[minmax(0,1.06fr)_minmax(430px,0.94fr)]">
-          <section className="relative hidden min-h-[760px] overflow-hidden rounded-2xl bg-primary lg:flex lg:items-center lg:justify-center">
+        <div className="grid min-h-[calc(100dvh-116px)] overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.09)] dark:border-[#343434] dark:bg-[#121212] dark:shadow-[0_24px_70px_rgba(0,0,0,0.55)] lg:grid-cols-[minmax(0,1.06fr)_minmax(430px,0.94fr)]">
+          <section className="relative hidden min-h-[760px] overflow-hidden rounded-2xl bg-primary dark:!bg-[#0f0f0f] lg:flex lg:items-center lg:justify-center">
             <ShaderBackground className="absolute inset-0 h-full w-full" />
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,33,23,0.18)_0%,rgba(0,33,23,0.42)_58%,rgba(0,20,14,0.78)_100%)]" />
             <div className="absolute inset-x-0 bottom-0 h-2/5 bg-[radial-gradient(ellipse_at_bottom,rgba(176,240,214,0.22),transparent_66%)]" />
@@ -48,7 +48,7 @@ export default function AuthPageShell({
             </div>
           </section>
 
-          <section className="flex min-h-[720px] items-center justify-center bg-[#fcfdfc] px-5 py-12 sm:px-10 lg:min-h-[760px] lg:border-l lg:border-slate-200/70 lg:px-14 lg:py-16 xl:px-20">
+          <section className="flex min-h-[720px] items-center justify-center bg-[#fcfdfc] px-5 py-12 dark:bg-[#121212] sm:px-10 lg:min-h-[760px] lg:border-l lg:border-slate-200/70 lg:px-14 lg:py-16 xl:px-20">
             <div className="w-full max-w-[520px]">
               <div className="mb-9 text-center">
                 <h1 className="text-[30px] font-extrabold leading-tight tracking-[-0.035em] text-slate-950 sm:text-[36px]">

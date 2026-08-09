@@ -33,14 +33,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className={`min-h-screen w-full bg-background transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] dark:bg-slate-950 ${isSidebarCollapsed ? "md:pl-[80px]" : "md:pl-[300px]"}`}>
+    <div className={`min-h-screen w-full bg-background transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] dark:bg-[#0a0a0a] ${isSidebarCollapsed ? "md:pl-[80px]" : "md:pl-[300px]"}`}>
       <Sidebar />
-      <div className="min-h-screen flex flex-col bg-background dark:bg-slate-950">
+      <div className="min-h-screen flex flex-col bg-background dark:bg-[#0a0a0a]">
         {/* Mobile Header */}
-        <header className="sticky top-0 z-40 flex items-center justify-between border-b border-outline-variant bg-white p-4 dark:border-slate-800 dark:bg-slate-950 md:hidden">
+        <header className="sticky top-0 z-40 flex items-center justify-between border-b border-outline-variant bg-white p-4 dark:border-[#343434] dark:bg-[#121212] md:hidden">
           <button 
             onClick={() => setMobileSidebarOpen(true)}
-            className="p-2 text-slate-600 hover:bg-slate-100 rounded-full flex items-center justify-center cursor-pointer"
+            className="p-2 text-slate-600 hover:bg-slate-100 rounded-full flex items-center justify-center cursor-pointer dark:text-[#ededed] dark:hover:bg-[#242424]"
           >
             <span className="material-symbols-outlined">menu</span>
           </button>

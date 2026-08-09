@@ -132,7 +132,7 @@ export default function RegisterPage() {
               aria-invalid={Boolean(fieldErrors.firstName)}
               aria-describedby={fieldErrors.firstName ? "register-first-name-error" : undefined}
               className={cn(
-                "h-12 rounded-lg border-[#aebbb5] bg-white text-slate-950 placeholder:text-slate-400",
+                "h-12 rounded-lg border-[#aebbb5] bg-white text-slate-950 placeholder:text-slate-400 dark:border-[#343434]",
                 fieldErrors.firstName && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
               )}
             />
@@ -159,7 +159,7 @@ export default function RegisterPage() {
               aria-invalid={Boolean(fieldErrors.lastName)}
               aria-describedby={fieldErrors.lastName ? "register-last-name-error" : undefined}
               className={cn(
-                "h-12 rounded-lg border-[#aebbb5] bg-white text-slate-950 placeholder:text-slate-400",
+                "h-12 rounded-lg border-[#aebbb5] bg-white text-slate-950 placeholder:text-slate-400 dark:border-[#343434]",
                 fieldErrors.lastName && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
               )}
             />
@@ -186,7 +186,7 @@ export default function RegisterPage() {
             aria-invalid={Boolean(fieldErrors.email)}
             aria-describedby={fieldErrors.email ? "register-email-error" : undefined}
             className={cn(
-              "h-12 rounded-lg border-[#aebbb5] bg-white text-slate-950 placeholder:text-slate-400",
+              "h-12 rounded-lg border-[#aebbb5] bg-white text-slate-950 placeholder:text-slate-400 dark:border-[#343434]",
               fieldErrors.email && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
             )}
           />
@@ -214,7 +214,7 @@ export default function RegisterPage() {
               aria-invalid={Boolean(fieldErrors.password)}
               aria-describedby={fieldErrors.password ? "register-password-error" : "register-password-help"}
               className={cn(
-                "h-12 rounded-lg border-[#aebbb5] bg-white pr-12 text-slate-950 placeholder:text-slate-400",
+                "h-12 rounded-lg border-[#aebbb5] bg-white pr-12 text-slate-950 placeholder:text-slate-400 dark:border-[#343434]",
                 fieldErrors.password && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
               )}
             />

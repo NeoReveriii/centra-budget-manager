@@ -114,45 +114,86 @@
   }
 
   .dark body {
-    background-color: #111513;
-    color: #f1f6f2;
+    background-color: #0a0a0a;
+    color: #f5f5f5;
   }
 
   /* Shared application dark theme tokens keep every tab on the same surface and contrast scale. */
   .dark {
     color-scheme: dark;
-    --color-background: #111513;
-    --color-surface: #111513;
-    --color-surface-bright: #29332e;
-    --color-surface-container-lowest: #202522;
-    --color-surface-container-low: #1a211e;
-    --color-surface-container: #202522;
-    --color-surface-container-high: #29332e;
-    --color-surface-container-highest: #35423a;
-    --color-surface-variant: #35423a;
-    --color-surface-dim: #0d110f;
-    --color-on-background: #f1f6f2;
-    --color-on-surface: #f1f6f2;
-    --color-on-surface-variant: #b7c4bb;
-    --color-outline: #718078;
-    --color-outline-variant: #3b4941;
+    --color-primary: #6ee7a5;
+    --color-primary-container: #00533d;
+    --color-surface-tint: #6ee7a5;
+    --color-on-primary: #04130d;
+    --color-on-primary-container: #c7f9df;
+    --color-primary-fixed: #242424;
+    --color-primary-fixed-dim: #1d1d1d;
+    --color-on-primary-fixed: #ededed;
+    --color-on-primary-fixed-variant: #b8b8b8;
+    --color-secondary: #c2c2c2;
+    --color-secondary-container: #242424;
+    --color-secondary-fixed: #2c2c2c;
+    --color-secondary-fixed-dim: #242424;
+    --color-on-secondary: #0a0a0a;
+    --color-on-secondary-container: #ededed;
+    --color-on-secondary-fixed: #ededed;
+    --color-on-secondary-fixed-variant: #b8b8b8;
+    --color-tertiary: #c2c2c2;
+    --color-tertiary-container: #242424;
+    --color-tertiary-fixed: #2c2c2c;
+    --color-tertiary-fixed-dim: #242424;
+    --color-on-tertiary: #0a0a0a;
+    --color-on-tertiary-container: #ededed;
+    --color-on-tertiary-fixed: #ededed;
+    --color-on-tertiary-fixed-variant: #b8b8b8;
+    --color-error: #ff7b7b;
+    --color-error-container: #2a1517;
+    --color-on-error: #260305;
+    --color-on-error-container: #ffb4b4;
+    --color-background: #0a0a0a;
+    --color-surface: #0a0a0a;
+    --color-surface-bright: #242424;
+    --color-surface-container-lowest: #181818;
+    --color-surface-container-low: #121212;
+    --color-surface-container: #181818;
+    --color-surface-container-high: #242424;
+    --color-surface-container-highest: #2c2c2c;
+    --color-surface-variant: #2c2c2c;
+    --color-surface-dim: #050505;
+    --color-on-background: #f5f5f5;
+    --color-on-surface: #f5f5f5;
+    --color-on-surface-variant: #b8b8b8;
+    --color-outline: #737373;
+    --color-outline-variant: #343434;
+    --color-inverse-surface: #ededed;
+    --color-inverse-on-surface: #181818;
+    --color-inverse-primary: #00533d;
+  }
+
+  /* Theme changes are intentionally immediate. This prevents half-light,
+     half-dark frames when the switch is clicked repeatedly. */
+  .theme-changing *,
+  .theme-changing *::before,
+  .theme-changing *::after {
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
   }
 
   /* Existing tabs use a few utility surfaces directly; normalize those surfaces in dark mode. */
   .dark .bg-white {
-    background-color: #1e293b;
+    background-color: #181818;
   }
 
   .dark .bg-slate-50 {
-    background-color: #172033;
+    background-color: #121212;
   }
 
   .dark .bg-slate-100 {
-    background-color: #1e293b;
+    background-color: #242424;
   }
 
   .dark .bg-slate-200 {
-    background-color: #334155;
+    background-color: #303030;
   }
 
   .dark .text-slate-950,
@@ -160,31 +201,31 @@
   .dark .text-slate-800,
   .dark .text-slate-700,
   .dark .text-slate-600 {
-    color: #e2e8f0;
+    color: #ededed;
   }
 
   .dark .text-slate-500,
   .dark .text-slate-400 {
-    color: #94a3b8;
+    color: #a3a3a3;
   }
 
   .dark .border-slate-100,
   .dark .border-slate-200,
   .dark .border-slate-300 {
-    border-color: #334155;
+    border-color: #343434;
   }
 
   .dark .divide-slate-100 > :not(:last-child),
   .dark .divide-slate-200 > :not(:last-child) {
-    border-color: #334155;
+    border-color: #343434;
   }
 
   .dark .bg-background {
-    background-color: #111513;
+    background-color: #0a0a0a;
   }
 
   .dark .bg-surface-container-lowest {
-    background-color: #202522;
+    background-color: #181818;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -318,42 +359,46 @@
      Tailwind utility colors already used by the tab implementations. */
   .dark .bg-white,
   .dark .dark\:bg-white {
-    background-color: #202522;
+    background-color: #181818;
   }
 
   .dark .bg-slate-50,
   .dark .dark\:bg-slate-50 {
-    background-color: #1a211e;
+    background-color: #121212;
   }
 
   .dark .bg-slate-100,
   .dark .dark\:bg-slate-100 {
-    background-color: #252e29;
+    background-color: #242424;
   }
 
   .dark .bg-slate-200,
   .dark .dark\:bg-slate-200 {
-    background-color: #35423a;
+    background-color: #303030;
+  }
+
+  .dark .bg-slate-300 {
+    background-color: #343434;
   }
 
   .dark .bg-slate-700,
   .dark .dark\:bg-slate-700 {
-    background-color: #35423a;
+    background-color: #303030;
   }
 
   .dark .bg-slate-800,
   .dark .dark\:bg-slate-800 {
-    background-color: #29332e;
+    background-color: #242424;
   }
 
   .dark .bg-slate-900,
   .dark .dark\:bg-slate-900 {
-    background-color: #1a211e;
+    background-color: #121212;
   }
 
   .dark .bg-slate-950,
   .dark .dark\:bg-slate-950 {
-    background-color: #111513;
+    background-color: #0a0a0a;
   }
 
   .dark .text-slate-100,
@@ -364,12 +409,12 @@
   .dark .text-slate-800,
   .dark .text-slate-700,
   .dark .text-slate-600 {
-    color: #e5eee8;
+    color: #ededed;
   }
 
   .dark .text-slate-400,
   .dark .text-slate-500 {
-    color: #9eaea4;
+    color: #a3a3a3;
   }
 
   .dark .border-slate-100,
@@ -377,23 +422,136 @@
   .dark .border-slate-300,
   .dark .dark\:border-slate-700,
   .dark .dark\:border-slate-800 {
-    border-color: #3b4941;
+    border-color: #343434;
   }
 
   .dark .divide-slate-100 > :not(:last-child),
   .dark .divide-slate-200 > :not(:last-child) {
-    border-color: #3b4941;
+    border-color: #343434;
   }
 
   .dark .text-primary {
-    color: #75e8aa;
+    color: #6ee7a5;
   }
 
   .dark .bg-primary {
-    background-color: #004b39;
+    background-color: #00533d;
   }
 
   .dark .dark\:bg-primary {
-    background-color: #004b39;
+    background-color: #00533d;
+  }
+
+  .dark .text-secondary {
+    color: #c2c2c2;
+  }
+
+  .dark .bg-secondary {
+    background-color: #303030;
+  }
+
+  .dark .bg-slate-50\/20 {
+    background-color: rgb(18 18 18 / 0.72);
+  }
+
+  .dark .bg-slate-50\/50,
+  .dark .hover\:bg-slate-50\/50:hover {
+    background-color: rgb(24 24 24 / 0.82);
+  }
+
+  .dark .bg-slate-50\/70 {
+    background-color: rgb(24 24 24 / 0.9);
+  }
+
+  .dark .bg-white\/70,
+  .dark .bg-white\/80,
+  .dark .bg-white\/90 {
+    background-color: rgb(24 24 24 / 0.94);
+  }
+
+  .dark .bg-slate-300\/80 {
+    background-color: rgb(52 52 52 / 0.8);
+  }
+
+  .dark .bg-secondary\/40 {
+    background-color: rgb(48 48 48 / 0.28);
+  }
+
+  .dark .hover\:bg-slate-50:hover,
+  .dark .dark\:hover\:bg-slate-800:hover,
+  .dark .dark\:hover\:bg-slate-800\/60:hover,
+  .dark .dark\:hover\:bg-slate-800\/70:hover {
+    background-color: #242424;
+  }
+
+  .dark .bg-emerald-50,
+  .dark .bg-emerald-100,
+  .dark .dark\:bg-emerald-900,
+  .dark .dark\:bg-emerald-950,
+  .dark .dark\:bg-emerald-950\/30,
+  .dark .dark\:bg-emerald-950\/40,
+  .dark .dark\:bg-emerald-950\/55 {
+    background-color: #181818;
+  }
+
+  .dark .dark\:border-emerald-800,
+  .dark .dark\:border-emerald-900 {
+    border-color: #343434;
+  }
+
+  .dark .dark\:hover\:bg-emerald-900:hover {
+    background-color: #242424;
+  }
+
+  /* Semantic status colors remain readable accents, while their surfaces
+     stay near-black so no tab introduces a bright or blue/violet panel. */
+  .dark .bg-rose-50,
+  .dark .hover\:bg-rose-50:hover,
+  .dark .dark\:bg-rose-950,
+  .dark .dark\:bg-rose-950\/40,
+  .dark .dark\:hover\:bg-rose-950:hover {
+    background-color: #241719;
+  }
+
+  .dark .bg-blue-50,
+  .dark .bg-sky-50,
+  .dark .bg-cyan-50,
+  .dark .bg-indigo-50,
+  .dark .bg-purple-50,
+  .dark .bg-teal-50,
+  .dark .bg-orange-50,
+  .dark .bg-red-50,
+  .dark .hover\:bg-blue-50:hover {
+    background-color: #1d1d1d;
+  }
+
+  .dark .border-blue-100,
+  .dark .border-sky-100,
+  .dark .border-cyan-100,
+  .dark .border-indigo-100,
+  .dark .border-purple-100,
+  .dark .border-teal-100,
+  .dark .border-orange-100,
+  .dark .border-red-100 {
+    border-color: #343434;
+  }
+
+  .dark .bg-amber-50,
+  .dark .bg-amber-100,
+  .dark .bg-amber-100\/90 {
+    background-color: #242018;
+  }
+
+  .dark .hover\:bg-slate-100:hover,
+  .dark .dark\:hover\:bg-slate-700:hover {
+    background-color: #2c2c2c;
+  }
+
+  .dark .fill-slate-900 {
+    fill: #ededed;
+  }
+
+  .dark .fill-slate-500 {
+    fill: #a3a3a3;
   }
 }

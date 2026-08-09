@@ -102,7 +102,7 @@ export default function ForgotPasswordPage() {
             aria-invalid={Boolean(emailError)}
             aria-describedby={emailError ? "forgot-email-error" : undefined}
             className={cn(
-              "h-12 rounded-lg border-[#aebbb5] bg-white text-slate-950 placeholder:text-slate-400",
+              "h-12 rounded-lg border-[#aebbb5] bg-white text-slate-950 placeholder:text-slate-400 dark:border-[#343434]",
               emailError && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
             )}
           />

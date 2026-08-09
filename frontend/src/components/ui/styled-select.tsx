@@ -134,7 +134,7 @@ export function StyledSelect({
         }}
         onKeyDown={handleKeyDown}
         className={cn(
-          "flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 text-left text-sm font-semibold text-slate-800 shadow-sm outline-none transition-[border-color,box-shadow,background-color] hover:border-slate-300 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 text-left text-sm font-semibold text-slate-800 shadow-sm outline-none transition-[border-color,box-shadow,background-color] hover:border-slate-300 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#343434] dark:bg-[#181818] dark:text-[#ededed] dark:hover:border-[#555]",
           className,
         )}
         title={selectedOption?.label ?? placeholder}
@@ -156,7 +156,7 @@ export function StyledSelect({
               aria-labelledby={id}
               onPointerDown={(event) => event.stopPropagation()}
               onMouseDown={(event) => event.stopPropagation()}
-              className="fixed z-[300] max-h-[280px] overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-[0_16px_38px_rgba(15,23,42,0.16)]"
+              className="fixed z-[300] max-h-[280px] overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-[0_16px_38px_rgba(15,23,42,0.16)] dark:border-[#343434] dark:bg-[#181818] dark:shadow-[0_18px_44px_rgba(0,0,0,0.65)]"
               style={menuStyle}
             >
               {options.map((option, index) => (
@@ -168,7 +168,7 @@ export function StyledSelect({
                   onMouseEnter={() => setActiveIndex(index)}
                   onClick={() => choose(index)}
                   className={cn(
-                    "flex min-h-11 w-full items-center justify-between rounded-lg px-3 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-[#eff8f3] hover:text-primary focus-visible:bg-[#eff8f3] focus-visible:text-primary focus-visible:outline-none",
+                    "flex min-h-11 w-full items-center justify-between rounded-lg px-3 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-[#eff8f3] hover:text-primary focus-visible:bg-[#eff8f3] focus-visible:text-primary focus-visible:outline-none dark:text-[#ededed] dark:hover:bg-[#242424] dark:focus-visible:bg-[#242424]",
                     index === activeIndex && "bg-slate-50",
                     option.value === value && "font-bold text-primary",
                   )}
