@@ -8,6 +8,7 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { StyledSelect } from "@/components/ui/styled-select";
+import { DatePicker } from "@/components/ui/date-picker";
 import FieldError from "@/components/FieldError";
 import { cn } from "@/lib/utils";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
@@ -328,12 +329,13 @@ const SavingsGoals: React.FC = () => {
                     Target Date
                     <span className="text-[10px] text-slate-400 font-normal">(optional)</span>
                   </Label>
-                  <Input
+                  <DatePicker
                     id="goal-deadline"
-                    type="date"
                     min={todayStr}
                     value={deadline}
-                    onChange={e => setDeadline(e.target.value)}
+                    onChange={setDeadline}
+                    placeholder="Select a target date"
+                    aria-label="Target date"
                   />
                   {deadline && targetAmount && Number(targetAmount) > 0 && (() => {
                     const months = getMonthsRemaining(deadline);
