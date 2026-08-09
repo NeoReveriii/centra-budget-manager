@@ -618,4 +618,26 @@
   .dark.high-contrast .border-outline-variant {
     border-color: #707070;
   }
+
+  /* Browser autofill defaults are often navy in dark mode. Keep saved
+     credentials inside the same charcoal form surface as normal inputs. */
+  .dark input:-webkit-autofill,
+  .dark input:-webkit-autofill:hover,
+  .dark input:-webkit-autofill:focus,
+  .dark textarea:-webkit-autofill,
+  .dark textarea:-webkit-autofill:hover,
+  .dark textarea:-webkit-autofill:focus {
+    -webkit-text-fill-color: #ededed;
+    -webkit-box-shadow: 0 0 0 1000px #181818 inset;
+    box-shadow: 0 0 0 1000px #181818 inset;
+    caret-color: #ededed;
+    transition: background-color 9999s ease-in-out 0s;
+  }
+
+  .dark input:-moz-autofill,
+  .dark textarea:-moz-autofill {
+    background-color: #181818 !important;
+    color: #ededed !important;
+    caret-color: #ededed;
+  }
 }

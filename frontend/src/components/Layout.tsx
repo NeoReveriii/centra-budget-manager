@@ -3,7 +3,7 @@ import Sidebar from "./Sidebar";
 import { useUiStore } from "@/stores/ui-store";
 import { AddTransactionModal } from "./AddTransactionModal";
 import { TransferFundsModal } from "./TransferFundsModal";
-import { ArrowRightLeft, Plus, TrendingDown, TrendingUp, X } from "lucide-react";
+import { ArrowDownRight, ArrowLeftRight, ArrowUpRight, Plus, X } from "lucide-react";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -71,7 +71,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           >
             <span className="text-sm font-extrabold text-slate-800">Add expenses</span>
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-700 transition-transform duration-200 group-hover:scale-105">
-              <TrendingDown className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
+              <ArrowDownRight className="h-5 w-5" strokeWidth={2.25} aria-hidden="true" />
             </span>
           </button>
           <button
@@ -82,7 +82,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           >
             <span className="text-sm font-extrabold text-slate-800">Add income</span>
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 transition-transform duration-200 group-hover:scale-105">
-              <TrendingUp className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
+              <ArrowUpRight className="h-5 w-5" strokeWidth={2.25} aria-hidden="true" />
             </span>
           </button>
           <button
@@ -93,7 +93,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           >
             <span className="text-sm font-extrabold text-slate-800">Add transfer</span>
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700 transition-transform duration-200 group-hover:scale-105">
-              <ArrowRightLeft className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
+              <ArrowLeftRight className="h-5 w-5" strokeWidth={2.25} aria-hidden="true" />
             </span>
           </button>
         </div>
