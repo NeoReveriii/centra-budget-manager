@@ -166,16 +166,23 @@ function MaterialIcon({
 
 function CentraMark() {
   return (
-    <svg
+    <span
       aria-hidden="true"
-      viewBox="0 0 28 28"
-      className="h-7 w-7 shrink-0 text-[#1a7a5e] dark:text-[#75f0ad]"
-      fill="none"
+      className="relative flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden"
     >
-      <path d="M3 5.5 24.5 3 22 24.5l-6.2-7.1-4.6 5.1.8-8.2L3 9.8Z" fill="currentColor" />
-      <path d="m4.7 8.2 14.2-.9-7.6 4.9Z" fill="white" fillOpacity="0.86" />
-      <path d="m14.1 13.7 6.5-4.4-1.1 9.4Z" fill="white" fillOpacity="0.72" />
-    </svg>
+      <img
+        src="/assets/images/CentraTextDefault_Only.png"
+        alt=""
+        className="absolute h-[110px] w-[110px] max-w-none object-contain dark:hidden"
+        style={{ left: "-81.3px", top: "-45.2px" }}
+      />
+      <img
+        src="/assets/images/CentraTextDark_Only.png"
+        alt=""
+        className="absolute hidden h-[110px] w-[110px] max-w-none object-contain dark:block"
+        style={{ left: "-81.3px", top: "-45.2px" }}
+      />
+    </span>
   );
 }
 
@@ -189,7 +196,7 @@ function DashboardSidebar({ compact }: { compact: boolean }) {
       )}
     >
       <div className={cn("flex shrink-0 items-center border-b border-[#bccabe]/30 px-3", compact ? "h-12" : "h-14")}>
-        <div className="flex min-w-0 items-center gap-2">
+        <div className="flex min-w-0 translate-x-1 items-center gap-1.5">
           <CentraMark />
           <span className="truncate text-[15px] font-bold tracking-[-0.3px] text-[#1a7a5e] dark:text-[#75f0ad]">
             centra

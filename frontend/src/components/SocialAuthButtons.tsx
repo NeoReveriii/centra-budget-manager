@@ -34,7 +34,7 @@ export default function SocialAuthButtons({ onSocial, disabled }: SocialAuthButt
           <img
             src="/assets/brand/apple-sign-in-logo.png"
             alt=""
-            className="absolute left-1/2 top-1/2 h-10 w-10 max-w-none -translate-x-1/2 -translate-y-1/2 object-contain"
+            className="absolute left-1/2 top-1/2 h-10 w-10 max-w-none -translate-x-1/2 -translate-y-1/2 object-contain dark:invert dark:mix-blend-screen"
           />
         </span>
         Continue with Apple
