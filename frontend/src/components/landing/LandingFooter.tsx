@@ -29,8 +29,6 @@ const footerGroups = [
   },
 ] as const;
 
-const capabilities = ["Wallets", "Transactions", "Savings goals", "Kwarta AI"] as const;
-
 const EASE_OUT = [0.16, 1, 0.3, 1] as const;
 const NO_MOTION_TRANSITION = { duration: 0 } as const;
 const LINK_FILL_TRANSITION = {
@@ -75,14 +73,6 @@ const LINK_CONTENT_VARIANTS = {
 const LINK_UNDERLINE_VARIANTS = {
   rest: { scaleX: 0 },
   active: { scaleX: 1 },
-};
-
-const CURRENT_LINE_VARIANTS = {
-  hidden: { scaleX: 0 },
-  visible: {
-    scaleX: 1,
-    transition: { duration: 1.05, ease: EASE_OUT, delay: 0.08 },
-  },
 };
 
 const RIBBON_REVEAL_VARIANTS = {
@@ -177,34 +167,12 @@ export default function LandingFooter() {
           </m.aside>
         </m.div>
 
-        <div className="relative border-t border-[#cbd8cf] py-6 dark:border-white/12">
-          <m.span
-            aria-hidden="true"
-            variants={CURRENT_LINE_VARIANTS}
-            initial={reduceMotion ? false : "hidden"}
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.85 }}
-            className="absolute -top-px left-0 h-0.5 w-full origin-left bg-[#19704f] dark:bg-[#9cf0bf]"
-          />
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <p className="text-sm font-semibold text-[#274b39] dark:text-[#bce8cc]">One connected financial view</p>
-            <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-[#596b60] dark:text-white/62" aria-label="Centra capabilities">
-              {capabilities.map((capability, index) => (
-                <li key={capability} className="inline-flex items-center gap-5">
-                  {index > 0 ? <span className="hidden h-3 w-px bg-[#b8c8bd] dark:bg-white/18 md:block" aria-hidden="true" /> : null}
-                  <span>{capability}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
         <m.div
           variants={NAV_ITEM_VARIANTS}
           initial={reduceMotion ? false : "hidden"}
           whileInView="visible"
           viewport={{ once: true, amount: 0.75 }}
-          className="flex flex-col gap-3 border-t border-[#d7e1d9] py-7 text-[0.8rem] text-[#56685d] dark:border-white/10 dark:text-white/60 sm:flex-row sm:items-center sm:justify-between"
+          className="flex flex-col gap-3 border-t border-[#cbd8cf] py-7 text-[0.8rem] text-[#56685d] dark:border-white/12 dark:text-white/60 sm:flex-row sm:items-center sm:justify-between"
         >
           <p>&copy; 2026 Centra Financial Systems</p>
           <m.a

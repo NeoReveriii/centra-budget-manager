@@ -1,5 +1,4 @@
 import { useRef, useState } from "react";
-import { Bot, ChartNoAxesCombined, Target, WalletCards } from "lucide-react";
 import {
   LazyMotion,
   MotionConfig,
@@ -55,13 +54,6 @@ const heroItemVariants: Variants = {
     },
   },
 };
-
-const capabilities = [
-  { label: "Wallets", detail: "One combined balance", Icon: WalletCards },
-  { label: "Cash flow", detail: "Income and expenses", Icon: ChartNoAxesCombined },
-  { label: "Goals", detail: "Progress that stays visible", Icon: Target },
-  { label: "Kwarta AI", detail: "Answers with context", Icon: Bot },
-] as const;
 
 function IntroReveal() {
   const reduceMotion = useLandingReducedMotion();
@@ -233,44 +225,6 @@ function Hero() {
   );
 }
 
-function CapabilityRail() {
-  const reduceMotion = useLandingReducedMotion();
-
-  return (
-    <section aria-label="Centra capabilities" className="border-y border-[#dce4dd] bg-[#f0f4ef] dark:border-white/9 dark:bg-[#111411]">
-      <m.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: false, amount: 0.45 }}
-        variants={{
-          hidden: {},
-          visible: { transition: { staggerChildren: reduceMotion ? 0 : 0.06 } },
-        }}
-        className="mx-auto grid w-full max-w-[1400px] grid-cols-2 px-4 sm:px-6 lg:grid-cols-4 lg:px-8"
-      >
-        {capabilities.map(({ label, detail, Icon }, index) => (
-          <m.div
-            key={label}
-            variants={{
-              hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 18 },
-              visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE_OUT } },
-            }}
-            className={`flex min-h-[8.5rem] items-center gap-3 px-3 py-6 sm:px-5 ${index % 2 ? "border-l border-[#dce4dd] dark:border-white/9" : ""} ${index >= 2 ? "border-t border-[#dce4dd] dark:border-white/9 lg:border-t-0" : ""} ${index > 0 ? "lg:border-l lg:border-[#dce4dd] lg:dark:border-white/9" : ""}`}
-          >
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#dff8e9] text-[#0d5038] dark:bg-[#183c2d] dark:text-[#9cf0bf]">
-              <Icon className="h-5 w-5" strokeWidth={1.8} aria-hidden="true" />
-            </span>
-            <span>
-              <span className="block text-sm font-semibold text-[#142019] dark:text-white/88">{label}</span>
-              <span className="mt-1 block text-xs leading-5 text-[#6b7a71] dark:text-white/45">{detail}</span>
-            </span>
-          </m.div>
-        ))}
-      </m.div>
-    </section>
-  );
-}
-
 function LandingExperience() {
   const reduceMotion = useLandingReducedMotion();
 
@@ -290,7 +244,6 @@ function LandingExperience() {
 
           <main>
             <Hero />
-            <CapabilityRail />
             <PlatformShowcase />
             <ProductPairSection />
             <KwartaSection />

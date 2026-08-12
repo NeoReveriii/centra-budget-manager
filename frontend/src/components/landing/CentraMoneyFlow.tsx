@@ -14,21 +14,21 @@ const WALLETS = [
     name: "BPI Savings",
     type: "Bank",
     balance: "₱68,240.50",
-    icon: "account_balance",
+    mark: "B",
     selected: true,
   },
   {
     name: "Main Wallet",
     type: "E-wallet",
     balance: "₱21,936.25",
-    icon: "account_balance_wallet",
+    mark: "M",
     selected: false,
   },
   {
     name: "Daily Cash",
     type: "Cash",
     balance: "₱8,274.00",
-    icon: "payments",
+    mark: "₱",
     selected: false,
   },
 ] as const;
@@ -173,15 +173,8 @@ function WalletStack({ reducedMotion }: { reducedMotion: boolean }) {
             viewport={{ once: false, amount: 0.5 }}
             transition={{ duration: 0.5, delay: reducedMotion ? 0 : index * 0.08, ease: EASE_OUT }}
           >
-            <span
-              className={cn(
-                "grid h-9 w-9 shrink-0 place-items-center rounded-xl",
-                wallet.selected
-                  ? "bg-[#d9f5e5] text-[#0d5038] dark:bg-[#17412f] dark:text-[#9cf0bf]"
-                  : "bg-[#edf2ee] text-[#526b5d] dark:bg-white/7 dark:text-white/72",
-              )}
-            >
-              <MaterialIcon icon={wallet.icon} className="text-[18px]" />
+            <span className="grid h-8 w-8 shrink-0 place-items-center border-r border-[#b9cbbf] pr-2 font-mono text-[13px] font-bold text-[#19704f] dark:border-white/16 dark:text-[#9cf0bf]" aria-hidden="true">
+              {wallet.mark}
             </span>
             <span className="min-w-0 flex-1">
               <span className="flex items-center gap-1.5">
@@ -232,41 +225,29 @@ function TransferNode({ reducedMotion }: { reducedMotion: boolean }) {
 }
 
 function TravelGoal({ reducedMotion }: { reducedMotion: boolean }) {
-  const circumference = 301.59;
-  const targetOffset = circumference * 0.42;
-
   return (
-    <section aria-labelledby="money-flow-goal" className="relative z-10 mx-auto flex w-full max-w-[16rem] flex-col items-center text-center sm:mx-0 sm:max-w-[14rem] lg:max-w-[16rem]">
+    <section aria-labelledby="money-flow-goal" className="relative z-10 mx-auto w-full max-w-[16rem] sm:mx-0 sm:max-w-[14rem] lg:max-w-[16rem]">
       <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#526b5d] dark:text-white/68">Destination goal</span>
-      <div className="relative mt-3 h-[8.25rem] w-[8.25rem]">
-        <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90" role="img" aria-label="Travel Fund is 58 percent funded">
-          <circle cx="60" cy="60" r="48" fill="none" stroke="currentColor" strokeWidth="8" className="text-[#d7e3da] dark:text-white/10" />
-          <m.circle
-            cx="60"
-            cy="60"
-            r="48"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            className="text-[#0d6948] dark:text-[#9cf0bf]"
-            initial={{ strokeDashoffset: reducedMotion ? targetOffset : circumference }}
-            whileInView={{ strokeDashoffset: targetOffset }}
+      <div className="mt-4 border-y border-[#b9cbbf] py-4 dark:border-white/16">
+        <div className="flex items-end justify-between gap-3">
+          <h3 id="money-flow-goal" className="text-[15px] font-semibold tracking-[-0.03em] text-[#142019] dark:text-[#f1f6f2]">Travel Fund</h3>
+          <span className="font-mono text-[22px] font-semibold leading-none tabular-nums text-[#123e2e] dark:text-[#baf4d2]">58%</span>
+        </div>
+        <div className="mt-4 h-1.5 overflow-hidden bg-[#cddbd1] dark:bg-white/10" role="img" aria-label="Travel Fund is 58 percent funded">
+          <m.div
+            className="h-full origin-left bg-[#19704f] dark:bg-[#9cf0bf]"
+            initial={reducedMotion ? { scaleX: 0.58 } : { scaleX: 0 }}
+            whileInView={{ scaleX: 0.58 }}
             viewport={{ once: false, amount: 0.6 }}
-            transition={{ duration: 1.05, delay: reducedMotion ? 0 : 0.2, ease: EASE_OUT }}
+            transition={{ duration: reducedMotion ? 0 : 0.9, delay: reducedMotion ? 0 : 0.2, ease: EASE_OUT }}
           />
-        </svg>
-        <div className="absolute inset-[0.9rem] grid place-items-center rounded-full border border-white/70 bg-white/74 shadow-[inset_0_0_24px_rgba(18,62,46,0.05)] backdrop-blur-lg dark:border-white/8 dark:bg-[#171e19]/82">
-          <span>
-            <span className="block font-mono text-[24px] font-semibold tabular-nums text-[#123e2e] dark:text-[#baf4d2]">58%</span>
-            <span className="mt-0.5 block text-[9px] font-bold uppercase tracking-[0.12em] text-[#53645b] dark:text-white/66">Funded</span>
-          </span>
+        </div>
+        <div className="mt-3 flex justify-between gap-3 font-mono text-[10px] font-semibold tabular-nums text-[#3d5e4c] dark:text-[#a7d9bd]">
+          <span>₱46,400 funded</span>
+          <span>₱80,000 goal</span>
         </div>
       </div>
-      <h3 id="money-flow-goal" className="mt-3 text-[15px] font-semibold tracking-[-0.03em] text-[#142019] dark:text-[#f1f6f2]">Travel Fund</h3>
-      <p className="mt-1 font-mono text-[11px] font-semibold tabular-nums text-[#3d5e4c] dark:text-[#a7d9bd]">₱46,400 of ₱80,000</p>
-      <p className="mt-1 text-[11px] font-medium text-[#53645b] dark:text-white/66">Target · December 2026</p>
+      <p className="mt-3 text-[11px] font-medium text-[#53645b] dark:text-white/66">₱33,600 remaining by December 2026</p>
     </section>
   );
 }
@@ -281,9 +262,7 @@ function KwartaInsight({ reducedMotion }: { reducedMotion: boolean }) {
       viewport={{ once: false, amount: 0.55 }}
       transition={{ duration: 0.55, delay: reducedMotion ? 0 : 0.4, ease: EASE_OUT }}
     >
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#9cf0bf] text-[#073322]">
-        <MaterialIcon icon="auto_awesome" className="text-[18px]" />
-      </span>
+      <span className="shrink-0 border-r border-white/18 pr-3 font-mono text-sm font-bold text-[#9cf0bf]" aria-hidden="true">K</span>
       <span className="min-w-0">
         <span className="flex items-center gap-2">
           <span className="text-[11px] font-bold">Kwarta AI</span>

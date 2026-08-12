@@ -32,7 +32,16 @@ export async function getAccessToken(): Promise<string | null> {
   try {
     // getSession exchanges OAuth verifiers, sets cookies, and injects the JWT via set-auth-jwt.
     const sessionResult = await authClient.getSession();
-    let token = sessionResult.data?.session?.token ?? null;
+    const session = sessionResult.data?.session;
+
+    // Anonymous public routes have no session. Calling token() here only creates
+    // a noisy 401 and cannot produce a JWT without a session to exchange.
+    if (!session) {
+      localStorage.removeItem("centra_token");
+      return null;
+    }
+
+    let token = session.token ?? null;
 
     // token() is a separate POST; fall back only if the session response had no JWT.
     if (!token) {
