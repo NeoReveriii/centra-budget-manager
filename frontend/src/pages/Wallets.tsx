@@ -411,7 +411,7 @@ const Wallets = () => {
         </div>
       </header>
       <aside
-        className="flex w-full max-w-[52rem] items-start gap-3 rounded-xl border border-outline-variant/70 bg-surface-container-low px-3.5 py-3 text-on-surface-variant dark:border-white/10 dark:bg-white/[0.04] sm:px-4"
+        className="flex w-full items-center gap-3 rounded-xl border border-outline-variant/70 bg-surface-container-low px-3.5 py-2.5 text-on-surface-variant dark:border-white/10 dark:bg-white/[0.04] sm:px-4"
         aria-label="Institution affiliation notice"
       >
         <span
@@ -420,11 +420,11 @@ const Wallets = () => {
         >
           info
         </span>
-        <div className="min-w-0 pt-0.5">
-          <p className="text-[0.78rem] font-extrabold leading-4 text-on-surface dark:text-slate-100">
+        <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-3 gap-y-0.5">
+          <p className="shrink-0 text-[0.78rem] font-extrabold leading-5 text-on-surface dark:text-slate-100">
             Original Centra account themes
           </p>
-          <p className="mt-1 max-w-[68ch] text-[0.75rem] leading-[1.55] text-on-surface-variant dark:text-slate-300">
+          <p className="min-w-0 flex-1 text-[0.75rem] leading-5 text-on-surface-variant dark:text-slate-300">
             Centra is not affiliated with any financial institution and does not store card numbers or payment credentials.
           </p>
         </div>
