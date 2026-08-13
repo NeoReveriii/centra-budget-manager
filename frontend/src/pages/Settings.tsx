@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useUiStore } from "@/stores/ui-store";
 import { StyledSelect } from "@/components/ui/styled-select";
 import { Button } from "@/components/ui/button";
@@ -264,7 +265,7 @@ const Settings = () => {
             <p className="text-sm font-bold text-on-surface">
               Privacy Policy
             </p>
-            <button className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-container group">
+            <Link to="/privacy" className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-container group">
               View Policy
               <span
                 className="material-symbols-outlined group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
@@ -272,13 +273,13 @@ const Settings = () => {
               >
                 open_in_new
               </span>
-            </button>
+            </Link>
           </div>
           <div className="flex cursor-pointer items-center justify-between gap-4 p-4 transition-colors hover:bg-surface-container-low group/row">
             <p className="text-sm font-bold text-on-surface">
               Terms of Use
             </p>
-            <button className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-container group">
+            <Link to="/terms" className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-container group">
               View Terms
               <span
                 className="material-symbols-outlined group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
@@ -286,7 +287,7 @@ const Settings = () => {
               >
                 open_in_new
               </span>
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -305,10 +306,10 @@ const Settings = () => {
           <div className="flex items-center justify-between gap-4 bg-error-container/10 p-4 transition-colors hover:bg-error-container/30">
             <div className="min-w-0">
               <p className="text-sm font-bold text-on-error-container">
-                Delete Account
+                Delete Centra Data
               </p>
               <p className="text-xs leading-5 text-on-surface-variant">
-                Permanently remove your account and all associated budget data.
+                Permanently remove your Centra profile, wallets, transactions, goals, and saved chats.
               </p>
             </div>
             <button
@@ -320,18 +321,11 @@ const Settings = () => {
               }}
               className="shrink-0 rounded-lg bg-error px-3 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-[#93000a] hover:shadow-md active:scale-95"
             >
-              Delete Account
+              Delete Data
             </button>
           </div>
         </div>
       </section>
-
-      {/* Branding Footer */}
-      <footer className="mt-8 border-t border-outline-variant/30 pt-6 text-center">
-        <p className="font-label-caps text-outline uppercase tracking-tighter opacity-50">
-          Centra Institutional Suite v4.2.0
-        </p>
-      </footer>
 
       <Dialog
         open={deleteOpen}
@@ -346,9 +340,9 @@ const Settings = () => {
       >
         <DialogContent className="max-w-[460px]">
           <DialogHeader>
-            <DialogTitle>Delete your account?</DialogTitle>
+            <DialogTitle>Delete your Centra data?</DialogTitle>
             <DialogDescription>
-              This permanently deletes your wallets, transactions, goals, and saved financial data. This action cannot be undone.
+              This permanently deletes your Centra profile, wallets, transactions, goals, and saved chats. Your separate authentication-provider identity may remain, and signing in again may create a new empty Centra profile. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
 
@@ -382,7 +376,7 @@ const Settings = () => {
               onClick={handleDeleteAccount}
               disabled={deleteConfirmation.trim() !== "DELETE" || isDeleting}
             >
-              {isDeleting ? "Deleting..." : "Delete permanently"}
+              {isDeleting ? "Deleting..." : "Delete data permanently"}
             </Button>
           </DialogFooter>
         </DialogContent>

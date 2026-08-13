@@ -10,13 +10,7 @@ if (!authUrl) {
 
 export const authClient = createAuthClient(authUrl || "http://localhost");
 
-function getPersistedToken(): string | null {
-  try {
-    return localStorage.getItem("centra_token");
-  } catch {
-    return null;
-  }
-}
+let inMemoryAccessToken: string | null = null;
 
 export async function resetAuthSession(): Promise<void> {
   clearPersistedSession();
@@ -24,9 +18,8 @@ export async function resetAuthSession(): Promise<void> {
 }
 
 export async function getAccessToken(): Promise<string | null> {
-  const persistedToken = getPersistedToken();
-  if (persistedToken) {
-    return persistedToken;
+  if (inMemoryAccessToken) {
+    return inMemoryAccessToken;
   }
 
   try {
@@ -37,7 +30,7 @@ export async function getAccessToken(): Promise<string | null> {
     // Anonymous public routes have no session. Calling token() here only creates
     // a noisy 401 and cannot produce a JWT without a session to exchange.
     if (!session) {
-      localStorage.removeItem("centra_token");
+      inMemoryAccessToken = null;
       return null;
     }
 
@@ -50,13 +43,13 @@ export async function getAccessToken(): Promise<string | null> {
     }
 
     if (token) {
-      localStorage.setItem("centra_token", token);
+      inMemoryAccessToken = token;
       return token;
     }
 
-    localStorage.removeItem("centra_token");
+    inMemoryAccessToken = null;
   } catch {
-    localStorage.removeItem("centra_token");
+    inMemoryAccessToken = null;
   }
 
   return null;
@@ -65,14 +58,13 @@ export async function getAccessToken(): Promise<string | null> {
 export async function persistSessionToken(): Promise<string | null> {
   const token = await getAccessToken();
   if (!token) {
-    localStorage.removeItem("centra_token");
+    inMemoryAccessToken = null;
   }
   return token;
 }
 
 export function clearPersistedSession(): void {
-  localStorage.removeItem("centra_token");
-  localStorage.removeItem("centra_user");
+  inMemoryAccessToken = null;
 }
 
 export async function requestPasswordReset(

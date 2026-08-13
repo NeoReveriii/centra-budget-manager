@@ -6,7 +6,7 @@ import {
   updateGoalSchema,
 } from './schemas.js';
 import { parseBody } from './validate.js';
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { VercelRequest, VercelResponse } from './http-types.js';
 
 interface ColumnRow {
   column_name: string;

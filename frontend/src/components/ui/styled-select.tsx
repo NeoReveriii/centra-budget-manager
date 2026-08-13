@@ -16,6 +16,8 @@ interface StyledSelectProps {
   className?: string;
   disabled?: boolean;
   required?: boolean;
+  searchable?: boolean;
+  searchPlaceholder?: string;
   "aria-label"?: string;
   "aria-invalid"?: boolean;
   "aria-describedby"?: string;
@@ -30,27 +32,40 @@ export function StyledSelect({
   className,
   disabled = false,
   required = false,
+  searchable = false,
+  searchPlaceholder = "Search options...",
   "aria-label": ariaLabel,
   "aria-invalid": ariaInvalid,
   "aria-describedby": ariaDescribedBy,
 }: StyledSelectProps) {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
   const [activeIndex, setActiveIndex] = useState(() =>
     Math.max(0, options.findIndex((option) => option.value === value)),
   );
   const wrapperRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const menuId = useId();
   const selectedIndex = options.findIndex((option) => option.value === value);
   const selectedOption = options[selectedIndex];
+  const filteredOptions = searchable && query.trim()
+    ? options.filter((option) => option.label.toLowerCase().includes(query.trim().toLowerCase()))
+    : options;
+
+  useEffect(() => {
+    if (!open || !searchable) return;
+    const frame = window.requestAnimationFrame(() => searchInputRef.current?.focus());
+    return () => window.cancelAnimationFrame(frame);
+  }, [open, searchable]);
 
   useEffect(() => {
     if (!open) return;
     const updatePosition = () => {
       const rect = buttonRef.current?.getBoundingClientRect();
       if (!rect) return;
-      const menuHeight = Math.min(options.length * 44 + 8, 280);
+      const menuHeight = Math.min(options.length * 44 + (searchable ? 64 : 8), searchable ? 352 : 280);
       const roomBelow = window.innerHeight - rect.bottom;
       const top = roomBelow < menuHeight && rect.top > menuHeight
         ? rect.top - menuHeight - 6
@@ -71,7 +86,7 @@ export function StyledSelect({
       window.removeEventListener("resize", updatePosition);
       window.removeEventListener("scroll", updatePosition, true);
     };
-  }, [open, options.length]);
+  }, [open, options.length, searchable]);
 
   useEffect(() => {
     if (!open) return;
@@ -86,10 +101,11 @@ export function StyledSelect({
   }, [open, menuId]);
 
   function choose(index: number) {
-    const option = options[index];
+    const option = filteredOptions[index];
     if (!option) return;
     onChange(option.value);
-    setActiveIndex(index);
+    setActiveIndex(Math.max(0, options.findIndex((item) => item.value === option.value)));
+    setQuery("");
     setOpen(false);
     buttonRef.current?.focus();
   }
@@ -99,10 +115,12 @@ export function StyledSelect({
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       event.preventDefault();
       const direction = event.key === "ArrowDown" ? 1 : -1;
+      const optionCount = open ? filteredOptions.length : options.length;
+      if (!optionCount) return;
       const next = open
-        ? (activeIndex + direction + options.length) % options.length
+        ? (activeIndex + direction + optionCount) % optionCount
         : Math.max(0, selectedIndex) + (event.key === "ArrowDown" ? 1 : -1);
-      setActiveIndex(Math.max(0, Math.min(options.length - 1, next)));
+      setActiveIndex(Math.max(0, Math.min(optionCount - 1, next)));
       setOpen(true);
     } else if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
@@ -136,6 +154,7 @@ export function StyledSelect({
         aria-invalid={ariaInvalid || undefined}
         aria-describedby={ariaDescribedBy}
         onClick={() => {
+          setQuery("");
           setActiveIndex(Math.max(0, selectedIndex));
           setOpen((current) => !current);
         }}
@@ -163,10 +182,48 @@ export function StyledSelect({
               aria-labelledby={id}
               onPointerDown={(event) => event.stopPropagation()}
               onMouseDown={(event) => event.stopPropagation()}
-              className="pointer-events-auto fixed z-[300] max-h-[280px] overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-[0_16px_38px_rgba(15,23,42,0.16)] dark:border-[#343434] dark:bg-[#181818] dark:shadow-[0_18px_44px_rgba(0,0,0,0.65)]"
+              onWheel={(event) => event.stopPropagation()}
+              className={cn(
+                "pointer-events-auto fixed z-[300] overflow-y-auto overscroll-contain touch-pan-y rounded-xl border border-slate-200 bg-white p-1.5 shadow-[0_16px_38px_rgba(15,23,42,0.16)] dark:border-[#343434] dark:bg-[#181818] dark:shadow-[0_18px_44px_rgba(0,0,0,0.65)]",
+                searchable ? "max-h-[min(22rem,calc(100vh-2rem))]" : "max-h-[280px]",
+              )}
               style={menuStyle}
             >
-              {options.map((option, index) => (
+              {searchable ? (
+                <div className="sticky top-0 z-10 bg-white p-1 pb-2 dark:bg-[#181818]">
+                  <div className="relative">
+                    <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-slate-400" aria-hidden="true">search</span>
+                    <input
+                      ref={searchInputRef}
+                      type="search"
+                      value={query}
+                      onChange={(event) => {
+                        setQuery(event.target.value);
+                        setActiveIndex(0);
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Escape") {
+                          event.preventDefault();
+                          setOpen(false);
+                          buttonRef.current?.focus();
+                        } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                          event.preventDefault();
+                          if (!filteredOptions.length) return;
+                          const direction = event.key === "ArrowDown" ? 1 : -1;
+                          setActiveIndex((current) => (current + direction + filteredOptions.length) % filteredOptions.length);
+                        } else if (event.key === "Enter" && filteredOptions.length) {
+                          event.preventDefault();
+                          choose(activeIndex);
+                        }
+                      }}
+                      placeholder={searchPlaceholder}
+                      aria-label={searchPlaceholder}
+                      className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-3 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-[#3a3a3a] dark:bg-[#111] dark:text-white"
+                    />
+                  </div>
+                </div>
+              ) : null}
+              {filteredOptions.map((option, index) => (
                 <button
                   key={option.value}
                   type="button"
@@ -189,6 +246,9 @@ export function StyledSelect({
                   {option.value === value ? <span className="material-symbols-outlined text-[18px]" aria-hidden="true">check</span> : null}
                 </button>
               ))}
+              {!filteredOptions.length ? (
+                <p className="px-3 py-5 text-center text-sm text-slate-500 dark:text-slate-400">No matching options</p>
+              ) : null}
             </div>,
             document.body,
           )

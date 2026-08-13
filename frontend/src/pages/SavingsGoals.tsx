@@ -227,7 +227,10 @@ const SavingsGoals: React.FC = () => {
           </DialogTrigger>
 
           {/* ── Add Goal Dialog ── */}
-          <DialogContent className="sm:max-w-[480px]">
+          <DialogContent
+            className="sm:max-w-[480px]"
+            onInteractOutside={(event) => event.preventDefault()}
+          >
             <form onSubmit={handleAddGoal} noValidate>
               <DialogHeader>
                 <DialogTitle>Create New Goal</DialogTitle>

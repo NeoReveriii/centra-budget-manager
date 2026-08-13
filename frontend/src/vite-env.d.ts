@@ -2,6 +2,7 @@
 
 interface ImportMetaEnv {
   readonly VITE_NEON_AUTH_URL: string;
+  readonly VITE_PRIVACY_CONTACT?: string;
 }
 
 interface ImportMeta {

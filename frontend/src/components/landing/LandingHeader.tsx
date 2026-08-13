@@ -128,7 +128,7 @@ export default function LandingHeader() {
                   <m.span
                     layoutId={reduceMotion ? undefined : "landing-nav-slider"}
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-1 rounded-full bg-[#e5f2e9] shadow-[inset_0_0_0_1px_rgba(25,112,79,0.08)] dark:bg-white/9 dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]"
+                    className="pointer-events-none absolute inset-x-4 bottom-1 h-0.5 rounded-full bg-[#19704f] dark:bg-[#9cf0bf]"
                     transition={
                       reduceMotion
                         ? { duration: 0 }

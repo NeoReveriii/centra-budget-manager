@@ -20,6 +20,7 @@ interface RegisterFieldErrors {
   lastName?: string;
   email?: string;
   password?: string;
+  terms?: string;
 }
 
 export default function RegisterPage() {
@@ -33,6 +34,7 @@ export default function RegisterPage() {
   const [fieldErrors, setFieldErrors] = useState<RegisterFieldErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -43,6 +45,7 @@ export default function RegisterPage() {
       lastName: validateRequiredValue(lastName, "Enter your last name."),
       email: validateEmailAddress(email),
       password: validatePassword(password, 8),
+      terms: acceptedTerms ? "" : "Review and accept the Terms of Use and Privacy Notice to continue.",
     };
     setFieldErrors(nextFieldErrors);
 
@@ -51,6 +54,7 @@ export default function RegisterPage() {
       [nextFieldErrors.lastName, "register-last-name"],
       [nextFieldErrors.email, "register-email"],
       [nextFieldErrors.password, "register-password"],
+      [nextFieldErrors.terms, "register-terms"],
     ].find(([message]) => Boolean(message))?.[1];
 
     if (firstInvalidId) {
@@ -74,6 +78,14 @@ export default function RegisterPage() {
 
   async function handleSocial(provider: "google" | "apple") {
     setError("");
+    if (!acceptedTerms) {
+      setFieldErrors((current) => ({
+        ...current,
+        terms: "Review and accept the Terms of Use and Privacy Notice to continue.",
+      }));
+      document.getElementById("register-terms")?.focus();
+      return;
+    }
     setIsLoading(true);
 
     try {
@@ -99,7 +111,31 @@ export default function RegisterPage() {
         </div>
       )}
 
-      <SocialAuthButtons onSocial={handleSocial} disabled={isLoading} />
+      <div className="mb-5 rounded-xl border border-slate-300 bg-slate-50 p-4">
+        <label htmlFor="register-terms" className="flex cursor-pointer items-start gap-3 text-sm font-medium leading-6 text-slate-700">
+          <input
+            id="register-terms"
+            type="checkbox"
+            checked={acceptedTerms}
+            onChange={(event) => {
+              setAcceptedTerms(event.target.checked);
+              if (event.target.checked) {
+                setFieldErrors((current) => ({ ...current, terms: "" }));
+              }
+            }}
+            aria-invalid={Boolean(fieldErrors.terms)}
+            aria-describedby={fieldErrors.terms ? "register-terms-error" : undefined}
+            className="mt-1 h-4 w-4 shrink-0 accent-primary"
+          />
+          <span>
+            I have read and agree to the <Link to="/terms" target="_blank" className="font-extrabold text-primary underline underline-offset-4">Terms of Use</Link>
+            {" "}and acknowledge the <Link to="/privacy" target="_blank" className="font-extrabold text-primary underline underline-offset-4">Privacy Notice</Link>, including Kwarta AI processing.
+          </span>
+        </label>
+        <FieldError id="register-terms-error" message={fieldErrors.terms} />
+      </div>
+
+      <SocialAuthButtons onSocial={handleSocial} disabled={isLoading || !acceptedTerms} />
 
       <div className="my-6 flex items-center gap-4">
         <div className="h-px flex-1 bg-slate-300" />
@@ -235,13 +271,6 @@ export default function RegisterPage() {
         </Button>
       </form>
 
-      <p className="mt-5 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-center text-xs font-medium leading-5 text-slate-500">
-        <span>By continuing, you agree to our</span>
-        <a href="/views/terms.html" className="font-bold text-slate-700 transition-colors duration-200 hover:text-primary hover:underline">Terms of Service</a>
-        <span>and</span>
-        <a href="/views/privacy.html" className="font-bold text-slate-700 transition-colors duration-200 hover:text-primary hover:underline">Privacy Policy</a>
-        <span>.</span>
-      </p>
       <p className="mt-5 text-center text-sm font-medium text-slate-600">
         Already have an account?
         <Link to="/login" className="ml-1 inline-block font-bold text-primary transition-[color,transform] duration-200 hover:-translate-y-px hover:text-primary-container hover:underline motion-reduce:transition-none motion-reduce:hover:translate-y-0">Sign in</Link>

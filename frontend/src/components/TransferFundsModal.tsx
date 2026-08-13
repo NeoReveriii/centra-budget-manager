@@ -145,7 +145,11 @@ export function TransferFundsModal() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-[448px] p-0 gap-0 overflow-hidden shadow-2xl" showCloseButton={false}>
+      <DialogContent
+        className="max-w-[448px] gap-0 overflow-hidden p-0 shadow-2xl"
+        showCloseButton={false}
+        onInteractOutside={(event) => event.preventDefault()}
+      >
         <DialogHeader className="border-b border-slate-100 bg-[linear-gradient(180deg,rgba(248,250,252,0.98),rgba(255,255,255,0.92))] p-6 pb-5 text-left dark:bg-none dark:bg-[#181818]">
           <div>
             <DialogTitle className="text-xl font-bold tracking-tight text-slate-900">

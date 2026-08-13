@@ -7,7 +7,7 @@ import {
   updateTransactionSchema,
 } from './schemas.js';
 import { parseBody } from './validate.js';
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { VercelRequest, VercelResponse } from './http-types.js';
 
 interface ColumnRow {
   column_name: string;
@@ -373,11 +373,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!id) return res.status(400).json({ error: 'Transaction ID required' });
 
       const patchDescription = putBody.description ?? putBody.title ?? null;
-      const patchType = putBody.type ?? null;
-      const patchWallet = putBody.wallet_type ?? putBody.wallet ?? null;
-      const patchWalletId = putBody.wallet_id ?? null;
+      const patchType = putBody.type ? normalizeType(putBody.type) : null;
+      const requestedWalletName = putBody.wallet_type ?? putBody.wallet ?? null;
+      const requestedWalletId = putBody.wallet_id ?? null;
       const patchCategory = putBody.category ?? null;
       const patchAmount = putBody.amount ?? null;
+
+      let patchWallet = requestedWalletName;
+      let patchWalletId = requestedWalletId;
+      if (requestedWalletId != null || requestedWalletName != null) {
+        const walletRows = requestedWalletId != null
+          ? await sql`
+            SELECT wallet_id, name, status
+            FROM wallets
+            WHERE account_id = ${account.acc_id}
+              AND wallet_id = ${requestedWalletId}
+            LIMIT 1
+          ` as TransactionWalletRow[]
+          : await sql`
+            SELECT wallet_id, name, status
+            FROM wallets
+            WHERE account_id = ${account.acc_id}
+              AND LOWER(name) = LOWER(${requestedWalletName})
+            LIMIT 1
+          ` as TransactionWalletRow[];
+
+        const wallet = walletRows[0];
+        if (!wallet) {
+          return res.status(404).json({ error: 'Wallet not found' });
+        }
+        if (String(wallet.status || '').toUpperCase() !== 'ACTIVE') {
+          return res.status(400).json({ error: `Wallet "${wallet.name}" is archived` });
+        }
+        patchWalletId = wallet.wallet_id;
+        patchWallet = wallet.name;
+      }
 
       const updated = await sql`
         UPDATE transactions
@@ -416,7 +446,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       message: err instanceof Error ? err.message : String(err),
       stack: err instanceof Error ? err.stack : undefined
     });
-    const details = err instanceof Error ? err.message : String(err);
-    res.status(500).json({ error: 'Database error', details });
+    res.status(500).json({ error: 'Internal server error' });
   }
 }

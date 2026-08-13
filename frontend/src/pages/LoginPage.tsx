@@ -171,13 +171,13 @@ export default function LoginPage() {
 
       <p className="mt-5 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-center text-xs font-medium leading-5 text-slate-500">
         <span>By continuing, you agree to our</span>
-        <a href="/views/terms.html" className="font-bold text-slate-700 transition-colors duration-200 hover:text-primary hover:underline">
+        <Link to="/terms" className="font-bold text-slate-700 transition-colors duration-200 hover:text-primary hover:underline">
           Terms of Service
-        </a>
+        </Link>
         <span>and</span>
-        <a href="/views/privacy.html" className="font-bold text-slate-700 transition-colors duration-200 hover:text-primary hover:underline">
+        <Link to="/privacy" className="font-bold text-slate-700 transition-colors duration-200 hover:text-primary hover:underline">
           Privacy Policy
-        </a>
+        </Link>
         <span>.</span>
       </p>
 

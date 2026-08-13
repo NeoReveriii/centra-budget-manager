@@ -320,8 +320,8 @@ export function PlatformShowcase() {
 }
 
 const walletBars = [
-  { name: "BPI", value: 68240.5, height: 0.92 },
-  { name: "Maya", value: 21936.25, height: 0.52 },
+  { name: "Savings", value: 68240.5, height: 0.92 },
+  { name: "Digital", value: 21936.25, height: 0.52 },
   { name: "Cash", value: 8274, height: 0.28 },
 ] as const;
 
@@ -329,24 +329,24 @@ function FinancialMotionStage() {
   const reduceMotion = useLandingReducedMotion();
 
   return (
-    <div className="overflow-hidden rounded-[1rem] bg-[#0d130f] text-[#eff5f0] shadow-[0_36px_90px_rgba(13,55,37,0.16)] ring-1 ring-[#20342a] dark:ring-white/10">
+    <div className="overflow-hidden rounded-[1rem] bg-[#f1f6f2] text-[#142019] shadow-[0_36px_90px_rgba(35,83,61,0.13)] ring-1 ring-[#bfd0c5] dark:bg-[#0d130f] dark:text-[#eff5f0] dark:shadow-[0_36px_90px_rgba(4,20,12,0.28)] dark:ring-white/10">
       <div className="grid gap-10 px-5 pb-8 pt-6 sm:px-8 sm:pb-10 lg:grid-cols-[1.12fr_0.58fr_0.92fr] lg:gap-8 lg:px-12 lg:pb-12 lg:pt-9">
         <section aria-label="Sample connected wallet balances" className="min-w-0">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <p className="text-sm font-semibold text-white/88">Connected balance</p>
-              <p className="mt-1 text-xs text-white/44">Three active wallets</p>
+              <p className="text-sm font-semibold text-[#183e30] dark:text-white/88">Connected balance</p>
+              <p className="mt-1 text-xs text-[#6c7b72] dark:text-white/44">Three active wallets</p>
             </div>
             <AnimatedNumber
               value={98450.75}
               decimals={2}
               prefix="₱"
               delay={0.48}
-              className="font-mono text-base font-semibold tabular-nums text-[#baf4d2] sm:text-lg"
+              className="font-mono text-base font-semibold tabular-nums text-[#126344] dark:text-[#baf4d2] sm:text-lg"
             />
           </div>
 
-          <div className="mt-8 flex h-64 items-end gap-5 border-b border-white/16 px-2 sm:gap-8 sm:px-4">
+          <div className="mt-8 flex h-64 items-end gap-5 border-b border-[#b9cbbf] px-2 dark:border-white/16 sm:gap-8 sm:px-4">
             {walletBars.map((wallet, index) => (
               <div key={wallet.name} className="flex h-full min-w-0 flex-1 flex-col justify-end">
                 <AnimatedNumber
@@ -354,7 +354,7 @@ function FinancialMotionStage() {
                   decimals={2}
                   prefix="₱"
                   delay={0.1 + index * 0.1}
-                  className="mb-3 block truncate font-mono text-[0.68rem] font-semibold tabular-nums text-white/64 sm:text-xs"
+                  className="mb-3 block truncate font-mono text-[0.68rem] font-semibold tabular-nums text-[#51645a] dark:text-white/64 sm:text-xs"
                 />
                 <m.div
                   initial={reduceMotion ? { scaleY: wallet.height } : { scaleY: 0 }}
@@ -365,63 +365,63 @@ function FinancialMotionStage() {
                     delay: reduceMotion ? 0 : 0.08 + index * 0.1,
                     ease: EASE_OUT,
                   }}
-                  className="h-[11.5rem] origin-bottom bg-[#74dca1] shadow-[inset_0_1px_0_rgba(255,255,255,0.36)]"
+                  className="h-[11.5rem] origin-bottom bg-[#4fbd80] shadow-[inset_0_1px_0_rgba(255,255,255,0.48)] dark:bg-[#74dca1]"
                 />
-                <span className="mt-3 text-xs font-semibold text-white/70">{wallet.name}</span>
+                <span className="mt-3 text-xs font-semibold text-[#344b40] dark:text-white/70">{wallet.name}</span>
               </div>
             ))}
           </div>
         </section>
 
         <section aria-label="Monthly contribution" className="flex min-w-0 flex-col justify-center lg:pt-16">
-          <p className="text-xs font-medium text-white/42">This month</p>
+          <p className="text-xs font-medium text-[#6c7b72] dark:text-white/42">This month</p>
           <AnimatedNumber
             value={3200}
             prefix="₱"
             delay={0.78}
-            className="mt-2 font-mono text-[clamp(2rem,4vw,3.4rem)] font-semibold leading-none tracking-[-0.055em] tabular-nums text-white"
+            className="mt-2 font-mono text-[clamp(2rem,4vw,3.4rem)] font-semibold leading-none tracking-[-0.055em] tabular-nums text-[#153a2c] dark:text-white"
           />
-          <p className="mt-3 max-w-[12rem] text-sm leading-6 text-white/50">moves from your available balance toward Travel.</p>
-          <div className="relative mt-8 h-px bg-white/12">
+          <p className="mt-3 max-w-[12rem] text-sm leading-6 text-[#607168] dark:text-white/50">moves from your available balance toward Travel.</p>
+          <div className="relative mt-8 h-px bg-[#b9cbbf] dark:bg-white/12">
             <m.span
               initial={reduceMotion ? { scaleX: 1 } : { scaleX: 0 }}
               whileInView={{ scaleX: 1 }}
               viewport={{ once: false, amount: 0.8 }}
               transition={{ duration: reduceMotion ? 0 : 0.62, delay: reduceMotion ? 0 : 0.76, ease: EASE_OUT }}
-              className="absolute inset-0 origin-left bg-[#9cf0bf]"
+              className="absolute inset-0 origin-left bg-[#2c9b6d] dark:bg-[#9cf0bf]"
             />
             <m.span
               initial={reduceMotion ? { x: "calc(100% - 0.75rem)", opacity: 1 } : { x: 0, opacity: 0 }}
               whileInView={{ x: "calc(100% - 0.75rem)", opacity: 1 }}
               viewport={{ once: false, amount: 0.8 }}
               transition={{ duration: reduceMotion ? 0 : 0.72, delay: reduceMotion ? 0 : 0.78, ease: EASE_OUT }}
-              className="absolute -top-1.5 left-0 h-3 w-3 rounded-full bg-[#9cf0bf]"
+              className="absolute -top-1.5 left-0 h-3 w-3 rounded-full bg-[#2c9b6d] dark:bg-[#9cf0bf]"
             />
           </div>
         </section>
 
-        <section aria-label="Travel Fund progress" className="min-w-0 border-t border-white/12 pt-8 lg:border-l lg:border-t-0 lg:pl-9 lg:pt-0">
+        <section aria-label="Travel Fund progress" className="min-w-0 border-t border-[#c7d5cc] pt-8 dark:border-white/12 lg:border-l lg:border-t-0 lg:pl-9 lg:pt-0">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-semibold text-white/88">Travel fund</p>
-              <p className="mt-1 text-xs text-white/44">Target by December</p>
+              <p className="text-sm font-semibold text-[#183e30] dark:text-white/88">Travel fund</p>
+              <p className="mt-1 text-xs text-[#6c7b72] dark:text-white/44">Target by December</p>
             </div>
             <AnimatedNumber
               value={58}
               suffix="%"
               delay={0.94}
-              className="font-mono text-2xl font-semibold tabular-nums text-[#baf4d2]"
+              className="font-mono text-2xl font-semibold tabular-nums text-[#126344] dark:text-[#baf4d2]"
             />
           </div>
 
           <div className="mt-8 flex h-64 items-end gap-6">
-            <div className="relative h-full w-[clamp(5.5rem,10vw,8rem)] border-b border-white/16">
+            <div className="relative h-full w-[clamp(5.5rem,10vw,8rem)] border-b border-[#b9cbbf] dark:border-white/16">
               <m.div
                 initial={reduceMotion ? { scaleY: 0.58 } : { scaleY: 0 }}
                 whileInView={{ scaleY: 0.58 }}
                 viewport={{ once: false, amount: 0.45 }}
                 transition={{ duration: reduceMotion ? 0 : 0.8, delay: reduceMotion ? 0 : 0.88, ease: EASE_OUT }}
-                className="absolute inset-x-0 bottom-0 h-full origin-bottom bg-[#9cf0bf]"
+                className="absolute inset-x-0 bottom-0 h-full origin-bottom bg-[#82dca7] dark:bg-[#9cf0bf]"
               />
             </div>
             <div className="pb-1">
@@ -429,16 +429,16 @@ function FinancialMotionStage() {
                 value={46400}
                 prefix="₱"
                 delay={0.98}
-                className="block font-mono text-2xl font-semibold tabular-nums text-white sm:text-3xl"
+                className="block font-mono text-2xl font-semibold tabular-nums text-[#153a2c] dark:text-white sm:text-3xl"
               />
-              <p className="mt-2 text-sm text-white/46">of ₱80,000</p>
-              <p className="mt-8 max-w-[11rem] text-sm leading-6 text-white/58">₱33,600 remains. The next contribution is already in context.</p>
+              <p className="mt-2 text-sm text-[#65766c] dark:text-white/46">of ₱80,000</p>
+              <p className="mt-8 max-w-[11rem] text-sm leading-6 text-[#53665b] dark:text-white/58">₱33,600 remains. The next contribution is already in context.</p>
             </div>
           </div>
         </section>
       </div>
 
-      <div className="grid border-t border-white/12 md:grid-cols-3">
+      <div className="grid border-t border-[#c7d5cc] dark:border-white/12 md:grid-cols-3">
         {[
           ["Wallets stay connected", "Bank, e-wallet, and cash resolve into one dependable balance."],
           ["Movement stays visible", "Each contribution has a source, amount, and destination."],
@@ -450,10 +450,10 @@ function FinancialMotionStage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.7 }}
             transition={{ duration: reduceMotion ? 0 : 0.42, delay: reduceMotion ? 0 : 0.12 + index * 0.08, ease: EASE_OUT }}
-            className="px-5 py-6 md:border-l md:border-white/12 md:first:border-l-0 sm:px-8"
+            className="px-5 py-6 md:border-l md:border-[#c7d5cc] md:first:border-l-0 dark:md:border-white/12 sm:px-8"
           >
-            <h3 className="text-lg font-semibold tracking-[-0.03em] text-white/92">{title}</h3>
-            <p className="mt-2 max-w-[23rem] text-sm leading-6 text-white/50">{description}</p>
+            <h3 className="text-lg font-semibold tracking-[-0.03em] text-[#183e30] dark:text-white/92">{title}</h3>
+            <p className="mt-2 max-w-[23rem] text-sm leading-6 text-[#607168] dark:text-white/50">{description}</p>
           </m.div>
         ))}
       </div>
@@ -522,17 +522,17 @@ export function KwartaSection() {
           whileInView={{ opacity: 1, x: 0, scale: 1 }}
           viewport={{ once: false, amount: 0.3 }}
           transition={{ type: "spring", stiffness: 120, damping: 22, mass: 0.9 }}
-          className="rounded-[1.7rem] bg-[#111411] p-4 text-[#eff5f0] shadow-[0_30px_74px_rgba(4,20,12,0.2)] sm:p-6"
+          className="rounded-[1.7rem] bg-[#f8fbf8] p-4 text-[#142019] shadow-[0_30px_74px_rgba(35,83,61,0.14)] ring-1 ring-[#c6d5cb] dark:bg-[#111411] dark:text-[#eff5f0] dark:shadow-[0_30px_74px_rgba(4,20,12,0.28)] dark:ring-white/10 sm:p-6"
         >
-          <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div className="flex items-center justify-between border-b border-[#d3ddd6] pb-4 dark:border-white/10">
             <div className="flex items-center gap-3">
-              <Bot className="h-5 w-5 text-[#9cf0bf]" strokeWidth={1.7} aria-hidden="true" />
+              <Bot className="h-5 w-5 text-[#19704f] dark:text-[#9cf0bf]" strokeWidth={1.7} aria-hidden="true" />
               <div>
                 <p className="text-sm font-semibold">Kwarta AI</p>
-                <p className="mt-0.5 text-xs text-white/45">Demo insight</p>
+                <p className="mt-0.5 text-xs text-[#738078] dark:text-white/45">Demo insight</p>
               </div>
             </div>
-            <span className="rounded-full border border-white/12 px-3 py-1 text-xs text-white/54">This month</span>
+            <span className="rounded-full border border-[#cbd7cf] px-3 py-1 text-xs text-[#5f7066] dark:border-white/12 dark:text-white/54">This month</span>
           </div>
 
           <m.div
@@ -540,7 +540,7 @@ export function KwartaSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.7 }}
             transition={{ duration: 0.5, delay: 0.18, ease: EASE_OUT }}
-            className="ml-auto mt-6 w-fit max-w-[82%] rounded-[1.2rem] rounded-br-md bg-white/9 px-4 py-3 text-sm leading-6 text-white/82"
+            className="ml-auto mt-6 w-fit max-w-[82%] rounded-[1.2rem] rounded-br-md bg-[#e5ebe7] px-4 py-3 text-sm leading-6 text-[#33483d] dark:bg-white/9 dark:text-white/82"
           >
             Can I add more to my travel goal this month?
           </m.div>
@@ -550,7 +550,7 @@ export function KwartaSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.55 }}
             transition={{ duration: 0.55, delay: 0.32, ease: EASE_OUT }}
-            className="mt-4 max-w-[92%] rounded-[1.2rem] rounded-bl-md bg-[#183126] px-5 py-4 text-sm leading-6 text-[#daf8e6]"
+            className="mt-4 max-w-[92%] rounded-[1.2rem] rounded-bl-md bg-[#d9eee1] px-5 py-4 text-sm leading-6 text-[#164732] dark:bg-[#183126] dark:text-[#daf8e6]"
           >
             Your dining spend is ₱1,840 above its 3-month average. Moving ₱1,200 to Travel keeps ₱6,480 available after planned bills.
           </m.div>
@@ -561,9 +561,9 @@ export function KwartaSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: false, amount: 0.65 }}
               transition={{ duration: 0.45, delay: 0.44, ease: EASE_OUT }}
-              className="rounded-[1.1rem] border border-white/10 bg-white/5 p-4"
+              className="rounded-[1.1rem] border border-[#ccd9d0] bg-[#eef3ef] p-4 dark:border-white/10 dark:bg-white/5"
             >
-              <p className="text-xs text-white/45">Available after bills</p>
+              <p className="text-xs text-[#6d7c73] dark:text-white/45">Available after bills</p>
               <AnimatedNumber
                 value={6480}
                 prefix="₱"
@@ -576,7 +576,7 @@ export function KwartaSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: false, amount: 0.65 }}
               transition={{ duration: 0.45, delay: 0.5, ease: EASE_OUT }}
-              className="rounded-[1.1rem] bg-[#9cf0bf] p-4 text-[#062117]"
+              className="rounded-[1.1rem] bg-[#b7ebca] p-4 text-[#062117] dark:bg-[#9cf0bf]"
             >
               <p className="text-xs text-[#174c36]">Suggested contribution</p>
               <AnimatedNumber

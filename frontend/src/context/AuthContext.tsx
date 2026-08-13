@@ -51,43 +51,26 @@ async function syncLocalProfile(): Promise<{
   if (!token) return null;
 
   const user = await fetchCurrentUser();
-  localStorage.setItem("centra_user", JSON.stringify(user));
   return { user, token };
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserProfile | null>(() => {
-    try {
-      const savedUser = localStorage.getItem("centra_user");
-      return savedUser ? (JSON.parse(savedUser) as UserProfile) : null;
-    } catch {
-      return null;
-    }
-  });
-  const [token, setToken] = useState<string | null>(() => {
-    try {
-      return localStorage.getItem("centra_token");
-    } catch {
-      return null;
-    }
-  });
-  // Cached sessions render immediately; restoreSession verifies them in the background.
-  const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function restoreSession() {
       try {
-        const savedUser = localStorage.getItem("centra_user");
         const synced = await syncLocalProfile();
         if (synced) {
           setToken(synced.token);
           setUser(synced.user);
           return;
         }
-
-        if (savedUser) {
-          clearPersistedSession();
-        }
+        clearPersistedSession();
+        setToken(null);
+        setUser(null);
       } catch {
         clearPersistedSession();
         setToken(null);

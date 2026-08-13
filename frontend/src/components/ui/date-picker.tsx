@@ -1,8 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const DAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+const CALENDAR_WIDTH = 280;
+const CALENDAR_HEIGHT = 296;
 
 function parseDateValue(value: string): Date | null {
   const [year, month, day] = value.split("-").map(Number);
@@ -50,7 +53,10 @@ export function DatePicker({
   const minimumDate = min ? parseDateValue(min) : null;
   const today = startOfDay(new Date());
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const calendarRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
+  const [calendarStyle, setCalendarStyle] = useState<CSSProperties>({});
   const [visibleMonth, setVisibleMonth] = useState(() => {
     const initial = selectedDate ?? minimumDate ?? today;
     return new Date(initial.getFullYear(), initial.getMonth(), 1);
@@ -58,17 +64,50 @@ export function DatePicker({
 
   useEffect(() => {
     if (!open) return;
+    const updatePosition = () => {
+      const rect = buttonRef.current?.getBoundingClientRect();
+      if (!rect) return;
+
+      const width = Math.min(CALENDAR_WIDTH, window.innerWidth - 16);
+      const roomBelow = window.innerHeight - rect.bottom - 8;
+      const roomAbove = rect.top - 8;
+      const openAbove = roomBelow < CALENDAR_HEIGHT && roomAbove > roomBelow;
+      const preferredTop = openAbove
+        ? rect.top - CALENDAR_HEIGHT - 8
+        : rect.bottom + 8;
+      const maximumTop = Math.max(8, window.innerHeight - CALENDAR_HEIGHT - 8);
+
+      setCalendarStyle({
+        top: Math.min(Math.max(8, preferredTop), maximumTop),
+        left: Math.min(
+          Math.max(8, rect.left),
+          Math.max(8, window.innerWidth - width - 8),
+        ),
+        width,
+      });
+    };
     const handlePointerDown = (event: PointerEvent) => {
-      if (!wrapperRef.current?.contains(event.target as Node)) setOpen(false);
+      const target = event.target as Node;
+      if (
+        !wrapperRef.current?.contains(target) &&
+        !calendarRef.current?.contains(target)
+      ) {
+        setOpen(false);
+      }
     };
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setOpen(false);
     };
+    updatePosition();
     document.addEventListener("pointerdown", handlePointerDown);
     document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
     };
   }, [open]);
 
@@ -113,6 +152,7 @@ export function DatePicker({
     <div ref={wrapperRef} className="relative w-full">
       <input type="hidden" name={id} value={value} />
       <button
+        ref={buttonRef}
         id={id}
         type="button"
         aria-label={ariaLabel}
@@ -136,13 +176,15 @@ export function DatePicker({
         <ChevronRight className={cn("h-4 w-4 shrink-0 text-on-surface-variant transition-transform", open && "rotate-90 text-primary")} aria-hidden="true" />
       </button>
 
-      {open ? (
+      {open && typeof document !== "undefined" ? createPortal(
         <div
+          ref={calendarRef}
           role="dialog"
           aria-label="Choose target date"
-          className="absolute left-0 top-full z-[120] mt-2 w-[min(320px,calc(100vw-2rem))] rounded-2xl border border-outline-variant bg-surface-container-lowest p-3 shadow-[0_18px_44px_rgba(15,23,42,0.16)] dark:shadow-[0_18px_44px_rgba(0,0,0,0.6)]"
+          className="pointer-events-auto fixed z-[120] max-h-[calc(100dvh-1rem)] overflow-y-auto rounded-2xl border border-outline-variant bg-surface-container-lowest p-2.5 shadow-[0_18px_44px_rgba(15,23,42,0.16)] dark:shadow-[0_18px_44px_rgba(0,0,0,0.6)]"
+          style={calendarStyle}
         >
-          <div className="flex items-center justify-between px-1 pb-3">
+          <div className="flex items-center justify-between px-1 pb-2">
             <p className="text-sm font-bold text-on-surface">{monthLabel}</p>
             <div className="flex items-center gap-1">
               <button
@@ -150,7 +192,7 @@ export function DatePicker({
                 aria-label="Previous month"
                 disabled={cannotGoPrevious}
                 onClick={() => setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1))}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface disabled:cursor-not-allowed disabled:opacity-30"
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface disabled:cursor-not-allowed disabled:opacity-30"
               >
                 <ChevronLeft className="h-4 w-4" aria-hidden="true" />
               </button>
@@ -158,14 +200,14 @@ export function DatePicker({
                 type="button"
                 aria-label="Next month"
                 onClick={() => setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1))}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface"
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface"
               >
                 <ChevronRight className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-7 gap-1 text-center">
+          <div className="grid grid-cols-7 gap-0.5 text-center">
             {DAY_LABELS.map((label) => (
               <span key={label} className="py-1 text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">
                 {label}
@@ -185,7 +227,7 @@ export function DatePicker({
                   aria-pressed={isSelected}
                   onClick={() => chooseDate(date)}
                   className={cn(
-                    "flex h-9 items-center justify-center rounded-lg text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                    "flex h-8 items-center justify-center rounded-lg text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                     isOutsideMonth && "text-on-surface-variant/35",
                     !isOutsideMonth && !isSelected && "text-on-surface hover:bg-surface-container-high",
                     isDisabled && "cursor-not-allowed text-on-surface-variant/25 hover:bg-transparent",
@@ -199,7 +241,7 @@ export function DatePicker({
             })}
           </div>
 
-          <div className="mt-3 flex items-center justify-between border-t border-outline-variant/40 pt-3 px-1">
+          <div className="mt-2 flex items-center justify-between border-t border-outline-variant/40 px-1 pt-2">
             <button
               type="button"
               onClick={() => {
@@ -219,7 +261,8 @@ export function DatePicker({
               Today
             </button>
           </div>
-        </div>
+        </div>,
+        document.body,
       ) : null}
     </div>
   );

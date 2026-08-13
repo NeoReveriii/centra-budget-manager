@@ -1,5 +1,5 @@
 import type { ZodType } from 'zod';
-import type { VercelResponse } from '@vercel/node';
+import type { VercelResponse } from './http-types.js';
 
 export function parseBody<T>(
   schema: ZodType<T>,

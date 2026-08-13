@@ -23,8 +23,8 @@ const footerGroups = [
   {
     title: "Legal",
     links: [
-      { label: "Privacy", href: "/views/privacy.html" },
-      { label: "Terms", href: "/views/terms.html" },
+      { label: "Privacy", href: "/privacy" },
+      { label: "Terms", href: "/terms" },
     ],
   },
 ] as const;
@@ -174,7 +174,7 @@ export default function LandingFooter() {
           viewport={{ once: true, amount: 0.75 }}
           className="flex flex-col gap-3 border-t border-[#cbd8cf] py-7 text-[0.8rem] text-[#56685d] dark:border-white/12 dark:text-white/60 sm:flex-row sm:items-center sm:justify-between"
         >
-          <p>&copy; 2026 Centra Financial Systems</p>
+          <p>&copy; 2026 Centra</p>
           <m.a
             href="#top"
             whileHover={reduceMotion ? undefined : BACK_TO_TOP_HOVER}

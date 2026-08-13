@@ -111,10 +111,13 @@ Neon hosts both application data (`public` schema) and auth data (`neon_auth` sc
    ```env
    DATABASE_URL=postgresql://...
    VITE_NEON_AUTH_URL=https://<your-branch>.neonauth.../neondb/auth
+   VITE_PRIVACY_CONTACT=privacy@example.com
    NEON_JWKS_URL=https://<your-branch>.neonauth.../neondb/auth/.well-known/jwks.json
    NEON_AUTH_ISSUER=https://<your-branch>.neonauth.../neondb/auth
    DEEPSEEK_API_KEY=your_deepseek_key
    ```
+
+   `VITE_PRIVACY_CONTACT` must be a monitored private address belonging to the deployment owner. Do not accept real user data in production until it is configured.
 
 4. **Run locally**
    ```bash

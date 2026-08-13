@@ -1,6 +1,6 @@
 import { neon } from '@neondatabase/serverless';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { VercelRequest, VercelResponse } from './http-types.js';
 import { ensureAccountsSchema } from './schema.js';
 
 export interface AccountContext {

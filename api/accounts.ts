@@ -3,7 +3,7 @@ import { ensureAccountsSchema } from './schema.js';
 import { requireAccount, requireAccountProfile } from './auth-helper.js';
 import { accountDeleteSchema, accountUpdateSchema } from './schemas.js';
 import { parseBody } from './validate.js';
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { VercelRequest, VercelResponse } from './http-types.js';
 
 interface AccountRow {
   acc_id: number;
@@ -36,7 +36,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const body = parseBody(accountUpdateSchema, req.body, res);
       if (!body) return;
 
-      const { id, username, email, pnumber, bio, avatar_seed, avatar_url } = body;
+      const { id, username, pnumber, bio, avatar_seed, avatar_url } = body;
 
       const targetId = id ?? account.acc_id;
       if (targetId !== account.acc_id) {
@@ -55,7 +55,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const updated = await sql`
         UPDATE accounts
         SET username = COALESCE(${username ?? null}, username),
-            email = COALESCE(${email ?? null}, email),
             pnumber = COALESCE(${pnumber ?? null}, pnumber),
             bio = COALESCE(${bio ?? null}, bio),
             avatar_seed = ${finalSeed === undefined ? sql`avatar_seed` : finalSeed},
@@ -102,6 +101,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       await tryDel(sql`DELETE FROM goals WHERE account_id = ${account.acc_id}`);
       await tryDel(sql`DELETE FROM transactions WHERE account_id = ${account.acc_id}`);
       await tryDel(sql`DELETE FROM wallets WHERE account_id = ${account.acc_id}`);
+      await tryDel(sql`DELETE FROM ai_chats WHERE acc_id = ${account.acc_id}`);
 
       await sql`
         DELETE FROM accounts WHERE acc_id = ${account.acc_id}
@@ -110,7 +110,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       return res.status(200).json({
         success: true,
-        message: 'Account deleted successfully'
+        message: 'Centra application data deleted successfully'
       });
 
     } else {
@@ -119,7 +119,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   } catch (error: unknown) {
     console.error('Account error:', error);
-    const message = error instanceof Error ? error.message : 'Internal server error';
-    return res.status(500).json({ error: message });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }

@@ -6,7 +6,7 @@ import {
   updateWalletSchema,
 } from './schemas.js';
 import { parseBody } from './validate.js';
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { VercelRequest, VercelResponse } from './http-types.js';
 
 interface RegClassRow {
   reg: string | null;

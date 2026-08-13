@@ -2,7 +2,7 @@ import { neon } from '@neondatabase/serverless';
 import { requireAccount } from './auth-helper.js';
 import { chatMessageSchema } from './schemas.js';
 import { parseBody } from './validate.js';
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { VercelRequest, VercelResponse } from './http-types.js';
 
 interface ChatHistoryRow {
   role: string;
@@ -994,8 +994,7 @@ QUERY TYPE ROUTING - follow these rules strictly:
   } catch (error: unknown) {
     console.error('Chat error:', error);
     if (!res.headersSent) {
-      const message = error instanceof Error ? error.message : 'Internal server error';
-      res.status(500).json({ error: message });
+      res.status(500).json({ error: 'Internal server error' });
     }
   }
 }
