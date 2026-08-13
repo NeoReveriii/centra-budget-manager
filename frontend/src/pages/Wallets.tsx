@@ -415,7 +415,7 @@ const Wallets = () => {
         aria-label="Institution affiliation notice"
       >
         <span
-          className="material-symbols-outlined flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface-container-lowest text-[17px] text-primary shadow-[inset_0_0_0_1px_rgba(0,53,39,0.08)] dark:bg-white/[0.06] dark:text-emerald-300 dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]"
+          className="material-symbols-outlined flex h-6 w-6 shrink-0 items-center justify-center text-[20px] leading-none text-primary dark:text-emerald-300"
           aria-hidden="true"
         >
           info
