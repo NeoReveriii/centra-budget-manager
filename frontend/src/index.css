@@ -343,6 +343,59 @@
 }
 
 @layer utilities {
+  .skeleton-shimmer {
+    position: relative;
+    overflow: hidden;
+    background-color: #e5e7e7;
+  }
+
+  .skeleton-shimmer::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+    pointer-events: none;
+    background: linear-gradient(
+      135deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.72) 50%,
+      transparent 70%
+    );
+    background-position: -150% -150%;
+    background-size: 250% 250%;
+    animation: skeleton-shimmer-sweep 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    will-change: background-position;
+  }
+
+  .dark .skeleton-shimmer {
+    background-color: #292929;
+  }
+
+  .dark .skeleton-shimmer::after {
+    background: linear-gradient(
+      135deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 70%
+    );
+  }
+
+  @keyframes skeleton-shimmer-sweep {
+    from {
+      background-position: -150% -150%;
+    }
+    to {
+      background-position: 150% 150%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-shimmer::after {
+      animation-duration: 3.6s;
+      animation-timing-function: ease-in-out;
+      opacity: 0.65;
+    }
+  }
+
   .material-symbols-outlined {
     font-variation-settings:
       "FILL" 0,

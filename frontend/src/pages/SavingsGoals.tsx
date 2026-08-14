@@ -438,8 +438,8 @@ const SavingsGoals: React.FC = () => {
         return (
           <div className={`flex items-center gap-4 px-5 py-4 rounded-xl border ${
             daysLeft <= 30
-              ? "bg-rose-50 border-rose-200 text-rose-800"
-              : "bg-amber-50 border-amber-200 text-amber-800"
+              ? "bg-rose-50 border-rose-200 text-rose-800 dark:bg-rose-950/35 dark:border-rose-800/70 dark:text-rose-200"
+              : "bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-950/35 dark:border-amber-800/70 dark:text-amber-200"
           }`}>
             <span className="material-symbols-outlined text-[24px]">
               {daysLeft <= 30 ? "warning" : "notifications_active"}

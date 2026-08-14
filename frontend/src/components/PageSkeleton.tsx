@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-type PageSkeletonVariant = "dashboard" | "transactions" | "wallets" | "goals" | "chat";
+export type PageSkeletonVariant = "dashboard" | "transactions" | "wallets" | "goals" | "chat" | "settings";
 
 interface PageSkeletonProps {
   variant: PageSkeletonVariant;
@@ -11,7 +11,7 @@ function SkeletonBlock({ className }: { className?: string }) {
   return (
     <div
       aria-hidden="true"
-      className={cn("rounded-xl bg-slate-200/85 dark:bg-slate-800/85", className)}
+      className={cn("skeleton-shimmer rounded-xl", className)}
     />
   );
 }
@@ -57,7 +57,7 @@ function TransactionsSkeleton() {
         <SkeletonBlock className="h-14 rounded-none" />
         <div className="space-y-px bg-slate-200 dark:bg-slate-800">
           {Array.from({ length: 6 }, (_, index) => (
-            <SkeletonBlock key={index} className="h-[72px] rounded-none bg-white dark:bg-slate-950" />
+            <SkeletonBlock key={index} className="h-[72px] rounded-none" />
           ))}
         </div>
       </div>
@@ -102,6 +102,42 @@ function GoalsSkeleton() {
   );
 }
 
+function SettingsSkeleton() {
+  return (
+    <div className="mx-auto max-w-[800px] space-y-6">
+      <div className="space-y-3">
+        <SkeletonBlock className="h-8 w-36" />
+        <SkeletonBlock className="h-4 w-72 max-w-[75vw]" />
+      </div>
+      {Array.from({ length: 3 }, (_, sectionIndex) => (
+        <div
+          key={sectionIndex}
+          className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800"
+        >
+          <div className="space-y-2 border-b border-slate-200 p-5 dark:border-slate-800">
+            <SkeletonBlock className="h-5 w-32" />
+            <SkeletonBlock className="h-3 w-56 max-w-[65vw]" />
+          </div>
+          <div className="space-y-px bg-slate-200 dark:bg-slate-800">
+            {Array.from({ length: sectionIndex === 0 ? 3 : 2 }, (_, rowIndex) => (
+              <div
+                key={rowIndex}
+                className="flex h-[72px] items-center justify-between bg-white px-5 dark:bg-slate-950"
+              >
+                <div className="space-y-2">
+                  <SkeletonBlock className="h-4 w-36" />
+                  <SkeletonBlock className="h-3 w-48 max-w-[55vw]" />
+                </div>
+                <SkeletonBlock className="h-9 w-24" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function ChatSkeleton() {
   return (
     <div className="flex h-[calc(100dvh-8rem)] min-h-[640px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
@@ -138,13 +174,14 @@ export function PageSkeleton({ variant, label = "Loading content" }: PageSkeleto
       role="status"
       aria-busy="true"
       aria-label={label}
-      className="animate-pulse pb-20 motion-reduce:animate-none"
+      className="pb-20"
     >
       {variant === "dashboard" ? <DashboardSkeleton /> : null}
       {variant === "transactions" ? <TransactionsSkeleton /> : null}
       {variant === "wallets" ? <WalletsSkeleton /> : null}
       {variant === "goals" ? <GoalsSkeleton /> : null}
       {variant === "chat" ? <ChatSkeleton /> : null}
+      {variant === "settings" ? <SettingsSkeleton /> : null}
       <span className="sr-only">{label}</span>
     </div>
   );

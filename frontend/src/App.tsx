@@ -22,18 +22,24 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import { PrivacyPage, TermsPage } from "./pages/LegalPage";
-import { PageSkeleton } from "@/components/PageSkeleton";
+import { PageSkeleton, type PageSkeletonVariant } from "@/components/PageSkeleton";
+
+function getProtectedSkeletonVariant(pathname: string): PageSkeletonVariant {
+  if (pathname.startsWith("/transactions")) return "transactions";
+  if (pathname.startsWith("/wallets")) return "wallets";
+  if (pathname.startsWith("/goals")) return "goals";
+  if (pathname.startsWith("/kwarta-ai")) return "chat";
+  if (pathname.startsWith("/settings")) return "settings";
+  return "dashboard";
+}
 
 // Wrapper that redirects to /login if not authenticated
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
 
   if (isLoading) {
-    return (
-      <main className="min-h-screen bg-background px-5 py-8 sm:px-8 lg:px-12">
-        <PageSkeleton variant="dashboard" label="Restoring your session" />
-      </main>
-    );
+    return <PageSkeleton variant={getProtectedSkeletonVariant(location.pathname)} label="Restoring your session" />;
   }
 
   if (!isAuthenticated) {
@@ -100,8 +106,8 @@ function AppRoutes() {
         <Route
           path="/*"
           element={
-            <ProtectedRoute>
-              <Layout>
+            <Layout>
+              <ProtectedRoute>
                 <Routes>
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/settings" element={<Settings />} />
@@ -110,8 +116,8 @@ function AppRoutes() {
                   <Route path="/goals" element={<SavingsGoals />} />
                   <Route path="/kwarta-ai" element={<KwartaAI />} />
                 </Routes>
-              </Layout>
-            </ProtectedRoute>
+              </ProtectedRoute>
+            </Layout>
           }
         />
       </Routes>

@@ -9,7 +9,6 @@ import {
 import {
   AreaChart,
   Area,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -652,10 +651,10 @@ const Dashboard = () => {
           <div className="mb-lg flex items-center justify-between">
             <div>
               <h3 className="font-h3 text-h3 text-primary">Cash Flow</h3>
-              <p className="text-body-sm text-slate-500">Animated {cashflowDescription} movement for {selectedWalletLabel.toLowerCase()}.</p>
+              <p className="text-body-sm text-slate-500">Animated {cashflowDescription} income and expenses for {selectedWalletLabel.toLowerCase()}.</p>
             </div>
             <div className="rounded-full bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
-              Net flow live
+              Income vs expenses
             </div>
           </div>
 
@@ -688,10 +687,6 @@ const Dashboard = () => {
                     <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.35} />
                     <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
                   </linearGradient>
-                  <linearGradient id="colorNet" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#0f766e" stopOpacity={0.15} />
-                    <stop offset="100%" stopColor="#0f766e" stopOpacity={0.85} />
-                  </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme === "dark" ? "#343434" : "#f1f5f9"} />
                 <XAxis
@@ -720,7 +715,7 @@ const Dashboard = () => {
                   labelStyle={{ color: theme === "dark" ? "#f5f5f5" : "#131b2e" }}
                   itemStyle={{ color: theme === "dark" ? "#ededed" : "#131b2e" }}
                   formatter={(value: number | string, name) => {
-                    const label = name === "Income" ? "Income" : name === "Expenses" ? "Expenses" : "Net";
+                    const label = name === "Income" ? "Income" : "Expenses";
                     return [formatCurrency(Number(value)), label];
                   }}
                   labelFormatter={(_, payload) => {
@@ -731,7 +726,7 @@ const Dashboard = () => {
                   }}
                 />
                 <Area
-                  type="monotone"
+                  type="linear"
                   dataKey="Income"
                   stroke="#10b981"
                   strokeWidth={3}
@@ -745,7 +740,7 @@ const Dashboard = () => {
                   dot={false}
                 />
                 <Area
-                  type="monotone"
+                  type="linear"
                   dataKey="Expenses"
                   stroke="#f43f5e"
                   strokeWidth={3}
@@ -757,16 +752,6 @@ const Dashboard = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   dot={false}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="Net"
-                  stroke="url(#colorNet)"
-                  strokeWidth={3.5}
-                  dot={false}
-                  isAnimationActive
-                  animationDuration={1200}
-                  animationEasing="ease-out"
                 />
               </AreaChart>
             </ResponsiveContainer>
