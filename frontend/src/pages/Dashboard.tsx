@@ -19,6 +19,7 @@ import {
 import { StyledSelect } from "@/components/ui/styled-select";
 import { useUiStore } from "@/stores/ui-store";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { PageSkeleton } from "@/components/PageSkeleton";
 
 interface CategoryStyle {
   icon: string;
@@ -489,6 +490,10 @@ const Dashboard = () => {
   const selectedWalletLabel = selectedWallet ? selectedWallet.name : "All wallets";
   const cashflowDescription = getRangeDescriptor(selectedDateRange);
   const emptyExpenseMessage = getEmptyExpenseMessage(selectedDateRange);
+
+  if (walletQuery.isLoading || transactionQuery.isLoading) {
+    return <PageSkeleton variant="dashboard" label="Loading dashboard" />;
+  }
 
   if (walletQuery.isError || transactionQuery.isError) {
     return (

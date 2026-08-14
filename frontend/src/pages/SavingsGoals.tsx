@@ -7,6 +7,7 @@ import { budgetQueryKeys } from "../hooks/use-budget-data";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+import { PageSkeleton } from "@/components/PageSkeleton";
 import { StyledSelect } from "@/components/ui/styled-select";
 import { DatePicker } from "@/components/ui/date-picker";
 import FieldError from "@/components/FieldError";
@@ -200,6 +201,10 @@ const SavingsGoals: React.FC = () => {
   // ── Min date for deadline picker = today ──
   const todayStr = new Date().toISOString().split("T")[0];
 
+  if (isLoading) {
+    return <PageSkeleton variant="goals" label="Loading savings goals" />;
+  }
+
   return (
     <div className="flex min-h-full flex-col space-y-3 animate-fade-in">
 
@@ -220,10 +225,10 @@ const SavingsGoals: React.FC = () => {
           }}
         >
           <DialogTrigger asChild>
-            <button className="flex h-11 items-center gap-2 whitespace-nowrap rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 active:scale-[0.98]">
+            <Button type="button" className="h-11 px-4">
               <span className="material-symbols-outlined text-[18px]">add_circle</span>
               New Goal
-            </button>
+            </Button>
           </DialogTrigger>
 
           {/* ── Add Goal Dialog ── */}
@@ -454,13 +459,7 @@ const SavingsGoals: React.FC = () => {
 
       {/* ── Goal Cards ─────────────────────────────────────────── */}
       <section>
-        {isLoading ? (
-          <div className="flex justify-center items-center h-40">
-            <span className="material-symbols-outlined animate-spin text-primary text-4xl">
-              progress_activity
-            </span>
-          </div>
-        ) : goals.length === 0 ? (
+        {goals.length === 0 ? (
           <div className="text-center py-20 text-on-surface-variant">
             <span className="material-symbols-outlined text-[56px] text-slate-200">savings</span>
             <p className="mt-4 font-bold text-on-surface">No goals yet</p>

@@ -32,6 +32,7 @@ import {
   WALLET_PROVIDER_OPTIONS,
   WalletCardFace,
 } from "@/components/wallets/WalletCardFace";
+import { PageSkeleton } from "@/components/PageSkeleton";
 
 type WalletFilter = "ALL" | "ACTIVE" | "ARCHIVED";
 
@@ -117,6 +118,7 @@ function WalletCountUp({
       progress.set(value);
       return;
     }
+    progress.set(0);
     const controls = animate(progress, value, {
       duration: 0.9,
       ease: [0.22, 1, 0.36, 1],
@@ -359,20 +361,7 @@ const Wallets = () => {
   }
 
   if (walletQuery.isLoading || transactionQuery.isLoading) {
-    return (
-      <div
-        className="space-y-6 animate-pulse"
-        aria-label="Loading wallets"
-        aria-busy="true"
-      >
-        <div className="h-10 w-48 rounded-xl bg-slate-200 dark:bg-slate-800" />
-        <div className="h-44 rounded-2xl bg-slate-200 dark:bg-slate-800" />
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-          <div className="h-96 rounded-2xl bg-slate-200 dark:bg-slate-800" />
-          <div className="h-96 rounded-2xl bg-slate-200 dark:bg-slate-800" />
-        </div>
-      </div>
-    );
+    return <PageSkeleton variant="wallets" label="Loading wallets" />;
   }
 
   if (walletQuery.isError || transactionQuery.isError) {
@@ -470,6 +459,7 @@ const Wallets = () => {
                   <m.button
                     key={wallet.wallet_id}
                     type="button"
+                    data-custom-interaction
                     aria-label={`${wallet.name}, ${formatCurrency(Number(wallet.calculated_balance))}, ${activityCount} ${activityCount === 1 ? "transaction" : "transactions"}`}
                     aria-pressed={selected}
                     onClick={() => {
@@ -478,9 +468,9 @@ const Wallets = () => {
                     }}
                     layout={!reduceMotion}
                     animate={reduceMotion ? undefined : selected ? { y: -2, scale: 1.008 } : { y: 0, scale: 1 }}
-                    whileHover={reduceMotion ? undefined : { y: -6, scale: 1.012, rotateX: 1.2, rotateY: -1.2 }}
-                    whileTap={reduceMotion ? undefined : { scale: 0.975, y: 0 }}
-                    transition={{ type: "spring", stiffness: 280, damping: 24, mass: 0.72 }}
+                    whileHover={reduceMotion ? { opacity: 0.92 } : { y: -6, scale: 1.012, rotateX: 1.2, rotateY: -1.2 }}
+                    whileTap={reduceMotion ? { opacity: 0.8 } : { scale: 0.975, y: 0 }}
+                    transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 280, damping: 24, mass: 0.72 }}
                     className={cn(
                       "group relative isolate w-full rounded-[1.7rem] p-1.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 motion-reduce:transform-none",
                       selected

@@ -18,6 +18,7 @@ import {
 } from "@/hooks/use-budget-data";
 import { getAccessToken } from "../lib/auth-client";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { PageSkeleton } from "@/components/PageSkeleton";
 
 interface ChatMessage {
   id: string;
@@ -488,6 +489,10 @@ const KwartaAI = () => {
     }
   }
 
+  if (isLoading) {
+    return <PageSkeleton variant="chat" label="Loading Kwarta AI" />;
+  }
+
   return (
     <>
       <div className="animate-fade-in pb-10">
@@ -567,14 +572,7 @@ const KwartaAI = () => {
           </div>
 
           <div className="flex-1 overflow-y-auto bg-slate-50/20 px-4 py-5 sm:px-6">
-            {isLoading ? (
-              <div className="flex h-full items-center justify-center">
-                <span className="material-symbols-outlined text-[32px] text-primary animate-spin">
-                  progress_activity
-                </span>
-              </div>
-            ) : (
-              <div className="space-y-4">
+            <div className="space-y-4">
                 {messages.map((msg) => {
                   if (msg.sender === "ai") {
                     const parsed = parseAssistantContent(msg.content);
@@ -640,8 +638,7 @@ const KwartaAI = () => {
                     </div>
                   );
                 })}
-              </div>
-            )}
+            </div>
             <div ref={chatEndRef} />
           </div>
 

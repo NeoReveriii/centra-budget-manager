@@ -22,10 +22,19 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import { PrivacyPage, TermsPage } from "./pages/LegalPage";
+import { PageSkeleton } from "@/components/PageSkeleton";
 
 // Wrapper that redirects to /login if not authenticated
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-background px-5 py-8 sm:px-8 lg:px-12">
+        <PageSkeleton variant="dashboard" label="Restoring your session" />
+      </main>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;

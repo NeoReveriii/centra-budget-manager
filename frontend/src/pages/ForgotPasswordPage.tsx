@@ -112,7 +112,7 @@ export default function ForgotPasswordPage() {
         <Button
           type="submit"
           disabled={isLoading}
-          className="h-12 w-full rounded-lg bg-primary font-bold text-white shadow-[0_8px_20px_rgba(0,53,39,0.14)] hover:bg-primary-container hover:shadow-[0_12px_26px_rgba(0,53,39,0.2)]"
+          className="h-12 w-full rounded-lg font-bold"
         >
           <Mail className="h-4 w-4" aria-hidden="true" />
           {isLoading ? "Sending..." : "Send reset link"}

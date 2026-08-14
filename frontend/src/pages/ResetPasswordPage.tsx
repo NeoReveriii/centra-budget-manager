@@ -193,7 +193,7 @@ export default function ResetPasswordPage() {
         <Button
           type="submit"
           disabled={isLoading || !hasValidToken || Boolean(successMessage)}
-          className="h-12 w-full rounded-lg bg-primary font-bold text-white shadow-[0_8px_20px_rgba(0,53,39,0.14)] hover:bg-primary-container"
+          className="h-12 w-full rounded-lg font-bold"
         >
           {isLoading ? "Updating..." : "Update password"}
         </Button>

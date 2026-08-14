@@ -300,7 +300,7 @@ export function TransferFundsModal() {
             <Button
               type="submit"
               disabled={transferMutation.isPending || activeWallets.length < 2}
-              className="flex-1 rounded-xl shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30"
+              className="flex-1 rounded-xl"
             >
               {transferMutation.isPending ? "Transferring..." : "Transfer"}
             </Button>

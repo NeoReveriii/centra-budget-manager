@@ -154,7 +154,7 @@ const Settings = () => {
               type="button"
               aria-pressed={highContrast}
               onClick={() => setHighContrast(!highContrast)}
-              className="shrink-0 rounded-lg border border-outline-variant bg-surface-container-high px-3 py-2 text-xs font-bold text-primary transition-all hover:bg-surface-dim hover:text-primary-container hover:shadow-sm active:scale-95"
+              className="shrink-0 rounded-lg border border-outline-variant bg-surface-container-high px-3 py-2 text-xs font-bold text-primary transition-colors hover:bg-surface-dim hover:text-primary-container active:scale-[0.98]"
             >
               {highContrast ? "High Contrast" : "Normal Contrast"}
             </button>
@@ -231,7 +231,7 @@ const Settings = () => {
               type="button"
               onClick={handleExport}
               disabled={isExporting}
-              className="flex shrink-0 items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-primary hover:shadow-md active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex shrink-0 items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-primary active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <span
                 className="material-symbols-outlined"
@@ -319,7 +319,7 @@ const Settings = () => {
                 setDeleteError("");
                 setDeleteOpen(true);
               }}
-              className="shrink-0 rounded-lg bg-error px-3 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-[#93000a] hover:shadow-md active:scale-95"
+              className="shrink-0 rounded-lg bg-error px-3 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-[#93000a] active:scale-[0.98]"
             >
               Delete Data
             </button>

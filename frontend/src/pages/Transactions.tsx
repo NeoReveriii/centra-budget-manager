@@ -8,6 +8,7 @@ import { useUiStore } from "@/stores/ui-store";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { Button } from "@/components/ui/button";
 import { StyledSelect } from "@/components/ui/styled-select";
+import { PageSkeleton } from "@/components/PageSkeleton";
 import {
   Dialog,
   DialogContent,
@@ -143,8 +144,8 @@ const ITEMS_PER_PAGE = 10;
 
 const Transactions = () => {
   const formatCurrency = useCurrencyFormatter();
-  const { data: transactions = [], isLoading: loading } = useTransactions();
-  const { data: wallets = [] } = useWallets();
+  const { data: transactions = [], isLoading: transactionsLoading } = useTransactions();
+  const { data: wallets = [], isLoading: walletsLoading } = useWallets();
 
   const deleteTx = useDeleteTransaction();
 
@@ -191,17 +192,8 @@ const Transactions = () => {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <div className="text-center space-y-4">
-          <span className="material-symbols-outlined animate-spin text-primary text-[48px]">
-            progress_activity
-          </span>
-          <p className="text-slate-500 font-medium">Loading transactions...</p>
-        </div>
-      </div>
-    );
+  if (transactionsLoading || walletsLoading) {
+    return <PageSkeleton variant="transactions" label="Loading transactions" />;
   }
 
   return (

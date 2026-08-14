@@ -379,7 +379,7 @@ export function AddTransactionModal() {
             <Button
               type="submit"
               disabled={createTx.isPending || activeWallets.length === 0}
-              className="flex-1 rounded-xl shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30"
+              className="flex-1 rounded-xl"
             >
               {createTx.isPending ? "Saving..." : "Save Transaction"}
             </Button>

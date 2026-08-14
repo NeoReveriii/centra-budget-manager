@@ -4,12 +4,12 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex touch-manipulation items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold transition-[background-color,border-color,color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.985] active:shadow-none motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 disabled:pointer-events-none disabled:opacity-50 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+  "inline-flex touch-manipulation items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold transition-[background-color,border-color,color,opacity,transform] duration-200 ease-out hover:opacity-90 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 disabled:pointer-events-none disabled:opacity-50 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-on-primary shadow-sm hover:bg-primary/90 active:bg-primary/80 dark:bg-[#006b52] dark:text-white dark:hover:bg-[#087c60] dark:active:bg-[#00533d] dark:active:shadow-none",
+          "bg-primary text-on-primary shadow-sm dark:bg-[#006b52] dark:text-white",
         destructive: "bg-error text-on-error hover:bg-error/90",
         outline:
           "border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low text-on-surface",
