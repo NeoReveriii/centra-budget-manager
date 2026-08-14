@@ -531,7 +531,7 @@ const Wallets = () => {
       </section>
       <Dialog open={detailsOpen && Boolean(selectedWallet)} onOpenChange={setDetailsOpen}>
         <DialogContent
-          className="max-h-[90dvh] max-w-[720px] gap-0 overflow-y-auto p-0 md:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)] dark:border-slate-800 dark:bg-slate-900"
+          className="w-[calc(100%-1.5rem)] max-h-[90dvh] max-w-[720px] gap-0 overflow-y-auto p-0 md:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)] dark:border-slate-800 dark:bg-slate-900"
           onInteractOutside={(event) => event.preventDefault()}
         >
           {selectedWallet ? (
@@ -551,7 +551,7 @@ const Wallets = () => {
                   className="min-h-[12.5rem]"
                 />
               </div>
-              <dl className="grid grid-cols-2 border-b border-slate-100 dark:border-slate-800 md:col-start-2 md:row-start-1">
+              <dl className="grid grid-cols-2 border-b border-slate-100 dark:border-slate-800 md:col-start-2 md:row-start-1 md:pt-12">
                 {[["Starting balance", formatCurrency(Number(selectedWallet.initial_balance))], ["Share of funds", totalBalance > 0 ? ((Number(selectedWallet.calculated_balance) / totalBalance) * 100).toFixed(1) + "%" : "0.0%"], ["Money in", formatCurrency(selectedFlow.in)], ["Money out", formatCurrency(selectedFlow.out)]].map(([label, value], index) => (
                   <div key={label} className={"p-4 " + (index % 2 ? "border-l border-slate-100 dark:border-slate-800 " : "") + (index > 1 ? "border-t border-slate-100 dark:border-slate-800" : "")}><dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</dt><dd className="mt-1 truncate text-sm font-extrabold tabular-nums text-slate-800 dark:text-slate-100">{value}</dd></div>
                 ))}
