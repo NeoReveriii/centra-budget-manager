@@ -12,12 +12,22 @@ export const authClient = createAuthClient(authUrl || "http://localhost");
 
 let inMemoryAccessToken: string | null = null;
 
+interface AccessTokenOptions {
+  forceRefresh?: boolean;
+}
+
 export async function resetAuthSession(): Promise<void> {
   clearPersistedSession();
   await authClient.signOut().catch(() => undefined);
 }
 
-export async function getAccessToken(): Promise<string | null> {
+export async function getAccessToken(
+  options: AccessTokenOptions = {},
+): Promise<string | null> {
+  if (options.forceRefresh) {
+    inMemoryAccessToken = null;
+  }
+
   if (inMemoryAccessToken) {
     return inMemoryAccessToken;
   }
@@ -36,8 +46,9 @@ export async function getAccessToken(): Promise<string | null> {
 
     let token = session.token ?? null;
 
-    // token() is a separate POST; fall back only if the session response had no JWT.
-    if (!token) {
+    // A forced refresh must bypass the SDK's cached session token. This is used
+    // after a 401 so an expired in-memory JWT cannot poison every API request.
+    if (options.forceRefresh || !token) {
       const tokenResult = await authClient.token();
       token = tokenResult.data?.token ?? null;
     }

@@ -231,7 +231,7 @@ export function DatePicker({
                     isOutsideMonth && "text-on-surface-variant/35",
                     !isOutsideMonth && !isSelected && "text-on-surface hover:bg-surface-container-high",
                     isDisabled && "cursor-not-allowed text-on-surface-variant/25 hover:bg-transparent",
-                    isSelected && "bg-primary text-on-primary shadow-sm hover:bg-primary/90",
+                    isSelected && "bg-primary text-on-primary shadow-sm hover:bg-primary/90 dark:bg-[#006b52] dark:text-white",
                     isToday && !isSelected && "ring-1 ring-primary/50 text-primary",
                   )}
                 >

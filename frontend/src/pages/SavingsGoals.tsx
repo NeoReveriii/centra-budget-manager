@@ -380,7 +380,7 @@ const SavingsGoals: React.FC = () => {
       {/* ── Summary Banner ─────────────────────────────────────── */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* Total Saved */}
-        <div className="col-span-2 md:col-span-1 bg-primary text-on-primary rounded-2xl p-5 relative overflow-hidden shadow-md">
+        <div className="col-span-2 md:col-span-1 bg-primary text-on-primary rounded-2xl p-5 relative overflow-hidden shadow-md dark:bg-[#006b52] dark:text-white">
           <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-on-primary/10 rounded-full" />
           <p className="text-[11px] font-bold uppercase tracking-widest opacity-80 mb-1">Total Saved</p>
           <p className="text-2xl font-bold">{formatCurrency(totalSavings)}</p>

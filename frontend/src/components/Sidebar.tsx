@@ -230,8 +230,8 @@ const Sidebar = () => {
           >
             {/* Avatar — same x-position as all icons */}
             <span className="w-10 h-10 flex items-center justify-center shrink-0">
-              <span className="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center
-                              justify-center font-bold text-xs border border-primary/20">
+              <span className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center
+                              justify-center font-bold text-xs border border-primary/25">
                 {initials}
               </span>
             </span>

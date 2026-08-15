@@ -39,10 +39,14 @@ const NEON_AUTH_MANAGED_PASSWORD = '__neon_auth__';
 let jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
 
 function getJwks(): ReturnType<typeof createRemoteJWKSet> {
-  const jwksUrl = process.env.NEON_JWKS_URL;
-  if (!jwksUrl) {
-    throw new Error('NEON_JWKS_URL is not configured');
-  }
+  const configuredJwksUrl = process.env.NEON_JWKS_URL;
+  const configuredAuthUrl = process.env.NEON_AUTH_ISSUER || process.env.VITE_NEON_AUTH_URL;
+  const jwksUrl = configuredJwksUrl || (
+    configuredAuthUrl
+      ? new URL('.well-known/jwks.json', `${configuredAuthUrl.replace(/\/$/, '')}/`).toString()
+      : null
+  );
+  if (!jwksUrl) throw new Error('NEON_JWKS_URL or VITE_NEON_AUTH_URL is not configured');
   if (!jwks) {
     jwks = createRemoteJWKSet(new URL(jwksUrl));
   }
@@ -58,6 +62,15 @@ function getAuthOrigin(): string {
   return new URL(authUrl).origin;
 }
 
+function getAuthIssuers(): string[] {
+  const configured = process.env.NEON_AUTH_ISSUER || process.env.VITE_NEON_AUTH_URL;
+  if (!configured) return [getAuthOrigin()];
+
+  const parsed = new URL(configured);
+  const full = configured.replace(/\/$/, '');
+  return Array.from(new Set([parsed.origin, full]));
+}
+
 function getBearerToken(req: VercelRequest): string | null {
   const header = req.headers?.authorization || req.headers?.Authorization;
   if (!header || typeof header !== 'string') return null;
@@ -69,8 +82,8 @@ async function verifyNeonToken(token: string): Promise<NeonJwtPayload | null> {
   try {
     const origin = getAuthOrigin();
     const { payload } = await jwtVerify(token, getJwks(), {
-      issuer: origin,
-      audience: origin,
+      issuer: getAuthIssuers(),
+      audience: [origin, ...getAuthIssuers()],
     });
     return payload as NeonJwtPayload;
   } catch (error) {

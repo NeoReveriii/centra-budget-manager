@@ -386,7 +386,7 @@ const Transactions = () => {
                   <button
                     key={p}
                     onClick={() => setPage(p)}
-                    className={`w-9 h-9 flex items-center justify-center rounded-xl font-bold text-sm cursor-pointer ${p === page ? "bg-primary text-on-primary" : "hover:bg-surface-container-high text-on-surface-variant"}`}
+                    className={`w-9 h-9 flex items-center justify-center rounded-xl font-bold text-sm cursor-pointer ${p === page ? "bg-primary text-on-primary dark:bg-[#006b52] dark:text-white" : "hover:bg-surface-container-high text-on-surface-variant"}`}
                   >
                     {p}
                   </button>

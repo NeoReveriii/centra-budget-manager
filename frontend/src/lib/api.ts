@@ -13,24 +13,34 @@ async function request<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const token = await resolveToken();
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...((options.headers as Record<string, string>) || {}),
+  const send = async (token: string | null) => {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      ...((options.headers as Record<string, string>) || {}),
+    };
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    return fetch(`${API_BASE}${endpoint}`, {
+      ...options,
+      credentials: "include",
+      headers,
+    });
   };
 
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
-  const res = await fetch(`${API_BASE}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  let res = await send(await resolveToken());
 
   if (res.status === 401) {
     clearPersistedSession();
-    throw new Error("Unauthorized");
+    const refreshedToken = await getAccessToken({ forceRefresh: true });
+    if (refreshedToken) {
+      res = await send(refreshedToken);
+    }
+    if (res.status === 401) {
+      throw new Error("Unauthorized");
+    }
   }
 
   if (!res.ok) {

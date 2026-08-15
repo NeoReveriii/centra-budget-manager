@@ -223,7 +223,7 @@ const GoalCard: React.FC<GoalCardProps> = ({
           className={`w-full py-2.5 rounded-xl font-bold text-[13px] flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer ${
             isCompleted
               ? "bg-surface-container-low text-on-surface-variant border border-outline-variant cursor-default"
-              : "bg-primary text-on-primary hover:opacity-90"
+              : "bg-primary text-on-primary hover:opacity-90 dark:bg-[#006b52] dark:text-white"
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">
