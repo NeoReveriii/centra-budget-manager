@@ -55,7 +55,7 @@ function TransactionsSkeleton() {
       </div>
       <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
         <SkeletonBlock className="h-14 rounded-none" />
-        <div className="space-y-px bg-slate-200 dark:bg-slate-800">
+        <div className="flex flex-col">
           {Array.from({ length: 6 }, (_, index) => (
             <SkeletonBlock key={index} className="h-[72px] rounded-none" />
           ))}

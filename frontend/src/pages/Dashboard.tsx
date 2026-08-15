@@ -726,7 +726,7 @@ const Dashboard = () => {
                   }}
                 />
                 <Area
-                  type="linear"
+                  type="monotone"
                   dataKey="Income"
                   stroke="#10b981"
                   strokeWidth={3}
@@ -740,7 +740,7 @@ const Dashboard = () => {
                   dot={false}
                 />
                 <Area
-                  type="linear"
+                  type="monotone"
                   dataKey="Expenses"
                   stroke="#f43f5e"
                   strokeWidth={3}
