@@ -145,13 +145,13 @@ const CATEGORY_STYLES: Record<string, CategoryStyle> = {
   },
   transfer: {
     icon: "sync_alt",
-    iconBg: "bg-slate-50",
-    iconColor: "text-slate-600",
+    iconBg: "bg-surface-container-low",
+    iconColor: "text-on-surface-variant",
   },
   other: {
     icon: "receipt_long",
-    iconBg: "bg-slate-50",
-    iconColor: "text-slate-600",
+    iconBg: "bg-surface-container-low",
+    iconColor: "text-on-surface-variant",
   },
 };
 
@@ -378,7 +378,6 @@ function buildCashflowData(
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const theme = useUiStore((state) => state.theme);
   const showCurrencySymbol = useUiStore((state) => state.showCurrencySymbol);
   const formatCurrency = useCurrencyFormatter();
   const walletQuery = useWallets();
@@ -496,14 +495,14 @@ const Dashboard = () => {
 
   if (walletQuery.isError || transactionQuery.isError) {
     return (
-      <section className="mx-auto mt-20 max-w-[576px] rounded-2xl border border-rose-200 bg-white p-8 text-center shadow-sm">
+      <section className="mx-auto mt-20 max-w-[576px] rounded-2xl border border-rose-200 bg-surface-container-lowest p-8 text-center shadow-sm">
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-rose-50 text-rose-700">
           <span className="material-symbols-outlined">cloud_off</span>
         </div>
-        <h1 className="mt-5 text-xl font-bold text-slate-900">
+        <h1 className="mt-5 text-xl font-bold text-on-surface">
           Dashboard data is unavailable
         </h1>
-        <p className="mt-2 text-sm text-slate-500">
+        <p className="mt-2 text-sm text-on-surface-variant">
           Your saved data is safe. The dashboard will reconnect automatically.
         </p>
       </section>
@@ -523,10 +522,10 @@ const Dashboard = () => {
               value={selectedDateRange}
               onChange={(value) => setSelectedDateRange(value as DateRangeOption)}
               options={DATE_RANGE_OPTIONS.map((option) => ({ value: option, label: option }))}
-              className="h-11 md:h-10 rounded-xl border-slate-300 bg-slate-50 pl-9 pr-2 text-sm font-semibold text-slate-800 shadow-none hover:bg-white"
+              className="h-11 md:h-10 rounded-xl bg-surface-container-low pl-9 pr-2 text-sm font-semibold text-on-surface shadow-none hover:bg-surface-container-lowest"
               aria-label="Date range"
             />
-            <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-slate-500">
+            <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-on-surface-variant">
               calendar_month
             </span>
           </div>
@@ -536,10 +535,10 @@ const Dashboard = () => {
               value={selectedWalletId}
               onChange={setSelectedWalletId}
               options={[{ value: "all", label: "All Wallets" }, ...wallets.map((wallet) => ({ value: String(wallet.wallet_id), label: wallet.name }))]}
-              className="h-11 md:h-10 rounded-xl border-slate-300 bg-slate-50 pl-9 pr-2 text-sm font-semibold text-slate-800 shadow-none hover:bg-white"
+              className="h-11 md:h-10 rounded-xl bg-surface-container-low pl-9 pr-2 text-sm font-semibold text-on-surface shadow-none hover:bg-surface-container-lowest"
               aria-label="Wallet filter"
             />
-            <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-slate-500">
+            <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-on-surface-variant">
               account_balance_wallet
             </span>
           </div>
@@ -547,7 +546,7 @@ const Dashboard = () => {
       </section>
 
       <section className="grid grid-cols-1 gap-gutter sm:grid-cols-2 lg:grid-cols-4">
-        <div className="flex flex-col gap-2 rounded-xl border border-outline-variant bg-white p-lg transition-shadow hover:shadow-sm">
+        <div className="flex flex-col gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest p-lg transition-shadow hover:shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-label-caps font-label-caps uppercase text-on-surface-variant">
               Current Balance
@@ -558,7 +557,7 @@ const Dashboard = () => {
           </div>
           <div>
             <div className="font-h2 text-h2 text-primary">{formatCurrency(totalBalance)}</div>
-            <div className="mt-1 text-[12px] font-medium text-slate-500">
+            <div className="mt-1 text-[12px] font-medium text-on-surface-variant">
               {selectedWallet
                 ? selectedWallet.name
                 : wallets.length === 0
@@ -568,7 +567,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 rounded-xl border border-outline-variant bg-white p-lg transition-shadow hover:shadow-sm">
+        <div className="flex flex-col gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest p-lg transition-shadow hover:shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-label-caps font-label-caps uppercase text-on-surface-variant">
               Income
@@ -586,7 +585,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 rounded-xl border border-outline-variant bg-white p-lg transition-shadow hover:shadow-sm">
+        <div className="flex flex-col gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest p-lg transition-shadow hover:shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-label-caps font-label-caps uppercase text-on-surface-variant">
               Expenses
@@ -602,14 +601,14 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-4 rounded-xl border border-outline-variant bg-white p-lg transition-shadow hover:shadow-sm">
+        <div className="flex items-center justify-between gap-4 rounded-xl border border-outline-variant bg-surface-container-lowest p-lg transition-shadow hover:shadow-sm">
           <div className="flex w-full flex-col gap-2">
             <span className="text-label-caps font-label-caps uppercase text-on-surface-variant">
               Savings Rate
             </span>
             <div>
               <div className="font-h2 text-h2 text-on-background">{savingsRate.toFixed(1)}%</div>
-              <div className="mt-1 text-[12px] font-medium text-slate-500">
+              <div className="mt-1 text-[12px] font-medium text-on-surface-variant">
                 Target: {savingsTarget}% | Net: {formatCurrency(netCashFlow)}
               </div>
             </div>
@@ -617,7 +616,7 @@ const Dashboard = () => {
           <div className="relative h-16 w-16 shrink-0">
             <svg className="h-full w-full -rotate-90 transform">
               <circle
-                className="text-slate-100"
+                className="text-surface-container-high"
                 cx="32"
                 cy="32"
                 fill="transparent"
@@ -647,28 +646,28 @@ const Dashboard = () => {
       </section>
 
       <section className="grid grid-cols-1 gap-gutter lg:grid-cols-[1.2fr_0.8fr]">
-        <div className="overflow-hidden rounded-xl border border-outline-variant bg-white p-lg shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest p-lg shadow-sm">
           <div className="mb-lg flex items-center justify-between">
             <div>
               <h3 className="font-h3 text-h3 text-primary">Cash Flow</h3>
-              <p className="text-body-sm text-slate-500">Animated {cashflowDescription} income and expenses for {selectedWalletLabel.toLowerCase()}.</p>
+              <p className="text-body-sm text-on-surface-variant">Animated {cashflowDescription} income and expenses for {selectedWalletLabel.toLowerCase()}.</p>
             </div>
-            <div className="rounded-full bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
+            <div className="rounded-full bg-surface-container-low px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">
               Income vs expenses
             </div>
           </div>
 
-          <div className="mb-4 grid grid-cols-3 gap-3 rounded-2xl border border-slate-100 bg-slate-50/70 p-3">
+          <div className="mb-4 grid grid-cols-3 gap-3 rounded-2xl border border-outline-variant/40 bg-surface-container-low p-3">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Income</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant/70">Income</p>
               <p className="mt-1 text-sm font-semibold text-emerald-700">{formatCurrency(periodIncome)}</p>
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Expenses</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant/70">Expenses</p>
               <p className="mt-1 text-sm font-semibold text-rose-700">{formatCurrency(periodExpenses)}</p>
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Net</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant/70">Net</p>
               <p className={"mt-1 text-sm font-semibold " + (netCashFlow >= 0 ? "text-teal-700" : "text-rose-700")}>
                 {formatCurrency(netCashFlow)}
               </p>
@@ -688,32 +687,30 @@ const Dashboard = () => {
                     <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme === "dark" ? "#343434" : "#f1f5f9"} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-outline-variant)" strokeOpacity={0.45} />
                 <XAxis
                   dataKey="label"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: theme === "dark" ? "#a3a3a3" : "#94a3b8", fontSize: 12 }}
+                  tick={{ fill: "var(--color-on-surface-variant)", fontSize: 12 }}
                   
                 />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: theme === "dark" ? "#a3a3a3" : "#94a3b8", fontSize: 12 }}
+                  tick={{ fill: "var(--color-on-surface-variant)", fontSize: 12 }}
                   tickFormatter={(val) => `${showCurrencySymbol ? "₱" : ""}${Number(val) > 1000 ? `${(Number(val) / 1000).toFixed(0)}k` : Number(val)}`}
                 />
                 <Tooltip
                   contentStyle={{
                     borderRadius: "16px",
-                    border: `1px solid ${theme === "dark" ? "#343434" : "#e2e8f0"}`,
-                    backgroundColor: theme === "dark" ? "#181818" : "#ffffff",
-                    color: theme === "dark" ? "#f5f5f5" : "#131b2e",
-                    boxShadow: theme === "dark"
-                      ? "0 20px 40px rgba(0, 0, 0, 0.45)"
-                      : "0 20px 40px rgba(15, 23, 42, 0.12)",
+                    border: "1px solid var(--color-outline-variant)",
+                    backgroundColor: "var(--color-surface-container-lowest)",
+                    color: "var(--color-on-surface)",
+                    boxShadow: "0 20px 40px rgba(15, 23, 42, 0.16)",
                   }}
-                  labelStyle={{ color: theme === "dark" ? "#f5f5f5" : "#131b2e" }}
-                  itemStyle={{ color: theme === "dark" ? "#ededed" : "#131b2e" }}
+                  labelStyle={{ color: "var(--color-on-surface)" }}
+                  itemStyle={{ color: "var(--color-on-surface)" }}
                   formatter={(value: number | string, name) => {
                     const label = name === "Income" ? "Income" : "Expenses";
                     return [formatCurrency(Number(value)), label];
@@ -758,20 +755,20 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="rounded-xl border border-outline-variant bg-white p-lg shadow-sm">
+        <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-lg shadow-sm">
           <div className="mb-lg flex items-center justify-between">
             <h3 className="font-h3 text-h3 text-primary">Top Categories</h3>
           </div>
           <div className="space-y-5">
             {topCategories.length === 0 ? (
-              <p className="py-8 text-center text-body-sm text-slate-400">
+              <p className="py-8 text-center text-body-sm text-on-surface-variant">
                 {emptyExpenseMessage}
               </p>
             ) : (
               topCategories.map((category, index) => (
                 <div
                   key={category.label}
-                  className={`flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50/70 p-3 shadow-[0_8px_24px_rgba(15,23,42,0.04)] transition-all duration-500 ease-out ${animateTopCategories ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"}`}
+                  className={`flex items-center gap-4 rounded-2xl border border-outline-variant/40 bg-surface-container-low p-3 shadow-[0_8px_24px_rgba(15,23,42,0.04)] transition-all duration-500 ease-out ${animateTopCategories ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"}`}
                   style={{ transitionDelay: `${index * 90}ms` }}
                 >
                   <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${category.bg} ${category.text}`}>
@@ -782,7 +779,7 @@ const Dashboard = () => {
                       <span className="truncate font-bold text-on-background">{category.label}</span>
                       <span className="text-body-sm font-bold text-on-background">{category.amount}</span>
                     </div>
-                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-container-high">
                       <div
                         className="h-full rounded-full bg-gradient-to-r from-primary/70 via-primary to-secondary transition-[width] duration-900 ease-out"
                         style={{ width: animateTopCategories ? category.percent : "0%" }}
@@ -796,14 +793,14 @@ const Dashboard = () => {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-xl border border-outline-variant bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-slate-100 p-lg">
+      <section className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+        <div className="flex items-center justify-between border-b border-outline-variant/40 p-lg">
           <h3 className="font-h3 text-h3 text-primary">Recent Activity</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50">
+              <tr className="border-b border-outline-variant/40 bg-surface-container-low">
                 <th className="px-lg py-3 font-label-caps text-label-caps uppercase text-on-surface-variant">
                   Transaction
                 </th>
@@ -821,10 +818,10 @@ const Dashboard = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-outline-variant/40">
               {recentTx.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-lg py-8 text-center text-body-sm text-slate-400">
+                  <td colSpan={5} className="px-lg py-8 text-center text-body-sm text-on-surface-variant">
                     No transactions yet
                   </td>
                 </tr>
@@ -834,7 +831,7 @@ const Dashboard = () => {
                   const amount = Number(tx.amount);
 
                   return (
-                    <tr key={tx.trans_id} className="transition-colors hover:bg-slate-50/50">
+                    <tr key={tx.trans_id} className="transition-colors hover:bg-surface-container-low/70">
                       <td className="px-lg py-4">
                         <div className="flex items-center gap-3">
                           <div className={`flex h-10 w-10 items-center justify-center rounded-full ${style.iconBg} ${style.iconColor}`}>
@@ -843,7 +840,7 @@ const Dashboard = () => {
                           <div>
                             <div className="font-bold text-on-background">{tx.description}</div>
                             {tx.category ? (
-                              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-on-surface-variant/70">
                                 {tx.category}
                               </div>
                             ) : null}
@@ -863,7 +860,7 @@ const Dashboard = () => {
                           {tx.type}
                         </span>
                       </td>
-                      <td className="px-lg py-4 text-body-sm font-bold text-slate-600">
+                      <td className="px-lg py-4 text-body-sm font-bold text-on-surface-variant">
                         {tx.wallet_type}
                       </td>
                       <td className="px-lg py-4 text-body-sm text-on-surface-variant">

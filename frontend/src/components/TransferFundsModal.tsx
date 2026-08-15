@@ -150,12 +150,12 @@ export function TransferFundsModal() {
         showCloseButton={false}
         onInteractOutside={(event) => event.preventDefault()}
       >
-        <DialogHeader className="border-b border-slate-100 bg-[linear-gradient(180deg,rgba(248,250,252,0.98),rgba(255,255,255,0.92))] p-6 pb-5 text-left dark:bg-none dark:bg-[#181818]">
+        <DialogHeader className="border-b border-outline-variant/40 bg-surface-container-low p-6 pb-5 text-left">
           <div>
-            <DialogTitle className="text-xl font-bold tracking-tight text-slate-900">
+            <DialogTitle className="text-xl font-bold tracking-tight text-on-surface">
               Transfer Funds
             </DialogTitle>
-            <DialogDescription className="mt-1 text-sm text-slate-500">
+            <DialogDescription className="mt-1 text-sm text-on-surface-variant">
               Move money between your wallets without creating a fake expense.
             </DialogDescription>
           </div>
@@ -170,7 +170,7 @@ export function TransferFundsModal() {
           )}
 
           <div className="space-y-2">
-            <label htmlFor="transfer-from-wallet" className="block text-label-caps font-label-caps text-slate-500 uppercase">
+            <label htmlFor="transfer-from-wallet" className="block text-label-caps font-label-caps text-on-surface-variant uppercase">
               From Wallet
             </label>
             <StyledSelect
@@ -204,7 +204,7 @@ export function TransferFundsModal() {
                 })),
               ]}
               className={cn(
-                "bg-slate-50",
+                "bg-surface-container-low",
                 fieldErrors.fromWallet && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
               )}
               required
@@ -215,7 +215,7 @@ export function TransferFundsModal() {
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="transfer-to-wallet" className="block text-label-caps font-label-caps text-slate-500 uppercase">
+            <label htmlFor="transfer-to-wallet" className="block text-label-caps font-label-caps text-on-surface-variant uppercase">
               To Wallet
             </label>
             <StyledSelect
@@ -240,7 +240,7 @@ export function TransferFundsModal() {
                   })),
               ]}
               className={cn(
-                "bg-slate-50",
+                "bg-surface-container-low",
                 fieldErrors.toWallet && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
               )}
               required
@@ -257,7 +257,7 @@ export function TransferFundsModal() {
           ) : null}
 
           <div className="space-y-2">
-            <label htmlFor="transfer-amount" className="block text-label-caps font-label-caps text-slate-500 uppercase">
+            <label htmlFor="transfer-amount" className="block text-label-caps font-label-caps text-on-surface-variant uppercase">
               Amount{showCurrencySymbol ? " (₱)" : ""}
             </label>
             <input
@@ -279,7 +279,7 @@ export function TransferFundsModal() {
               aria-invalid={Boolean(fieldErrors.amount)}
               aria-describedby={fieldErrors.amount ? "transfer-amount-error" : undefined}
               className={cn(
-                "w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-body-sm outline-none transition-colors focus:bg-white focus:ring-2 focus:ring-primary/20",
+                "w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-body-sm outline-none transition-colors focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20",
                 fieldErrors.amount && "border-red-500 focus:border-red-500 focus:ring-red-200",
               )}
               placeholder="0.00"
@@ -292,7 +292,7 @@ export function TransferFundsModal() {
             <Button
               type="button"
               variant="outline"
-              className="flex-1 rounded-xl border-slate-200 hover:bg-slate-50"
+              className="flex-1 rounded-xl hover:bg-surface-container-low"
               onClick={() => setOpen(false)}
             >
               Cancel

@@ -53,7 +53,7 @@ function TransactionsSkeleton() {
         <SkeletonBlock className="h-11 md:h-10" />
         <SkeletonBlock className="h-11 md:h-10" />
       </div>
-      <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
+      <div className="overflow-hidden rounded-xl border border-outline-variant">
         <SkeletonBlock className="h-14 rounded-none" />
         <div className="flex flex-col">
           {Array.from({ length: 6 }, (_, index) => (
@@ -112,17 +112,17 @@ function SettingsSkeleton() {
       {Array.from({ length: 3 }, (_, sectionIndex) => (
         <div
           key={sectionIndex}
-          className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800"
+          className="overflow-hidden rounded-2xl border border-outline-variant"
         >
-          <div className="space-y-2 border-b border-slate-200 p-5 dark:border-slate-800">
+          <div className="space-y-2 border-b border-outline-variant p-5">
             <SkeletonBlock className="h-5 w-32" />
             <SkeletonBlock className="h-3 w-56 max-w-[65vw]" />
           </div>
-          <div className="space-y-px bg-slate-200 dark:bg-slate-800">
+          <div className="space-y-px bg-outline-variant">
             {Array.from({ length: sectionIndex === 0 ? 3 : 2 }, (_, rowIndex) => (
               <div
                 key={rowIndex}
-                className="flex h-[72px] items-center justify-between bg-white px-5 dark:bg-slate-950"
+                className="flex h-[72px] items-center justify-between bg-surface-container-lowest px-5"
               >
                 <div className="space-y-2">
                   <SkeletonBlock className="h-4 w-36" />
@@ -140,8 +140,8 @@ function SettingsSkeleton() {
 
 function ChatSkeleton() {
   return (
-    <div className="flex h-[calc(100dvh-8rem)] min-h-[640px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-      <div className="flex h-[72px] items-center gap-3 border-b border-slate-200 px-4 dark:border-slate-800">
+    <div className="flex h-[calc(100dvh-8rem)] min-h-[640px] flex-col overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest">
+      <div className="flex h-[72px] items-center gap-3 border-b border-outline-variant px-4">
         <SkeletonBlock className="h-10 w-10 rounded-full" />
         <div className="space-y-2">
           <SkeletonBlock className="h-4 w-24" />
@@ -161,7 +161,7 @@ function ChatSkeleton() {
           <SkeletonBlock className="h-32 w-[min(38rem,80%)] rounded-2xl" />
         </div>
       </div>
-      <div className="border-t border-slate-200 p-4 dark:border-slate-800">
+      <div className="border-t border-outline-variant p-4">
         <SkeletonBlock className="h-14 rounded-xl" />
       </div>
     </div>

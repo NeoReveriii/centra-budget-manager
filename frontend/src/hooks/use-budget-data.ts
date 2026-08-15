@@ -76,6 +76,9 @@ export function useGoals() {
     queryKey: [...budgetQueryKeys.goals, identity.accountId],
     queryFn: fetchGoals,
     enabled: identity.enabled,
+    staleTime: 60_000,
+    gcTime: 30 * 60_000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -216,12 +219,12 @@ export function useCreateGoal() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createGoal,
-    onSuccess: async ({ goal }) => {
+    onSuccess: ({ goal }) => {
       queryClient.setQueriesData<Goal[]>(
         { queryKey: budgetQueryKeys.goals },
-        (current) => (current ? [...current, goal] : current),
+        (current) => (current ? [goal, ...current.filter((item) => item.goal_id !== goal.goal_id)] : [goal]),
       );
-      await synchronizeBudgetQueries(queryClient, ["goals"]);
+      publishBudgetSync(["goals"]);
     },
   });
 }
@@ -230,13 +233,17 @@ export function useUpdateGoal() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateGoal,
-    onSuccess: async ({ goal }) => {
+    onSuccess: ({ goal }) => {
       queryClient.setQueriesData<Goal[]>(
         { queryKey: budgetQueryKeys.goals },
         (current) =>
-          current?.map((item) => (item.goal_id === goal.goal_id ? goal : item)),
+          current?.map((item) =>
+            item.goal_id === goal.goal_id
+              ? { ...item, ...goal, history: goal.history ?? item.history }
+              : item,
+          ),
       );
-      await synchronizeBudgetQueries(queryClient, ["goals"]);
+      publishBudgetSync(["goals"]);
     },
   });
 }
@@ -245,12 +252,12 @@ export function useDeleteGoal() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteGoal,
-    onSuccess: async (_, goalId) => {
+    onSuccess: (_, goalId) => {
       queryClient.setQueriesData<Goal[]>(
         { queryKey: budgetQueryKeys.goals },
         (current) => current?.filter((goal) => goal.goal_id !== goalId),
       );
-      await synchronizeBudgetQueries(queryClient, ["goals"]);
+      publishBudgetSync(["goals"]);
     },
   });
 }

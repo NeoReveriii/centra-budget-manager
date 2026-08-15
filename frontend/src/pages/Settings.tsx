@@ -136,7 +136,7 @@ const Settings = () => {
                 checked={theme === "dark"}
                 onChange={(e) => setTheme(e.target.checked ? "dark" : "light")}
               />
-              <div className="h-5 w-10 rounded-full bg-surface-container-high peer-focus:outline-none peer peer-checked:after:translate-x-5 peer-checked:after:border-white after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-outline-variant after:bg-white after:content-[''] after:transition-all peer-checked:bg-primary"></div>
+              <div className="h-5 w-10 rounded-full bg-surface-container-high peer-focus:outline-none peer peer-checked:after:translate-x-5 peer-checked:after:border-on-primary after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-outline-variant after:bg-surface-container-lowest after:content-[''] after:transition-all peer-checked:bg-primary"></div>
             </label>
           </div>
 
@@ -177,7 +177,7 @@ const Settings = () => {
                   { value: "Filipino", label: "Filipino" },
                   { value: "Spanish", label: "Spanish" },
                 ]}
-                className="rounded-xl bg-white text-on-surface"
+                className="rounded-xl bg-surface-container-lowest text-on-surface"
                 aria-label="Language"
               />
             </div>
@@ -201,7 +201,7 @@ const Settings = () => {
                 type="checkbox"
                 aria-label="Currency Display"
               />
-              <div className="h-5 w-10 rounded-full bg-surface-container-high peer-focus:outline-none peer peer-checked:after:translate-x-5 peer-checked:after:border-white after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-outline-variant after:bg-white after:content-[''] after:transition-all peer-checked:bg-primary"></div>
+              <div className="h-5 w-10 rounded-full bg-surface-container-high peer-focus:outline-none peer peer-checked:after:translate-x-5 peer-checked:after:border-on-primary after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-outline-variant after:bg-surface-container-lowest after:content-[''] after:transition-all peer-checked:bg-primary"></div>
             </label>
           </div>
         </div>
@@ -231,7 +231,7 @@ const Settings = () => {
               type="button"
               onClick={handleExport}
               disabled={isExporting}
-              className="flex shrink-0 items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-primary active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex shrink-0 items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-xs font-bold text-on-secondary shadow-sm transition-colors hover:bg-primary hover:text-on-primary active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <span
                 className="material-symbols-outlined"
@@ -319,7 +319,7 @@ const Settings = () => {
                 setDeleteError("");
                 setDeleteOpen(true);
               }}
-              className="shrink-0 rounded-lg bg-error px-3 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-[#93000a] active:scale-[0.98]"
+              className="shrink-0 rounded-lg bg-error px-3 py-2 text-xs font-bold text-on-error shadow-sm transition-colors hover:bg-error/90 active:scale-[0.98]"
             >
               Delete Data
             </button>

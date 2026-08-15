@@ -17,6 +17,7 @@ interface RegClassRow {
 }
 
 const sql = neon(process.env.DATABASE_URL!);
+let goalsSchemaRecoveryPromise: Promise<void> | null = null;
 
 async function ensureGoalsSchema(): Promise<void> {
   const reg = await sql`SELECT to_regclass('public.goals') AS reg` as RegClassRow[];
@@ -34,6 +35,7 @@ async function ensureGoalsSchema(): Promise<void> {
         current_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
         deadline DATE,
         status TEXT DEFAULT 'Active',
+        allow_expense BOOLEAN NOT NULL DEFAULT FALSE,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `;
@@ -68,6 +70,35 @@ async function ensureGoalsSchema(): Promise<void> {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `;
+
+  await sql`CREATE INDEX IF NOT EXISTS idx_goals_account_created ON goals(account_id, created_at DESC)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_goal_contributions_goal_created ON goal_contributions(goal_id, created_at DESC)`;
+}
+
+function isMissingGoalsSchemaError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const code = String((error as { code?: unknown }).code || '');
+  return code === '42P01' || code === '42703';
+}
+
+async function recoverGoalsSchema(): Promise<void> {
+  if (!goalsSchemaRecoveryPromise) {
+    goalsSchemaRecoveryPromise = ensureGoalsSchema().catch((error) => {
+      goalsSchemaRecoveryPromise = null;
+      throw error;
+    });
+  }
+  await goalsSchemaRecoveryPromise;
+}
+
+async function withGoalsSchemaRecovery<T>(operation: () => Promise<T>): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    if (!isMissingGoalsSchemaError(error)) throw error;
+    await recoverGoalsSchema();
+    return operation();
+  }
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -75,10 +106,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const account = await requireAccount(req, res);
     if (!account) return;
 
-    await ensureGoalsSchema();
-
     if (req.method === 'GET') {
-      const rows = await sql`
+      const rows = await withGoalsSchemaRecovery(() => sql`
         SELECT
           g.goal_id,
           g.title,
@@ -90,20 +119,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           g.status,
           g.allow_expense,
           g.created_at,
-          (
-            SELECT json_agg(h)
-            FROM (
-              SELECT amount, note, created_at
-              FROM goal_contributions
-              WHERE goal_id = g.goal_id
-              ORDER BY created_at DESC
-              LIMIT 10
-            ) h
-          ) as history
+          NULL::json AS history
         FROM goals g
         WHERE g.account_id = ${account.acc_id}
         ORDER BY g.created_at DESC
-      `;
+      `);
       return res.status(200).json({ goals: rows });
     }
 
@@ -124,11 +144,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       const allowExpenseBool = allow_expense === true || allow_expense === 'true';
-      const rows = await sql`
+      const rows = await withGoalsSchemaRecovery(() => sql`
         INSERT INTO goals (account_id, title, target_amount, deadline, category, priority, allow_expense)
         VALUES (${account.acc_id}, ${title}, ${target_amount}, ${deadline || null}, ${category || 'Savings'}, ${priority || 1}, ${allowExpenseBool})
         RETURNING *
-      `;
+      `);
 
       return res.status(201).json({ goal: rows[0] });
     }
@@ -139,21 +159,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       const { goal_id, add_amount, note } = body;
 
-      const rows = await sql`
-        UPDATE goals
-        SET current_amount = current_amount + ${add_amount}
-        WHERE goal_id = ${goal_id} AND account_id = ${account.acc_id}
-        RETURNING *
-      `;
+      const rows = await withGoalsSchemaRecovery(() => sql`
+        WITH updated_goal AS (
+          UPDATE goals
+          SET current_amount = current_amount + ${add_amount}
+          WHERE goal_id = ${goal_id} AND account_id = ${account.acc_id}
+          RETURNING *
+        ), recorded_contribution AS (
+          INSERT INTO goal_contributions (goal_id, amount, note)
+          SELECT goal_id, ${add_amount}, ${note || 'Manual add'}
+          FROM updated_goal
+          RETURNING goal_id
+        )
+        SELECT updated_goal.*
+        FROM updated_goal
+        JOIN recorded_contribution USING (goal_id)
+      `);
 
       if (rows.length === 0) {
         return res.status(404).json({ error: 'Goal not found or access denied.' });
       }
-
-      await sql`
-        INSERT INTO goal_contributions (goal_id, amount, note)
-        VALUES (${goal_id}, ${add_amount}, ${note || 'Manual add'})
-      `;
 
       return res.status(200).json({ goal: rows[0] });
     }
@@ -164,11 +189,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       const { goal_id } = body;
 
-      const rows = await sql`
+      const rows = await withGoalsSchemaRecovery(() => sql`
         DELETE FROM goals
         WHERE goal_id = ${goal_id} AND account_id = ${account.acc_id}
         RETURNING goal_id
-      `;
+      `);
 
       if (rows.length === 0) {
         return res.status(404).json({ error: 'Goal not found or access denied.' });

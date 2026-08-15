@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import GoalCard from "../components/GoalCard";
 import type { PriorityLevel } from "../components/GoalCard";
 import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal } from "../hooks/use-budget-data";
-import { useQueryClient } from "@tanstack/react-query";
-import { budgetQueryKeys } from "../hooks/use-budget-data";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -60,7 +58,6 @@ function getMonthsRemaining(deadline: string): number {
 const SavingsGoals: React.FC = () => {
   const formatCurrency = useCurrencyFormatter();
   const showCurrencySymbol = useUiStore((state) => state.showCurrencySymbol);
-  const queryClient = useQueryClient();
   const { data: goals = [], isLoading } = useGoals();
   const createGoalMut  = useCreateGoal();
   const updateGoalMut  = useUpdateGoal();
@@ -136,8 +133,6 @@ const SavingsGoals: React.FC = () => {
       },
       {
         onSuccess: () => {
-          // Force immediate refetch — bypasses staleTime
-          queryClient.refetchQueries({ queryKey: budgetQueryKeys.goals });
           setIsAddOpen(false);
           setTitle("");
           setTargetAmount("");
@@ -335,7 +330,7 @@ const SavingsGoals: React.FC = () => {
                 <div className="space-y-1.5">
                   <Label htmlFor="goal-deadline" className="flex items-center gap-2">
                     Target Date
-                    <span className="text-[10px] text-slate-400 font-normal">(optional)</span>
+                    <span className="text-[10px] text-on-surface-variant/70 font-normal">(optional)</span>
                   </Label>
                   <DatePicker
                     id="goal-deadline"
@@ -385,47 +380,47 @@ const SavingsGoals: React.FC = () => {
       {/* ── Summary Banner ─────────────────────────────────────── */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* Total Saved */}
-        <div className="col-span-2 md:col-span-1 bg-primary text-white rounded-2xl p-5 relative overflow-hidden shadow-md">
-          <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full" />
+        <div className="col-span-2 md:col-span-1 bg-primary text-on-primary rounded-2xl p-5 relative overflow-hidden shadow-md">
+          <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-on-primary/10 rounded-full" />
           <p className="text-[11px] font-bold uppercase tracking-widest opacity-80 mb-1">Total Saved</p>
           <p className="text-2xl font-bold">{formatCurrency(totalSavings)}</p>
           <p className="text-[11px] opacity-70 mt-1">{momentumPct.toFixed(1)}% of all targets</p>
         </div>
 
         {/* Monthly Needed */}
-        <div className="bg-white border border-outline-variant rounded-2xl p-5">
+        <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-2">
             <span className="material-symbols-outlined text-amber-500 text-[20px]">calendar_month</span>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Monthly Needed</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/70">Monthly Needed</p>
           </div>
           <p className="text-xl font-bold text-on-surface">
             {totalMonthlyNeeded > 0 ? formatCurrency(totalMonthlyNeeded) : "—"}
           </p>
-          <p className="text-[11px] text-slate-400 mt-1">Across all deadlines</p>
+          <p className="text-[11px] text-on-surface-variant/70 mt-1">Across all deadlines</p>
         </div>
 
         {/* Remaining */}
-        <div className="bg-white border border-outline-variant rounded-2xl p-5">
+        <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-2">
             <span className="material-symbols-outlined text-rose-500 text-[20px]">savings</span>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Still Needed</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/70">Still Needed</p>
           </div>
           <p className="text-xl font-bold text-on-surface">{formatCurrency(totalRemaining)}</p>
-          <p className="text-[11px] text-slate-400 mt-1">Until all goals met</p>
+          <p className="text-[11px] text-on-surface-variant/70 mt-1">Until all goals met</p>
         </div>
 
         {/* Goals count */}
-        <div className="bg-white border border-outline-variant rounded-2xl p-5">
+        <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-2">
             <span className="material-symbols-outlined text-emerald-500 text-[20px]">task_alt</span>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Goals</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/70">Goals</p>
           </div>
           <div className="flex items-baseline gap-2">
             <p className="text-xl font-bold text-emerald-600">{completedGoals}</p>
-            <p className="text-xl font-bold text-slate-300">/</p>
+            <p className="text-xl font-bold text-on-surface-variant/45">/</p>
             <p className="text-xl font-bold text-on-surface">{goals.length}</p>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">{activeGoals} active</p>
+          <p className="text-[11px] text-on-surface-variant/70 mt-1">{activeGoals} active</p>
         </div>
       </section>
 
@@ -461,7 +456,7 @@ const SavingsGoals: React.FC = () => {
       <section>
         {goals.length === 0 ? (
           <div className="text-center py-20 text-on-surface-variant">
-            <span className="material-symbols-outlined text-[56px] text-slate-200">savings</span>
+            <span className="material-symbols-outlined text-[56px] text-on-surface-variant/35">savings</span>
             <p className="mt-4 font-bold text-on-surface">No goals yet</p>
             <p className="text-body-sm mt-1">Click "New Goal" to set your first financial milestone.</p>
           </div>
@@ -529,7 +524,7 @@ const SavingsGoals: React.FC = () => {
               <div className="space-y-1.5">
                 <Label htmlFor="contribute-note">
                   Note
-                  <span className="text-[10px] text-slate-400 font-normal ml-2">(optional)</span>
+                  <span className="text-[10px] text-on-surface-variant/70 font-normal ml-2">(optional)</span>
                 </Label>
                 <Input
                   id="contribute-note"

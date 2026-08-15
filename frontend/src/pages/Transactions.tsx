@@ -91,8 +91,8 @@ const ICON_MAP: Record<
   },
   transfer: {
     icon: "sync_alt",
-    iconBg: "bg-slate-50",
-    iconColor: "text-slate-600",
+    iconBg: "bg-surface-container-low",
+    iconColor: "text-on-surface-variant",
   },
   health: {
     icon: "fitness_center",
@@ -130,13 +130,13 @@ function getIconStyle(desc: string, type: string) {
   if (type === "Transfer")
     return {
       icon: "sync_alt",
-      iconBg: "bg-slate-50",
-      iconColor: "text-slate-600",
+      iconBg: "bg-surface-container-low",
+      iconColor: "text-on-surface-variant",
     };
   return {
     icon: "receipt_long",
-    iconBg: "bg-slate-50",
-    iconColor: "text-slate-600",
+    iconBg: "bg-surface-container-low",
+    iconColor: "text-on-surface-variant",
   };
 }
 
@@ -211,11 +211,11 @@ const Transactions = () => {
       {/* FILTERS */}
       <section className="flex flex-col gap-3 md:grid md:grid-cols-[minmax(0,1fr)_186px_186px] md:items-center">
         <div className="relative min-w-0">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-slate-400">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-on-surface-variant/70">
             search
           </span>
           <input
-            className="h-11 md:h-10 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2 pl-10 text-sm font-semibold text-slate-800 shadow-none transition-colors placeholder:text-slate-500 hover:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20"
+            className="h-11 md:h-10 w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-2 pl-10 text-sm font-semibold text-on-surface shadow-none transition-colors placeholder:text-on-surface-variant/70 hover:bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary/20"
             placeholder="Search transactions..."
             type="text"
             value={search}
@@ -226,40 +226,40 @@ const Transactions = () => {
           value={typeFilter}
           onChange={setTypeFilter}
           options={["All Types", "Expense", "Income", "Transfer"].map((option) => ({ value: option, label: option }))}
-          className="w-full min-w-0 h-11 md:h-10 rounded-xl border-slate-300 bg-slate-50 text-sm font-semibold text-slate-800 shadow-none hover:bg-white"
+          className="w-full min-w-0 h-11 md:h-10 rounded-xl bg-surface-container-low text-sm font-semibold text-on-surface shadow-none hover:bg-surface-container-lowest"
           aria-label="Transaction type filter"
         />
         <StyledSelect
           value={walletFilter}
           onChange={setWalletFilter}
           options={[{ value: "All Wallets", label: "All Wallets" }, ...wallets.map((w) => ({ value: w.name, label: w.name }))]}
-          className="w-full min-w-0 h-11 md:h-10 rounded-xl border-slate-300 bg-slate-50 text-sm font-semibold text-slate-800 shadow-none hover:bg-white"
+          className="w-full min-w-0 h-11 md:h-10 rounded-xl bg-surface-container-low text-sm font-semibold text-on-surface shadow-none hover:bg-surface-container-lowest"
           aria-label="Wallet filter"
         />
       </section>
 
       {/* DATA TABLE */}
-      <section className="bg-white rounded-xl border border-outline-variant overflow-hidden shadow-sm">
+      <section className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
-            <thead className="bg-slate-50 border-b border-outline-variant">
+            <thead className="bg-surface-container-low border-b border-outline-variant">
               <tr>
-                <th className="px-6 py-4 text-left font-label-caps text-label-caps text-slate-500 uppercase tracking-widest whitespace-nowrap">
+                <th className="px-6 py-4 text-left font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest whitespace-nowrap">
                   Date
                 </th>
-                <th className="px-6 py-4 text-left font-label-caps text-label-caps text-slate-500 uppercase tracking-widest whitespace-nowrap">
+                <th className="px-6 py-4 text-left font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest whitespace-nowrap">
                   Description
                 </th>
-                <th className="px-6 py-4 text-left font-label-caps text-label-caps text-slate-500 uppercase tracking-widest whitespace-nowrap">
+                <th className="px-6 py-4 text-left font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest whitespace-nowrap">
                   Wallet
                 </th>
-                <th className="px-6 py-4 text-left font-label-caps text-label-caps text-slate-500 uppercase tracking-widest whitespace-nowrap">
+                <th className="px-6 py-4 text-left font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest whitespace-nowrap">
                   Type
                 </th>
-                <th className="px-6 py-4 text-right font-label-caps text-label-caps text-slate-500 uppercase tracking-widest whitespace-nowrap">
+                <th className="px-6 py-4 text-right font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest whitespace-nowrap">
                   Amount
                 </th>
-                <th className="px-6 py-4 text-center font-label-caps text-label-caps text-slate-500 uppercase tracking-widest whitespace-nowrap">
+                <th className="px-6 py-4 text-center font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest whitespace-nowrap">
                   Actions
                 </th>
               </tr>
@@ -269,7 +269,7 @@ const Transactions = () => {
                 <tr>
                   <td
                     colSpan={6}
-                    className="px-6 py-12 text-center text-slate-400"
+                    className="px-6 py-12 text-center text-on-surface-variant"
                   >
                     No transactions found
                   </td>
@@ -281,13 +281,13 @@ const Transactions = () => {
                   return (
                     <tr
                       key={tx.trans_id}
-                      className="hover:bg-slate-50/50 transition-colors group"
+                      className="hover:bg-surface-container-low/70 transition-colors group"
                     >
                       <td className="px-6 py-5 whitespace-nowrap">
-                        <p className="text-body-sm font-bold text-slate-700">
+                        <p className="text-body-sm font-bold text-on-surface">
                           {formatDate(tx.dateoftrans)}
                         </p>
-                        <p className="text-[11px] font-medium text-slate-400 mt-0.5">
+                        <p className="text-[11px] font-medium text-on-surface-variant/70 mt-0.5">
                           {formatTime(tx.dateoftrans)}
                         </p>
                       </td>
@@ -305,7 +305,7 @@ const Transactions = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-5 text-body-sm text-slate-600 font-bold whitespace-nowrap">
+                      <td className="px-6 py-5 text-body-sm text-on-surface-variant font-bold whitespace-nowrap">
                         {tx.wallet_type}
                       </td>
                       <td className="px-6 py-5 whitespace-nowrap">
@@ -340,7 +340,7 @@ const Transactions = () => {
                       <td className="px-6 py-5 text-center">
                         <button
                           onClick={() => setDeleteId(tx.trans_id)}
-                          className="p-1.5 text-slate-300 hover:text-error rounded-lg hover:bg-rose-50 transition-all cursor-pointer opacity-0 group-hover:opacity-100"
+                          className="p-1.5 text-on-surface-variant/45 hover:text-error rounded-lg hover:bg-rose-50 transition-all cursor-pointer opacity-0 group-hover:opacity-100"
                         >
                           <span className="material-symbols-outlined text-[18px]">
                             delete
@@ -358,7 +358,7 @@ const Transactions = () => {
         {/* PAGINATION */}
         {totalPages > 1 && (
           <div className="px-6 py-6 border-t border-outline-variant flex items-center justify-between">
-            <p className="text-body-sm text-slate-500 font-medium">
+            <p className="text-body-sm text-on-surface-variant font-medium">
               Showing{" "}
               <span className="text-on-surface font-bold">
                 {(page - 1) * ITEMS_PER_PAGE + 1}-
@@ -374,7 +374,7 @@ const Transactions = () => {
               <button
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="px-4 py-2 border border-outline-variant rounded-xl text-body-sm font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                className="px-4 py-2 border border-outline-variant rounded-xl text-body-sm font-bold text-on-surface-variant hover:bg-surface-container-low disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
               >
                 Previous
               </button>
@@ -386,7 +386,7 @@ const Transactions = () => {
                   <button
                     key={p}
                     onClick={() => setPage(p)}
-                    className={`w-9 h-9 flex items-center justify-center rounded-xl font-bold text-sm cursor-pointer ${p === page ? "bg-primary text-white" : "hover:bg-slate-100 text-slate-600"}`}
+                    className={`w-9 h-9 flex items-center justify-center rounded-xl font-bold text-sm cursor-pointer ${p === page ? "bg-primary text-on-primary" : "hover:bg-surface-container-high text-on-surface-variant"}`}
                   >
                     {p}
                   </button>
@@ -395,7 +395,7 @@ const Transactions = () => {
               <button
                 onClick={() => setPage(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
-                className="px-4 py-2 border border-outline-variant rounded-xl text-body-sm font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                className="px-4 py-2 border border-outline-variant rounded-xl text-body-sm font-bold text-on-surface-variant hover:bg-surface-container-low disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
               >
                 Next
               </button>

@@ -26,7 +26,7 @@ const TRANSACTION_CATEGORIES = {
     { key: "transport", label: "Transport", icon: "commute", accent: "bg-emerald-50 text-emerald-600 border-emerald-100" },
     { key: "travel", label: "Travel", icon: "flight_takeoff", accent: "bg-sky-50 text-sky-600 border-sky-100" },
     { key: "shopping", label: "Shopping", icon: "shopping_bag", accent: "bg-purple-50 text-purple-600 border-purple-100" },
-    { key: "bills", label: "Bills", icon: "receipt_long", accent: "bg-slate-50 text-slate-600 border-slate-200" },
+    { key: "bills", label: "Bills", icon: "receipt_long", accent: "bg-surface-container-low text-on-surface-variant border-outline-variant" },
     { key: "health", label: "Health", icon: "health_and_safety", accent: "bg-rose-50 text-rose-600 border-rose-100" },
   ],
   Income: [
@@ -35,7 +35,7 @@ const TRANSACTION_CATEGORIES = {
     { key: "freelance", label: "Freelance", icon: "work", accent: "bg-indigo-50 text-indigo-600 border-indigo-100" },
     { key: "refund", label: "Refund", icon: "reply_all", accent: "bg-cyan-50 text-cyan-700 border-cyan-100" },
     { key: "savings", label: "Savings", icon: "savings", accent: "bg-teal-50 text-teal-700 border-teal-100" },
-    { key: "other_income", label: "Other", icon: "account_balance", accent: "bg-slate-50 text-slate-600 border-slate-200" },
+    { key: "other_income", label: "Other", icon: "account_balance", accent: "bg-surface-container-low text-on-surface-variant border-outline-variant" },
   ],
 } as const;
 
@@ -191,7 +191,7 @@ export function AddTransactionModal() {
         onInteractOutside={(event) => event.preventDefault()}
         showCloseButton={false}
       >
-        <DialogHeader className="border-b border-slate-100 bg-[linear-gradient(180deg,rgba(248,250,252,0.98),rgba(255,255,255,0.92))] p-6 pb-5 text-left dark:bg-none dark:bg-[#181818]">
+        <DialogHeader className="border-b border-outline-variant/40 bg-surface-container-low p-6 pb-5 text-left">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner">
               <span className="material-symbols-outlined text-[20px]">
@@ -199,10 +199,10 @@ export function AddTransactionModal() {
               </span>
             </div>
             <div>
-              <DialogTitle className="text-xl font-bold tracking-tight text-slate-900">
+              <DialogTitle className="text-xl font-bold tracking-tight text-on-surface">
                 Add Transaction
               </DialogTitle>
-              <DialogDescription className="mt-1 text-sm text-slate-500">
+              <DialogDescription className="mt-1 text-sm text-on-surface-variant">
                 Add a transaction and categorize it for clearer spending insights.
               </DialogDescription>
             </div>
@@ -220,7 +220,7 @@ export function AddTransactionModal() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="tx-description" className="font-bold text-slate-600">
+            <Label htmlFor="tx-description" className="font-bold text-on-surface-variant">
               Description
             </Label>
             <Input
@@ -240,7 +240,7 @@ export function AddTransactionModal() {
               aria-invalid={Boolean(fieldErrors.description)}
               aria-describedby={fieldErrors.description ? "tx-description-error" : undefined}
               className={cn(
-                "h-11 rounded-xl border-slate-200 bg-slate-50 leading-5 transition-colors focus:bg-white",
+                "h-11 rounded-xl bg-surface-container-low leading-5 transition-colors focus:bg-surface-container-lowest",
                 fieldErrors.description && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
               )}
               required
@@ -250,7 +250,7 @@ export function AddTransactionModal() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="tx-type" className="font-bold text-slate-600">
+              <Label htmlFor="tx-type" className="font-bold text-on-surface-variant">
                 Type
               </Label>
               <StyledSelect
@@ -258,12 +258,12 @@ export function AddTransactionModal() {
                 value={newTx.type}
                 onChange={(value) => handleTypeChange(value as TxType)}
                 options={TYPE_OPTIONS.map((option) => ({ value: option, label: option }))}
-                className="bg-slate-50"
+                className="bg-surface-container-low"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="tx-amount" className="font-bold text-slate-600">
+              <Label htmlFor="tx-amount" className="font-bold text-on-surface-variant">
                 Amount{showCurrencySymbol ? " (₱)" : ""}
               </Label>
               <Input
@@ -286,7 +286,7 @@ export function AddTransactionModal() {
                 aria-invalid={Boolean(fieldErrors.amount)}
                 aria-describedby={fieldErrors.amount ? "tx-amount-error" : undefined}
                 className={cn(
-                  "h-11 rounded-xl border-slate-200 bg-slate-50 transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:bg-white",
+                  "h-11 rounded-xl bg-surface-container-low transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:bg-surface-container-lowest",
                   fieldErrors.amount && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
                 )}
                 required
@@ -297,8 +297,8 @@ export function AddTransactionModal() {
 
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-3">
-              <Label className="font-bold text-slate-600">Category</Label>
-              <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+              <Label className="font-bold text-on-surface-variant">Category</Label>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-on-surface-variant/70">
                 Pick one
               </span>
             </div>
@@ -310,7 +310,7 @@ export function AddTransactionModal() {
                     key={option.key}
                     type="button"
                     onClick={() => setNewTx({ ...newTx, category: option.key })}
-                    className={`flex flex-col items-start gap-2 rounded-2xl border p-3 text-left transition-all ${selected ? "border-primary bg-primary/5 shadow-sm" : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"}`}
+                    className={`flex flex-col items-start gap-2 rounded-2xl border p-3 text-left transition-all ${selected ? "border-primary bg-primary/5 shadow-sm" : "border-outline-variant bg-surface-container-lowest hover:border-outline hover:bg-surface-container-low"}`}
                   >
                     <div className={`flex h-10 w-10 items-center justify-center rounded-xl border ${option.accent}`}>
                       <span className="material-symbols-outlined text-[20px]">
@@ -318,10 +318,10 @@ export function AddTransactionModal() {
                       </span>
                     </div>
                     <div>
-                      <div className="text-sm font-bold text-slate-900">
+                      <div className="text-sm font-bold text-on-surface">
                         {option.label}
                       </div>
-                      <div className="text-[11px] text-slate-500">
+                      <div className="text-[11px] text-on-surface-variant">
                         {selected ? "Selected" : "Tap to apply"}
                       </div>
                     </div>
@@ -332,7 +332,7 @@ export function AddTransactionModal() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="tx-wallet" className="font-bold text-slate-600">
+            <Label htmlFor="tx-wallet" className="font-bold text-on-surface-variant">
               Wallet
             </Label>
             <StyledSelect
@@ -355,7 +355,7 @@ export function AddTransactionModal() {
               aria-invalid={Boolean(fieldErrors.wallet)}
               aria-describedby={fieldErrors.wallet ? "tx-wallet-error" : undefined}
               className={cn(
-                "bg-slate-50",
+                "bg-surface-container-low",
                 fieldErrors.wallet && "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-200",
               )}
             />
@@ -371,7 +371,7 @@ export function AddTransactionModal() {
             <Button
               type="button"
               variant="outline"
-              className="flex-1 rounded-xl border-slate-200 hover:bg-slate-50"
+              className="flex-1 rounded-xl hover:bg-surface-container-low"
               onClick={() => setOpen(false)}
             >
               Cancel

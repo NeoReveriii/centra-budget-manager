@@ -46,15 +46,15 @@ interface AiAvailability {
 }
 const markdownComponents: Components = {
   p: ({ children }) => (
-    <p className="mb-3 last:mb-0 text-sm leading-relaxed text-slate-700">{children}</p>
+    <p className="mb-3 last:mb-0 text-sm leading-relaxed text-on-surface">{children}</p>
   ),
   strong: ({ children }) => (
-    <strong className="rounded-md bg-amber-100/90 px-1.5 py-0.5 font-semibold text-slate-950 shadow-[inset_0_-1px_0_rgba(255,255,255,0.55)]">
+    <strong className="rounded-md bg-amber-100/90 px-1.5 py-0.5 font-semibold text-on-surface shadow-[inset_0_-1px_0_rgba(255,255,255,0.55)]">
       {children}
     </strong>
   ),
-  ul: ({ children }) => <ul className="my-3 space-y-1 pl-5 text-sm text-slate-700">{children}</ul>,
-  ol: ({ children }) => <ol className="my-3 list-decimal space-y-1 pl-5 text-sm text-slate-700">{children}</ol>,
+  ul: ({ children }) => <ul className="my-3 space-y-1 pl-5 text-sm text-on-surface">{children}</ul>,
+  ol: ({ children }) => <ol className="my-3 list-decimal space-y-1 pl-5 text-sm text-on-surface">{children}</ol>,
   li: ({ children }) => <li className="leading-relaxed">{children}</li>,
   a: ({ children, href }) => (
     <a
@@ -67,7 +67,7 @@ const markdownComponents: Components = {
     </a>
   ),
   code: ({ children }) => (
-    <code className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[0.85em] text-slate-900">
+    <code className="rounded-md bg-surface-container-high px-1.5 py-0.5 font-mono text-[0.85em] text-on-surface">
       {children}
     </code>
   ),
@@ -137,7 +137,7 @@ function buildArcPath(startAngle: number, endAngle: number, radius: number) {
 
 function KwartaAvatar() {
   return (
-    <div className="relative flex h-8 w-8 items-start justify-center overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-black/5">
+    <div className="relative flex h-8 w-8 items-start justify-center overflow-hidden rounded-full bg-surface-container-lowest shadow-sm ring-1 ring-outline-variant/40">
       <img
         src="/assets/images/KwartaIcon.png"
         alt="Kwarta AI"
@@ -162,7 +162,7 @@ function ChatVisualization({
 
   if (data.length === 0 || total <= 0) {
     return (
-      <div className="mt-4 rounded-[1.25rem] border border-dashed border-slate-300 bg-white/70 p-4 text-sm text-slate-500">
+      <div className="mt-4 rounded-[1.25rem] border border-dashed border-outline-variant bg-surface-container-lowest/70 p-4 text-sm text-on-surface-variant">
         No transaction data to visualize yet.
       </div>
     );
@@ -171,17 +171,17 @@ function ChatVisualization({
   let runningAngle = 0;
 
   return (
-    <div className="mt-4 rounded-[1.25rem] border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
-      <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-3">
+    <div className="mt-4 rounded-[1.25rem] border border-outline-variant bg-surface-container-lowest p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+      <div className="flex items-center justify-between gap-4 border-b border-outline-variant/40 pb-3">
         <div>
-          <p className="font-label-caps text-[10px] uppercase tracking-[0.25em] text-slate-500">
+          <p className="font-label-caps text-[10px] uppercase tracking-[0.25em] text-on-surface-variant">
             {title}
           </p>
           <p className="text-sm font-semibold text-primary">
             Total {chartType}: {formatCurrency(total)}
           </p>
         </div>
-        <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+        <span className="rounded-full bg-surface-container-high px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">
           Live data
         </span>
       </div>
@@ -200,16 +200,16 @@ function ChatVisualization({
                   key={`${item.label}-${index}`}
                   d={buildArcPath(startAngle, endAngle, 46)}
                   fill={palette[index % palette.length]}
-                  stroke="#ffffff"
+                  stroke="var(--color-surface-container-lowest)"
                   strokeWidth="1.5"
                 />
               );
             })}
-            <circle cx="50" cy="50" r="24" fill="white" />
-            <text x="50" y="47" textAnchor="middle" className="fill-slate-500 text-[6px] uppercase tracking-[0.2em]">
+            <circle cx="50" cy="50" r="24" fill="var(--color-surface-container-lowest)" />
+            <text x="50" y="47" textAnchor="middle" className="fill-on-surface-variant text-[6px] uppercase tracking-[0.2em]">
               {chartType}
             </text>
-            <text x="50" y="56" textAnchor="middle" className="fill-slate-900 text-[8px] font-semibold">
+            <text x="50" y="56" textAnchor="middle" className="fill-on-surface text-[8px] font-semibold">
               {data.length}
             </text>
           </svg>
@@ -226,13 +226,13 @@ function ChatVisualization({
                       className="h-2.5 w-2.5 rounded-full"
                       style={{ backgroundColor: palette[index % palette.length] }}
                     />
-                    <span className="truncate font-semibold text-slate-700">{item.label}</span>
+                    <span className="truncate font-semibold text-on-surface">{item.label}</span>
                   </div>
-                  <span className="shrink-0 font-mono text-slate-500">
+                  <span className="shrink-0 font-mono text-on-surface-variant">
                     {formatCurrency(item.amount)}
                   </span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                <div className="h-2 overflow-hidden rounded-full bg-surface-container-high">
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{
@@ -496,8 +496,8 @@ const KwartaAI = () => {
   return (
     <>
       <div className="animate-fade-in pb-10">
-        <div className="flex h-[calc(100dvh-8rem)] min-h-[640px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-100 bg-surface-container-low/30 px-4 py-3">
+        <div className="flex h-[calc(100dvh-8rem)] min-h-[640px] flex-col overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+          <div className="flex items-center justify-between border-b border-outline-variant/40 bg-surface-container-low px-4 py-3">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center">
                 <KwartaAvatar />
@@ -540,20 +540,20 @@ const KwartaAI = () => {
                 aria-haspopup="menu"
                 aria-expanded={isMenuOpen}
                 title="More actions"
-                className="flex cursor-pointer items-center rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+                className="flex cursor-pointer items-center rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface"
               >
                 <span className="material-symbols-outlined">more_vert</span>
               </button>
 
               {isMenuOpen ? (
-                <div className="absolute right-0 top-full z-20 mt-2 w-56 overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
+                <div className="absolute right-0 top-full z-20 mt-2 w-56 overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest p-2 shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
                   <button
                     type="button"
                     onClick={() => {
                       setIsDeleteDialogOpen(true);
                       setIsMenuOpen(false);
                     }}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-700"
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-on-surface transition-colors hover:bg-rose-50 hover:text-rose-700"
                   >
                     <span className="material-symbols-outlined text-[18px]">delete_sweep</span>
                     Clear conversation
@@ -561,7 +561,7 @@ const KwartaAI = () => {
                   <button
                     type="button"
                     onClick={handleJumpToLatest}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100"
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-on-surface transition-colors hover:bg-surface-container-high"
                   >
                     <span className="material-symbols-outlined text-[18px]">south</span>
                     Jump to latest
@@ -571,7 +571,7 @@ const KwartaAI = () => {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto bg-slate-50/20 px-4 py-5 sm:px-6">
+          <div className="flex-1 overflow-y-auto bg-surface-container-low/50 px-4 py-5 sm:px-6">
             <div className="space-y-4">
                 {messages.map((msg) => {
                   if (msg.sender === "ai") {
@@ -583,7 +583,7 @@ const KwartaAI = () => {
                           className={`min-w-0 w-fit max-w-[80%] rounded-[1.35rem] rounded-tl-md border px-4 py-3 shadow-sm ${
                             parsed.isRefusal
                               ? "border-amber-200 bg-amber-50/90 text-amber-950"
-                              : "border-slate-200 bg-white/90 text-slate-900 backdrop-blur"
+                              : "border-outline-variant bg-surface-container-lowest text-on-surface"
                           }`}
                         >
                           {msg.content === "" && isTyping ? (
@@ -595,14 +595,14 @@ const KwartaAI = () => {
                           ) : parsed.isRefusal ? (
                             <div className="space-y-3">
                               <div className="flex items-center gap-2">
-                                <span className="inline-flex items-center rounded-full border border-amber-200 bg-white/80 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-amber-900">
+                                <span className="inline-flex items-center rounded-full border border-amber-200 bg-surface-container-lowest px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-amber-900">
                                   Finance only
                                 </span>
                                 <span className="text-xs font-semibold text-amber-900">
                                   Kwarta policy
                                 </span>
                               </div>
-                              <div className="prose prose-sm max-w-none prose-slate prose-p:leading-relaxed prose-strong:text-slate-950 prose-strong:bg-amber-100/90 prose-strong:px-1.5 prose-strong:py-0.5 prose-strong:rounded-md">
+                              <div className="prose prose-sm max-w-none prose-p:leading-relaxed prose-strong:text-on-surface prose-strong:bg-amber-100/90 prose-strong:px-1.5 prose-strong:py-0.5 prose-strong:rounded-md">
                                 <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                                   {parsed.displayContent}
                                 </ReactMarkdown>
@@ -611,7 +611,7 @@ const KwartaAI = () => {
                           ) : (
                             <>
                               {parsed.displayContent ? (
-                                <div className="prose prose-sm max-w-none prose-slate prose-p:leading-relaxed prose-table:overflow-hidden prose-table:rounded-lg prose-table:border prose-table:border-slate-200 prose-td:p-3 prose-th:bg-slate-50 prose-th:p-3 prose-th:text-xs prose-th:uppercase prose-th:tracking-wider prose-strong:text-slate-950 prose-strong:bg-amber-100/90 prose-strong:px-1.5 prose-strong:py-0.5 prose-strong:rounded-md prose-code:rounded-md prose-code:bg-slate-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:font-mono prose-code:text-[0.85em] prose-code:text-slate-900">
+                                <div className="prose prose-sm max-w-none prose-p:leading-relaxed prose-table:overflow-hidden prose-table:rounded-lg prose-table:border prose-table:border-outline-variant prose-td:p-3 prose-th:bg-surface-container-low prose-th:p-3 prose-th:text-xs prose-th:uppercase prose-th:tracking-wider prose-strong:text-on-surface prose-strong:bg-amber-100/90 prose-strong:px-1.5 prose-strong:py-0.5 prose-strong:rounded-md prose-code:rounded-md prose-code:bg-surface-container-high prose-code:px-1.5 prose-code:py-0.5 prose-code:font-mono prose-code:text-[0.85em] prose-code:text-on-surface">
                                   <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                                     {parsed.displayContent}
                                   </ReactMarkdown>
@@ -627,12 +627,12 @@ const KwartaAI = () => {
 
                   return (
                     <div key={msg.id} className="flex w-full justify-end gap-3 pl-4 sm:pl-8">
-                      <div className="min-w-0 w-fit max-w-[80%] rounded-[1.35rem] rounded-tr-md border border-primary/10 bg-primary px-4 py-3 shadow-sm shadow-slate-900/5">
-                        <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-white">
+                      <div className="min-w-0 w-fit max-w-[80%] rounded-[1.35rem] rounded-tr-md border border-primary/10 bg-primary px-4 py-3 shadow-sm">
+                        <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-on-primary">
                           {msg.content}
                         </p>
                       </div>
-                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white shadow-sm">
+                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-on-primary shadow-sm">
                         {userInitials}
                       </div>
                     </div>
@@ -642,16 +642,16 @@ const KwartaAI = () => {
             <div ref={chatEndRef} />
           </div>
 
-          <form onSubmit={handleSendMessage} className="border-t border-slate-100 bg-white p-4 sm:p-5">
+          <form onSubmit={handleSendMessage} className="border-t border-outline-variant/40 bg-surface-container-lowest p-4 sm:p-5">
             <div className={`relative flex items-center transition-shadow duration-200 ${inputFocused ? "rounded-xl shadow-lg shadow-emerald-900/5" : ""}`}>
               <button
                 type="button"
-                className="absolute left-4 cursor-pointer text-slate-400 transition-colors hover:text-primary"
+                className="absolute left-4 cursor-pointer text-on-surface-variant transition-colors hover:text-primary"
               >
                 <span className="material-symbols-outlined">attach_file</span>
               </button>
               <input
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-4 pr-28 pl-12 font-body-sm text-on-surface focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full rounded-xl border border-outline-variant bg-surface-container-low py-4 pr-28 pl-12 font-body-sm text-on-surface focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="Ask about your budget, savings goals, or spending trends..."
                 type="text"
                 value={inputValue}
@@ -665,7 +665,7 @@ const KwartaAI = () => {
                   type="submit"
                   disabled={isTyping || !inputValue.trim()}
                   aria-label="Send message"
-                  className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-primary-container text-white transition-all hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-primary-container text-on-primary-container transition-all hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <span className="material-symbols-outlined text-sm">send</span>
                 </button>
@@ -699,7 +699,7 @@ const KwartaAI = () => {
             <button
               type="button"
               onClick={() => setIsDeleteDialogOpen(false)}
-              className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              className="inline-flex items-center justify-center rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container-low"
             >
               Cancel
             </button>
@@ -707,7 +707,7 @@ const KwartaAI = () => {
               type="button"
               onClick={handleClearHistory}
               disabled={isClearingHistory}
-              className="inline-flex items-center justify-center rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center justify-center rounded-xl bg-error px-4 py-2.5 text-sm font-semibold text-on-error shadow-sm transition-colors hover:bg-error/90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isClearingHistory ? "Clearing..." : "Clear conversation"}
             </button>

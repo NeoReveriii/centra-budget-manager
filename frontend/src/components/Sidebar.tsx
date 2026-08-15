@@ -44,8 +44,8 @@ const Sidebar = () => {
       isCollapsed ? "w-10" : "w-full"
     } ${
       isActive
-        ? "bg-white shadow-sm text-[#0f5a5c] font-semibold dark:bg-[#242424] dark:text-[#75f0ad]"
-        : "text-[#3d4a40] hover:bg-[#e0e3e5] font-medium dark:text-[#c2c2c2] dark:hover:bg-[#242424]"
+        ? "bg-surface-container-lowest shadow-sm text-primary font-semibold"
+        : "text-on-surface-variant hover:bg-surface-container-high font-medium"
     }`;
 
   // Opacity transitions are handled inline now
@@ -65,7 +65,7 @@ const Sidebar = () => {
         className={`
           group/sidebar
           fixed left-0 top-0 h-[100dvh]
-          bg-[#f2f4f6] border-r border-[#bccabe] dark:bg-[#121212] dark:border-[#343434]
+          bg-surface-container-low border-r border-outline-variant
           flex flex-col z-50
           overflow-hidden
           transition-[width] duration-300 ease-[cubic-bezier(0.2,0,0,1)]
@@ -103,11 +103,11 @@ const Sidebar = () => {
                 style={{ left: "-112.5px", top: "-62.9px" }}
               />
               {isCollapsed && btnHover && (
-                <span className="material-symbols-outlined absolute text-[22px] text-[#3d4a40] dark:text-[#c2c2c2]">menu</span>
+                <span className="material-symbols-outlined absolute text-[22px] text-on-surface-variant">menu</span>
               )}
             </div>
             <span
-              className={`text-[19px] font-bold whitespace-nowrap text-[#1a7a5e] dark:text-[#75f0ad] transition-all duration-150 ${
+              className={`text-[19px] font-bold whitespace-nowrap text-primary transition-all duration-150 ${
                 isCollapsed ? "w-0 opacity-0 overflow-hidden ml-0" : "w-auto opacity-100 ml-2"
               }`}
               style={{ letterSpacing: "-0.3px" }}
@@ -122,7 +122,7 @@ const Sidebar = () => {
               onClick={toggleSidebar}
               title="Collapse sidebar"
               className="hidden md:flex w-10 h-10 shrink-0 items-center justify-center rounded-full
-                         text-[#3d4a40] hover:bg-[#e0e3e5] dark:text-[#c2c2c2] dark:hover:bg-[#242424] transition-colors cursor-pointer ml-auto"
+                         text-on-surface-variant hover:bg-surface-container-high transition-colors cursor-pointer ml-auto"
             >
               <span className="material-symbols-outlined text-[22px]">menu_open</span>
             </button>
@@ -132,14 +132,14 @@ const Sidebar = () => {
           <button
             onClick={() => setMobileSidebarOpen(false)}
             className="md:hidden w-10 h-10 shrink-0 flex items-center justify-center rounded-full
-                       text-[#3d4a40] hover:bg-[#e0e3e5] dark:text-[#c2c2c2] dark:hover:bg-[#242424] transition-colors cursor-pointer ml-auto"
+                       text-on-surface-variant hover:bg-surface-container-high transition-colors cursor-pointer ml-auto"
           >
             <span className="material-symbols-outlined text-[22px]">close</span>
           </button>
         </div>
 
         {/* Divider */}
-        <div className="mx-3 mb-1 border-b border-[#bccabe]/30 dark:border-[#343434] shrink-0" />
+        <div className="mx-3 mb-1 border-b border-outline-variant/40 shrink-0" />
 
         {/* ── NAVIGATION ──────────────────────────────────────────
             Each item: [fixed 40px icon zone] [label that fades].
@@ -173,7 +173,7 @@ const Sidebar = () => {
         </nav>
 
         {/* ── FOOTER ──────────────────────────────────────────── */}
-        <div className="px-2 py-2 shrink-0 border-t border-[#bccabe]/30 dark:border-[#343434] space-y-0.5">
+        <div className="px-2 py-2 shrink-0 border-t border-outline-variant/40 space-y-0.5">
           <NavLink
             to="/settings"
             className={navLinkClass}
@@ -199,7 +199,7 @@ const Sidebar = () => {
             }}
             title={isCollapsed ? "Sign Out" : undefined}
             className={`flex items-center h-10 rounded-2xl cursor-pointer transition-all
-                       duration-300 text-[#3d4a40] hover:text-rose-600 hover:bg-rose-50 dark:text-[#c2c2c2] dark:hover:bg-rose-950/40 font-medium ${
+                       duration-300 text-on-surface-variant hover:text-rose-600 hover:bg-rose-50 font-medium ${
                          isCollapsed ? "w-10" : "w-full"
                        }`}
           >
@@ -222,7 +222,7 @@ const Sidebar = () => {
         ──────────────────────────────────────────────────────── */}
         <div className="px-2 pb-4 shrink-0">
           <div
-            className={`flex items-center h-12 rounded-2xl hover:bg-[#e0e3e5] dark:hover:bg-[#242424]
+            className={`flex items-center h-12 rounded-2xl hover:bg-surface-container-high
                        cursor-pointer transition-all duration-300 ${
                          isCollapsed ? "w-10" : "w-full"
                        }`}
@@ -230,8 +230,8 @@ const Sidebar = () => {
           >
             {/* Avatar — same x-position as all icons */}
             <span className="w-10 h-10 flex items-center justify-center shrink-0">
-              <span className="w-8 h-8 rounded-full bg-[#0f5a5c] text-white flex items-center
-                              justify-center font-bold text-xs border border-[#0f5a5c]/20">
+              <span className="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center
+                              justify-center font-bold text-xs border border-primary/20">
                 {initials}
               </span>
             </span>
@@ -244,14 +244,14 @@ const Sidebar = () => {
               aria-hidden={isCollapsed}
             >
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-bold text-[#191c1e] dark:text-[#f1f5f9] truncate">
+                <p className="text-[13px] font-bold text-on-surface truncate">
                   {user?.username ?? "Account"}
                 </p>
-                <p className="text-[12px] text-[#3d4a40] dark:text-[#a3a3a3] truncate">
+                <p className="text-[12px] text-on-surface-variant truncate">
                   {user?.email ?? ""}
                 </p>
               </div>
-              <span className="material-symbols-outlined text-[#3d4a40] dark:text-[#a3a3a3] text-[18px] shrink-0 mr-1">
+              <span className="material-symbols-outlined text-on-surface-variant text-[18px] shrink-0 mr-1">
                 unfold_more
               </span>
             </div>

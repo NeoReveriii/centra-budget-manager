@@ -160,15 +160,15 @@ export function StyledSelect({
         }}
         onKeyDown={handleKeyDown}
         className={cn(
-          "flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-4 text-left text-sm font-semibold text-slate-800 shadow-sm outline-none transition-[border-color,box-shadow,background-color] hover:border-slate-400 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#454545] dark:bg-[#181818] dark:text-[#ededed] dark:hover:border-[#666]",
+          "flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 text-left text-sm font-semibold text-on-surface shadow-sm outline-none transition-[border-color,box-shadow,background-color] hover:border-outline focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50",
           className,
         )}
         title={selectedOption?.label ?? placeholder}
       >
-        <span className={cn("min-w-0 flex-1 truncate", !selectedOption && "text-slate-400")}>
+        <span className={cn("min-w-0 flex-1 truncate", !selectedOption && "text-on-surface-variant/70")}>
           {selectedOption?.label ?? placeholder}
         </span>
-        <span className={cn("material-symbols-outlined shrink-0 text-[18px] text-slate-500 transition-transform", open && "rotate-180 text-primary")} aria-hidden="true">
+        <span className={cn("material-symbols-outlined shrink-0 text-[18px] text-on-surface-variant transition-transform", open && "rotate-180 text-primary")} aria-hidden="true">
           expand_more
         </span>
       </button>
@@ -184,15 +184,15 @@ export function StyledSelect({
               onMouseDown={(event) => event.stopPropagation()}
               onWheel={(event) => event.stopPropagation()}
               className={cn(
-                "pointer-events-auto fixed z-[300] overflow-y-auto overscroll-contain touch-pan-y rounded-xl border border-slate-200 bg-white p-1.5 shadow-[0_16px_38px_rgba(15,23,42,0.16)] dark:border-[#343434] dark:bg-[#181818] dark:shadow-[0_18px_44px_rgba(0,0,0,0.65)]",
+                "pointer-events-auto fixed z-[300] overflow-y-auto overscroll-contain touch-pan-y rounded-xl border border-outline-variant bg-surface-container-lowest p-1.5 shadow-[0_16px_38px_rgba(15,23,42,0.16)] dark:shadow-[0_18px_44px_rgba(0,0,0,0.65)]",
                 searchable ? "max-h-[min(22rem,calc(100vh-2rem))]" : "max-h-[280px]",
               )}
               style={menuStyle}
             >
               {searchable ? (
-                <div className="sticky top-0 z-10 bg-white p-1 pb-2 dark:bg-[#181818]">
+                <div className="sticky top-0 z-10 bg-surface-container-lowest p-1 pb-2">
                   <div className="relative">
-                    <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-slate-400" aria-hidden="true">search</span>
+                    <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant/70" aria-hidden="true">search</span>
                     <input
                       ref={searchInputRef}
                       type="search"
@@ -218,7 +218,7 @@ export function StyledSelect({
                       }}
                       placeholder={searchPlaceholder}
                       aria-label={searchPlaceholder}
-                      className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-3 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-[#3a3a3a] dark:bg-[#111] dark:text-white"
+                      className="h-10 w-full rounded-lg border border-outline-variant bg-surface-container-low pl-10 pr-3 text-sm text-on-surface outline-none placeholder:text-on-surface-variant/70 focus:border-primary focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
                 </div>
@@ -237,8 +237,8 @@ export function StyledSelect({
                   onMouseEnter={() => setActiveIndex(index)}
                   onClick={() => choose(index)}
                   className={cn(
-                    "flex min-h-11 w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-[#eff8f3] hover:text-primary focus-visible:bg-[#eff8f3] focus-visible:text-primary focus-visible:outline-none dark:text-[#ededed] dark:hover:bg-[#242424] dark:focus-visible:bg-[#242424]",
-                    index === activeIndex && "bg-slate-50",
+                    "flex min-h-11 w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-on-surface transition-colors hover:bg-surface-container-low hover:text-primary focus-visible:bg-surface-container-low focus-visible:text-primary focus-visible:outline-none",
+                    index === activeIndex && "bg-surface-container-low",
                     option.value === value && "font-bold text-primary",
                   )}
                 >
@@ -247,7 +247,7 @@ export function StyledSelect({
                 </button>
               ))}
               {!filteredOptions.length ? (
-                <p className="px-3 py-5 text-center text-sm text-slate-500 dark:text-slate-400">No matching options</p>
+                <p className="px-3 py-5 text-center text-sm text-on-surface-variant">No matching options</p>
               ) : null}
             </div>,
             document.body,
