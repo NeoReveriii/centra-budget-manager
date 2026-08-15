@@ -37,6 +37,14 @@ interface GoalFieldErrors {
   targetAmount?: string;
 }
 
+type GoalFilter = "in-progress" | "completed" | "all";
+
+const GOAL_FILTER_OPTIONS = [
+  { value: "in-progress", label: "In progress" },
+  { value: "completed", label: "Completed" },
+  { value: "all", label: "All goals" },
+] as const;
+
 function validatePositiveAmount(value: string, label: string) {
   if (!value.trim()) return `Enter the ${label}.`;
   const amount = Number(value);
@@ -71,16 +79,21 @@ const SavingsGoals: React.FC = () => {
   const [priority,     setPriority]     = useState<number>(3);
   const [deadline,     setDeadline]     = useState("");
   const [goalFieldErrors, setGoalFieldErrors] = useState<GoalFieldErrors>({});
+  const [goalFilter, setGoalFilter] = useState<GoalFilter>("in-progress");
 
   // ── Contribute State ──
   const [isContributeOpen, setIsContributeOpen]   = useState(false);
   const [selectedGoalId,   setSelectedGoalId]     = useState<number | null>(null);
+  const [isGoalViewOpen,   setIsGoalViewOpen]      = useState(false);
+  const [editingGoalId,    setEditingGoalId]       = useState<number | null>(null);
   const [contributeAmount, setContributeAmount]   = useState("");
   const [contributeNote,   setContributeNote]     = useState("");
   const [contributionError, setContributionError] = useState("");
 
   // ── Delete Confirm State ──
   const [deleteGoalId, setDeleteGoalId] = useState<number | null>(null);
+
+  const selectedGoal = goals.find((goal) => goal.goal_id === selectedGoalId) ?? null;
 
   // ── Analytics ──
   const totalSavings      = goals.reduce((s, g) => s + Number(g.current_amount), 0);
@@ -104,6 +117,25 @@ const SavingsGoals: React.FC = () => {
     return sum + Math.ceil(rem / months);
   }, 0);
 
+  const visibleGoals = goals.filter((goal) => {
+    const isCompleted = Number(goal.current_amount) >= Number(goal.target_amount);
+    if (goalFilter === "completed") return isCompleted;
+    if (goalFilter === "in-progress") return !isCompleted;
+    return true;
+  });
+
+  const upcomingSummary = upcomingGoal
+    ? (() => {
+        const daysLeft = Math.max(0, Math.ceil((new Date(upcomingGoal.deadline!).getTime() - Date.now()) / 86400000));
+        const months = getMonthsRemaining(upcomingGoal.deadline!);
+        const remaining = Math.max(0, Number(upcomingGoal.target_amount) - Number(upcomingGoal.current_amount));
+        return {
+          daysLeft,
+          monthlyNeeded: months > 0 ? Math.ceil(remaining / months) : remaining,
+        };
+      })()
+    : null;
+
   // ── Handlers ──
   const handleAddGoal = (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,26 +155,41 @@ const SavingsGoals: React.FC = () => {
       return;
     }
 
-    createGoalMut.mutate(
-      {
-        title,
-        target_amount: Number(targetAmount),
-        category,
-        priority,
-        deadline: deadline || undefined,
-      },
-      {
-        onSuccess: () => {
-          setIsAddOpen(false);
-          setTitle("");
-          setTargetAmount("");
-          setCategory("Savings");
-          setPriority(3);
-          setDeadline("");
-          setGoalFieldErrors({});
+    const onSuccess = () => {
+      setIsAddOpen(false);
+      setEditingGoalId(null);
+      setTitle("");
+      setTargetAmount("");
+      setCategory("Savings");
+      setPriority(3);
+      setDeadline("");
+      setGoalFieldErrors({});
+    };
+
+    if (editingGoalId !== null) {
+      updateGoalMut.mutate(
+        {
+          goal_id: editingGoalId,
+          title,
+          target_amount: Number(targetAmount),
+          category,
+          priority,
+          deadline: deadline || null,
         },
-      }
-    );
+        { onSuccess },
+      );
+    } else {
+      createGoalMut.mutate(
+        {
+          title,
+          target_amount: Number(targetAmount),
+          category,
+          priority,
+          deadline: deadline || undefined,
+        },
+        { onSuccess },
+      );
+    }
   };
 
   const handleContribute = (e: React.FormEvent) => {
@@ -175,7 +222,10 @@ const SavingsGoals: React.FC = () => {
   const confirmDelete = () => {
     if (deleteGoalId) {
       deleteGoalMut.mutate(deleteGoalId, {
-        onSuccess: () => setDeleteGoalId(null),
+        onSuccess: () => {
+          setDeleteGoalId(null);
+          setSelectedGoalId(null);
+        },
       });
     }
   };
@@ -184,6 +234,26 @@ const SavingsGoals: React.FC = () => {
     setSelectedGoalId(id);
     setContributionError("");
     setIsContributeOpen(true);
+  };
+
+  const openGoalView = (id: number) => {
+    setSelectedGoalId(id);
+    setIsGoalViewOpen(true);
+  };
+
+  const openEditGoal = (goalId: number) => {
+    const goal = goals.find((item) => item.goal_id === goalId);
+    if (!goal) return;
+
+    setIsGoalViewOpen(false);
+    setTitle(goal.title);
+    setTargetAmount(goal.target_amount);
+    setCategory(goal.category || "Savings");
+    setPriority(goal.priority);
+    setDeadline(goal.deadline?.slice(0, 10) || "");
+    setGoalFieldErrors({});
+    setEditingGoalId(goal.goal_id);
+    setIsAddOpen(true);
   };
 
   // Priority number → label
@@ -210,15 +280,35 @@ const SavingsGoals: React.FC = () => {
           <p className="font-body-sm text-body-sm text-on-surface-variant">
             Track your financial milestones and stay on target.
           </p>
+          {upcomingGoal && upcomingSummary ? (
+            <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-300">
+              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">notifications_active</span>
+              Upcoming: {upcomingGoal.title} · {upcomingSummary.daysLeft} days · Save {formatCurrency(upcomingSummary.monthlyNeeded)}/month
+            </p>
+          ) : null}
         </div>
 
-        <Dialog
-          open={isAddOpen}
-          onOpenChange={(open) => {
-            setIsAddOpen(open);
-            if (!open) setGoalFieldErrors({});
-          }}
-        >
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+          <div className="w-full sm:w-[168px]">
+            <StyledSelect
+              id="goal-filter"
+              value={goalFilter}
+              onChange={(value) => setGoalFilter(value as GoalFilter)}
+              options={GOAL_FILTER_OPTIONS}
+              aria-label="Filter goals"
+            />
+          </div>
+
+          <Dialog
+            open={isAddOpen}
+            onOpenChange={(open) => {
+              setIsAddOpen(open);
+              if (!open) {
+                setEditingGoalId(null);
+                setGoalFieldErrors({});
+              }
+            }}
+          >
           <DialogTrigger asChild>
             <Button type="button" className="h-11 px-4">
               <span className="material-symbols-outlined text-[18px]">add_circle</span>
@@ -233,9 +323,11 @@ const SavingsGoals: React.FC = () => {
           >
             <form onSubmit={handleAddGoal} noValidate>
               <DialogHeader>
-                <DialogTitle>Create New Goal</DialogTitle>
+                <DialogTitle>{editingGoalId === null ? "Create New Goal" : "Edit Goal"}</DialogTitle>
                 <DialogDescription>
-                  Set a title, target amount, priority, and an optional deadline.
+                  {editingGoalId === null
+                    ? "Set a title, target amount, priority, and an optional deadline."
+                    : "Update this goal’s details and target date."}
                 </DialogDescription>
               </DialogHeader>
 
@@ -368,20 +460,26 @@ const SavingsGoals: React.FC = () => {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={createGoalMut.isPending}>
-                  {createGoalMut.isPending ? "Saving…" : "Create Goal"}
+                <Button type="submit" disabled={createGoalMut.isPending || updateGoalMut.isPending}>
+                  {createGoalMut.isPending || updateGoalMut.isPending
+                    ? "Saving…"
+                    : editingGoalId === null
+                      ? "Create Goal"
+                      : "Save changes"}
                 </Button>
               </DialogFooter>
             </form>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </header>
 
       {/* ── Summary Banner ─────────────────────────────────────── */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* Total Saved */}
         <div className="col-span-2 md:col-span-1 bg-primary text-on-primary rounded-2xl p-5 relative overflow-hidden shadow-md dark:bg-[#006b52] dark:text-white">
-          <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-on-primary/10 rounded-full" />
+          <div className="pointer-events-none absolute -right-8 -bottom-8 h-32 w-32 rotate-[18deg] rounded-[1.75rem] border border-on-primary/15 bg-on-primary/10" aria-hidden="true" />
+          <div className="pointer-events-none absolute right-8 top-5 h-10 w-10 rotate-45 rounded-lg border border-on-primary/15" aria-hidden="true" />
           <p className="text-[11px] font-bold uppercase tracking-widest opacity-80 mb-1">Total Saved</p>
           <p className="text-2xl font-bold">{formatCurrency(totalSavings)}</p>
           <p className="text-[11px] opacity-70 mt-1">{momentumPct.toFixed(1)}% of all targets</p>
@@ -424,34 +522,6 @@ const SavingsGoals: React.FC = () => {
         </div>
       </section>
 
-      {/* Upcoming deadline banner */}
-      {upcomingGoal && (() => {
-        const daysLeft = Math.max(0, Math.ceil((new Date(upcomingGoal.deadline!).getTime() - Date.now()) / 86400000));
-        const months   = getMonthsRemaining(upcomingGoal.deadline!);
-        const rem      = Math.max(0, Number(upcomingGoal.target_amount) - Number(upcomingGoal.current_amount));
-        const mo       = months > 0 ? Math.ceil(rem / months) : rem;
-        return (
-          <div className={`flex items-center gap-4 px-5 py-4 rounded-xl border ${
-            daysLeft <= 30
-              ? "bg-rose-50 border-rose-200 text-rose-800 dark:bg-rose-950/35 dark:border-rose-800/70 dark:text-rose-200"
-              : "bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-950/35 dark:border-amber-800/70 dark:text-amber-200"
-          }`}>
-            <span className="material-symbols-outlined text-[24px]">
-              {daysLeft <= 30 ? "warning" : "notifications_active"}
-            </span>
-            <div className="flex-1">
-              <p className="font-bold text-[13px]">
-                {daysLeft <= 30 ? "Urgent! " : "Upcoming: "}
-                <span className="font-normal">{upcomingGoal.title}</span>
-              </p>
-              <p className="text-[12px] opacity-80">
-                {daysLeft} days left · Save {formatCurrency(mo)}/month to reach your goal.
-              </p>
-            </div>
-          </div>
-        );
-      })()}
-
       {/* ── Goal Cards ─────────────────────────────────────────── */}
       <section>
         {goals.length === 0 ? (
@@ -460,9 +530,15 @@ const SavingsGoals: React.FC = () => {
             <p className="mt-4 font-bold text-on-surface">No goals yet</p>
             <p className="text-body-sm mt-1">Click "New Goal" to set your first financial milestone.</p>
           </div>
+        ) : visibleGoals.length === 0 ? (
+          <div className="rounded-2xl border border-outline-variant bg-surface-container-lowest px-6 py-16 text-center">
+            <span className="material-symbols-outlined text-[48px] text-on-surface-variant/35">filter_alt_off</span>
+            <p className="mt-4 font-bold text-on-surface">No {goalFilter === "completed" ? "completed" : "in-progress"} goals</p>
+            <p className="mt-1 text-body-sm text-on-surface-variant">Switch the filter to see the other goals.</p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {goals.map(goal => (
+            {visibleGoals.map(goal => (
               <GoalCard
                 key={goal.goal_id}
                 title={goal.title}
@@ -473,12 +549,126 @@ const SavingsGoals: React.FC = () => {
                 deadline={goal.deadline}
                 createdAt={goal.created_at}
                 onContribute={() => openContribute(goal.goal_id)}
-                onDelete={() => handleDelete(goal.goal_id)}
+                onView={() => openGoalView(goal.goal_id)}
               />
             ))}
           </div>
         )}
       </section>
+
+      {/* ── Goal Details Dialog ────────────────────────────────── */}
+      <Dialog
+        open={isGoalViewOpen && Boolean(selectedGoal)}
+        onOpenChange={(open) => {
+          setIsGoalViewOpen(open);
+          if (!open) setSelectedGoalId(null);
+        }}
+      >
+        {selectedGoal ? (() => {
+          const targetAmount = Number(selectedGoal.target_amount);
+          const currentAmount = Number(selectedGoal.current_amount);
+          const remaining = Math.max(0, targetAmount - currentAmount);
+          const progressPct = Math.min(Math.round((currentAmount / targetAmount) * 100), 100);
+          const priority = priorityLabel(selectedGoal.priority);
+          const months = selectedGoal.deadline ? getMonthsRemaining(selectedGoal.deadline) : 0;
+          const monthlyNeeded = selectedGoal.deadline && months > 0
+            ? Math.ceil(remaining / months)
+            : null;
+
+          return (
+            <DialogContent
+              className="max-w-[520px]"
+              onPointerDownOutside={(event) => event.preventDefault()}
+            >
+              <DialogHeader className="text-left">
+                <div className="flex items-start justify-between gap-4 pr-8">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface-container-high text-primary">
+                      <span className="material-symbols-outlined text-[22px]" aria-hidden="true">
+                        {currentAmount >= targetAmount ? "check_circle" : CATEGORY_ICONS[selectedGoal.category || "Savings"] || "savings"}
+                      </span>
+                    </div>
+                    <div className="min-w-0">
+                      <DialogTitle className="truncate text-xl">{selectedGoal.title}</DialogTitle>
+                      <DialogDescription>Review this goal and manage its contributions.</DialogDescription>
+                    </div>
+                  </div>
+                  <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-low px-2.5 py-1 text-[11px] font-bold text-on-surface-variant">
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden="true" />
+                    {priority}
+                  </span>
+                </div>
+              </DialogHeader>
+
+              <div className="mt-5 space-y-5">
+                <div className="rounded-2xl border border-outline-variant bg-surface-container-low p-4">
+                  <div className="flex items-end justify-between gap-4">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant/70">Saved</p>
+                      <p className="mt-1 text-2xl font-extrabold tabular-nums text-on-surface">{formatCurrency(currentAmount)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant/70">Target</p>
+                      <p className="mt-1 text-sm font-bold tabular-nums text-on-surface-variant">{formatCurrency(targetAmount)}</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 h-2 overflow-hidden rounded-full bg-surface-container-high">
+                    <div
+                      className={`h-full rounded-full ${currentAmount >= targetAmount ? "bg-emerald-400" : "bg-primary"}`}
+                      style={{ width: `${progressPct}%` }}
+                    />
+                  </div>
+                  <div className="mt-2 flex justify-between text-xs font-medium text-on-surface-variant">
+                    <span>{progressPct}% complete</span>
+                    <span>{formatCurrency(remaining)} left</span>
+                  </div>
+                </div>
+
+                <dl className="grid grid-cols-2 divide-x divide-y divide-outline-variant/40 overflow-hidden rounded-2xl border border-outline-variant">
+                  <div className="p-4">
+                    <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant/70">Category</dt>
+                    <dd className="mt-1 text-sm font-bold text-on-surface">{selectedGoal.category || "Savings"}</dd>
+                  </div>
+                  <div className="p-4">
+                    <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant/70">Target date</dt>
+                    <dd className="mt-1 text-sm font-bold text-on-surface">
+                      {selectedGoal.deadline ? new Date(selectedGoal.deadline).toLocaleDateString("en-PH", { month: "short", year: "numeric" }) : "Not set"}
+                    </dd>
+                  </div>
+                  <div className="p-4">
+                    <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant/70">Monthly needed</dt>
+                    <dd className="mt-1 text-sm font-bold text-on-surface">{monthlyNeeded !== null ? `${formatCurrency(monthlyNeeded)}/mo` : "Not set"}</dd>
+                  </div>
+                  <div className="p-4">
+                    <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant/70">Status</dt>
+                    <dd className="mt-1 text-sm font-bold text-on-surface">{currentAmount >= targetAmount ? "Complete" : "In progress"}</dd>
+                  </div>
+                </dl>
+              </div>
+
+              <DialogFooter className="-mx-6 -mb-6 mt-6 grid grid-cols-2 gap-0 border-t border-outline-variant/40 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => openEditGoal(selectedGoal.goal_id)}
+                  className="min-h-12 text-xs font-bold text-on-surface-variant transition-colors hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsGoalViewOpen(false);
+                    handleDelete(selectedGoal.goal_id);
+                  }}
+                  className="min-h-12 border-l border-outline-variant/40 text-xs font-bold text-rose-600 transition-colors hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-rose-500 dark:text-rose-300 dark:hover:bg-rose-950"
+                >
+                  Delete
+                </button>
+              </DialogFooter>
+            </DialogContent>
+          );
+        })() : null}
+      </Dialog>
 
       {/* ── Contribute Dialog ──────────────────────────────────── */}
       <Dialog
@@ -488,7 +678,10 @@ const SavingsGoals: React.FC = () => {
           if (!open) setContributionError("");
         }}
       >
-        <DialogContent className="sm:max-w-[420px]">
+        <DialogContent
+          className="sm:max-w-[420px]"
+          onPointerDownOutside={(event) => event.preventDefault()}
+        >
           <form onSubmit={handleContribute} noValidate>
             <DialogHeader>
               <DialogTitle>Contribute to Goal</DialogTitle>

@@ -98,9 +98,17 @@ export const createGoalSchema = z.object({
 
 export const updateGoalSchema = z.object({
   goal_id: idFromBody,
-  add_amount: positiveAmount,
+  add_amount: positiveAmount.optional(),
   note: z.string().trim().max(500).optional(),
-});
+  title: z.string().trim().min(1, 'Title is required').max(150).optional(),
+  target_amount: positiveAmount.optional(),
+  deadline: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Deadline must use YYYY-MM-DD').nullable().optional(),
+  category: z.string().trim().max(100).optional(),
+  priority: z.coerce.number().int().min(1).max(5).optional(),
+}).refine(
+  (value) => value.add_amount !== undefined || value.title !== undefined || value.target_amount !== undefined || value.deadline !== undefined || value.category !== undefined || value.priority !== undefined,
+  { message: 'Provide a contribution or at least one goal field to update.' },
+);
 
 export const deleteGoalSchema = z.object({
   goal_id: idFromBody,

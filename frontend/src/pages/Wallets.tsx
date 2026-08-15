@@ -515,7 +515,13 @@ const Wallets = () => {
           </div>
         </div>
       </section>
-      <Dialog open={detailsOpen && Boolean(selectedWallet)} onOpenChange={setDetailsOpen}>
+      <Dialog
+        open={detailsOpen && Boolean(selectedWallet)}
+        onOpenChange={(open) => {
+          setDetailsOpen(open);
+          if (!open) setSelectedWalletId(null);
+        }}
+      >
         <DialogContent
           className="w-[calc(100%-1.5rem)] max-h-[90dvh] max-w-[720px] gap-0 overflow-y-auto p-0 md:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]"
           onInteractOutside={(event) => event.preventDefault()}

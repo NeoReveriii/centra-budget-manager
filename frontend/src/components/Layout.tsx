@@ -70,36 +70,30 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             data-custom-interaction
             aria-label="Add expense"
             onClick={() => openFabAction("Expense")}
-            className="group flex min-h-14 w-52 items-center justify-between gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2 text-left opacity-100 shadow-[0_10px_24px_rgba(15,23,42,0.1)] transition-[background-color,border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-rose-200 hover:bg-rose-50 hover:shadow-[0_14px_28px_rgba(15,23,42,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/30 active:translate-y-0"
+            className="group flex min-h-14 w-52 items-center justify-between gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2 text-left opacity-100 shadow-[0_10px_24px_rgba(15,23,42,0.1)] transition-[background-color,border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-outline hover:bg-surface-container-low hover:shadow-[0_14px_28px_rgba(15,23,42,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/30 active:translate-y-0"
           >
             <span className="text-sm font-extrabold text-on-surface">Add expenses</span>
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-700 transition-transform duration-200 group-hover:scale-105">
-              <span className="material-symbols-outlined text-[21px]" aria-hidden="true">receipt_long</span>
-            </span>
+            <span className="material-symbols-outlined shrink-0 text-[23px] text-rose-600 transition-transform duration-200 group-hover:scale-110" aria-hidden="true">receipt_long</span>
           </button>
           <button
             type="button"
             data-custom-interaction
             aria-label="Add income"
             onClick={() => openFabAction("Income")}
-            className="group flex min-h-14 w-52 items-center justify-between gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2 text-left opacity-100 shadow-[0_10px_24px_rgba(15,23,42,0.1)] transition-[background-color,border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:bg-emerald-50 hover:shadow-[0_14px_28px_rgba(15,23,42,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 active:translate-y-0"
+            className="group flex min-h-14 w-52 items-center justify-between gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2 text-left opacity-100 shadow-[0_10px_24px_rgba(15,23,42,0.1)] transition-[background-color,border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-outline hover:bg-surface-container-low hover:shadow-[0_14px_28px_rgba(15,23,42,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 active:translate-y-0"
           >
             <span className="text-sm font-extrabold text-on-surface">Add income</span>
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 transition-transform duration-200 group-hover:scale-105">
-              <span className="material-symbols-outlined text-[21px]" aria-hidden="true">payments</span>
-            </span>
+            <span className="material-symbols-outlined shrink-0 text-[23px] text-emerald-600 transition-transform duration-200 group-hover:scale-110" aria-hidden="true">payments</span>
           </button>
           <button
             type="button"
             data-custom-interaction
             aria-label="Add transfer"
             onClick={() => openFabAction("Transfer")}
-            className="group flex min-h-14 w-52 items-center justify-between gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2 text-left opacity-100 shadow-[0_10px_24px_rgba(15,23,42,0.1)] transition-[background-color,border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 hover:shadow-[0_14px_28px_rgba(15,23,42,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 active:translate-y-0"
+            className="group flex min-h-14 w-52 items-center justify-between gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2 text-left opacity-100 shadow-[0_10px_24px_rgba(15,23,42,0.1)] transition-[background-color,border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-outline hover:bg-surface-container-low hover:shadow-[0_14px_28px_rgba(15,23,42,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 active:translate-y-0"
           >
             <span className="text-sm font-extrabold text-on-surface">Add transfer</span>
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700 transition-transform duration-200 group-hover:scale-105">
-              <span className="material-symbols-outlined text-[21px]" aria-hidden="true">currency_exchange</span>
-            </span>
+            <span className="material-symbols-outlined shrink-0 text-[23px] text-blue-600 transition-transform duration-200 group-hover:scale-110" aria-hidden="true">currency_exchange</span>
           </button>
         </div>
 

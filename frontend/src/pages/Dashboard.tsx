@@ -546,7 +546,7 @@ const Dashboard = () => {
       </section>
 
       <section className="grid grid-cols-1 gap-gutter sm:grid-cols-2 lg:grid-cols-4">
-        <div className="flex flex-col gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest p-lg transition-shadow hover:shadow-sm">
+        <div className="flex flex-col gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest p-lg transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5 hover:border-outline hover:shadow-md dark:hover:border-outline-variant/80 dark:hover:shadow-[0_14px_30px_rgba(0,0,0,0.45)] motion-reduce:transform-none">
           <div className="flex items-center justify-between">
             <span className="text-label-caps font-label-caps uppercase text-on-surface-variant">
               Current Balance
@@ -567,7 +567,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest p-lg transition-shadow hover:shadow-sm">
+        <div className="flex flex-col gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest p-lg transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5 hover:border-outline hover:shadow-md dark:hover:border-outline-variant/80 dark:hover:shadow-[0_14px_30px_rgba(0,0,0,0.45)] motion-reduce:transform-none">
           <div className="flex items-center justify-between">
             <span className="text-label-caps font-label-caps uppercase text-on-surface-variant">
               Income
@@ -585,7 +585,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest p-lg transition-shadow hover:shadow-sm">
+        <div className="flex flex-col gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest p-lg transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5 hover:border-outline hover:shadow-md dark:hover:border-outline-variant/80 dark:hover:shadow-[0_14px_30px_rgba(0,0,0,0.45)] motion-reduce:transform-none">
           <div className="flex items-center justify-between">
             <span className="text-label-caps font-label-caps uppercase text-on-surface-variant">
               Expenses
@@ -601,7 +601,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-4 rounded-xl border border-outline-variant bg-surface-container-lowest p-lg transition-shadow hover:shadow-sm">
+        <div className="flex items-center justify-between gap-4 rounded-xl border border-outline-variant bg-surface-container-lowest p-lg transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5 hover:border-outline hover:shadow-md dark:hover:border-outline-variant/80 dark:hover:shadow-[0_14px_30px_rgba(0,0,0,0.45)] motion-reduce:transform-none">
           <div className="flex w-full flex-col gap-2">
             <span className="text-label-caps font-label-caps uppercase text-on-surface-variant">
               Savings Rate
@@ -730,7 +730,7 @@ const Dashboard = () => {
                   fillOpacity={1}
                   fill="url(#colorIncome)"
                   isAnimationActive
-                  animationDuration={1200}
+                  animationDuration={2600}
                   animationEasing="ease-out"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -744,7 +744,7 @@ const Dashboard = () => {
                   fillOpacity={1}
                   fill="url(#colorExpense)"
                   isAnimationActive
-                  animationDuration={1200}
+                  animationDuration={2600}
                   animationEasing="ease-out"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -781,7 +781,7 @@ const Dashboard = () => {
                     </div>
                     <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-container-high">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-primary/70 via-primary to-secondary transition-[width] duration-900 ease-out"
+                        className="h-full rounded-full bg-primary transition-[width] duration-900 ease-out"
                         style={{ width: animateTopCategories ? category.percent : "0%" }}
                       />
                     </div>

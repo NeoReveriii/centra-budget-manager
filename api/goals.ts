@@ -157,24 +157,45 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const body = parseBody(updateGoalSchema, req.body, res);
       if (!body) return;
 
-      const { goal_id, add_amount, note } = body;
+      const { goal_id, add_amount, note, title, target_amount, deadline, category, priority } = body;
 
-      const rows = await withGoalsSchemaRecovery(() => sql`
-        WITH updated_goal AS (
-          UPDATE goals
-          SET current_amount = current_amount + ${add_amount}
-          WHERE goal_id = ${goal_id} AND account_id = ${account.acc_id}
-          RETURNING *
-        ), recorded_contribution AS (
-          INSERT INTO goal_contributions (goal_id, amount, note)
-          SELECT goal_id, ${add_amount}, ${note || 'Manual add'}
-          FROM updated_goal
-          RETURNING goal_id
-        )
-        SELECT updated_goal.*
-        FROM updated_goal
-        JOIN recorded_contribution USING (goal_id)
-      `);
+      if (add_amount === undefined && deadline) {
+        const selectedDate = new Date(deadline);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (selectedDate < today) {
+          return res.status(400).json({ error: 'Please select a valid future date.' });
+        }
+      }
+
+      const rows = add_amount !== undefined
+        ? await withGoalsSchemaRecovery(() => sql`
+            WITH updated_goal AS (
+              UPDATE goals
+              SET current_amount = current_amount + ${add_amount}
+              WHERE goal_id = ${goal_id} AND account_id = ${account.acc_id}
+              RETURNING *
+            ), recorded_contribution AS (
+              INSERT INTO goal_contributions (goal_id, amount, note)
+              SELECT goal_id, ${add_amount}, ${note || 'Manual add'}
+              FROM updated_goal
+              RETURNING goal_id
+            )
+            SELECT updated_goal.*
+            FROM updated_goal
+            JOIN recorded_contribution USING (goal_id)
+          `)
+        : await withGoalsSchemaRecovery(() => sql`
+            UPDATE goals
+            SET title = COALESCE(${title ?? null}, title),
+                target_amount = COALESCE(${target_amount ?? null}, target_amount),
+                deadline = CASE WHEN ${deadline !== undefined} THEN ${deadline ?? null} ELSE deadline END,
+                category = COALESCE(${category ?? null}, category),
+                priority = COALESCE(${priority ?? null}, priority)
+            WHERE goal_id = ${goal_id} AND account_id = ${account.acc_id}
+            RETURNING *
+          `);
 
       if (rows.length === 0) {
         return res.status(404).json({ error: 'Goal not found or access denied.' });

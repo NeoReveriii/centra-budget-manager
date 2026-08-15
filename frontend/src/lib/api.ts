@@ -227,8 +227,13 @@ export async function createGoal(data: {
 
 export async function updateGoal(data: {
   goal_id: number;
-  add_amount: number;
+  add_amount?: number;
   note?: string;
+  title?: string;
+  target_amount?: number;
+  deadline?: string | null;
+  category?: string;
+  priority?: number;
 }): Promise<{ goal: Goal }> {
   return request("/goals", {
     method: "PUT",

@@ -281,7 +281,7 @@ const Transactions = () => {
                   return (
                     <tr
                       key={tx.trans_id}
-                      className="hover:bg-surface-container-low/70 transition-colors group"
+                      className="transition-colors hover:bg-surface-container-low/70"
                     >
                       <td className="px-6 py-5 whitespace-nowrap">
                         <p className="text-body-sm font-bold text-on-surface">
@@ -339,10 +339,12 @@ const Transactions = () => {
                       </td>
                       <td className="px-6 py-5 text-center">
                         <button
+                          type="button"
+                          aria-label={`Delete transaction: ${tx.description}`}
                           onClick={() => setDeleteId(tx.trans_id)}
-                          className="p-1.5 text-on-surface-variant/45 hover:text-error rounded-lg hover:bg-rose-50 transition-all cursor-pointer opacity-0 group-hover:opacity-100"
+                          className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-error focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error/30 cursor-pointer"
                         >
-                          <span className="material-symbols-outlined text-[18px]">
+                          <span className="material-symbols-outlined text-[20px]">
                             delete
                           </span>
                         </button>

@@ -12,7 +12,7 @@ export interface GoalCardProps {
   deadline?: string | null;
   createdAt?: string;
   onContribute?: () => void;
-  onDelete?: () => void;
+  onView?: () => void;
 }
 
 // Priority drives the progress bar and badge color only — no structural gimmicks
@@ -64,7 +64,7 @@ const GoalCard: React.FC<GoalCardProps> = ({
   priorityLevel = "Medium",
   deadline,
   onContribute,
-  onDelete,
+  onView,
 }) => {
   const formatCurrency = useCurrencyFormatter({
     minimumFractionDigits: 0,
@@ -96,7 +96,18 @@ const GoalCard: React.FC<GoalCardProps> = ({
   const isCompleted = progressPct >= 100;
 
   return (
-    <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300 group">
+    <div
+      className="cursor-pointer bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col overflow-hidden transition-[box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+      onClick={onView}
+      onKeyDown={(event) => {
+        if ((event.key === "Enter" || event.key === " ") && onView) {
+          event.preventDefault();
+          onView();
+        }
+      }}
+      role={onView ? "button" : undefined}
+      tabIndex={onView ? 0 : undefined}
+    >
 
       {/* Card header area */}
       <div className="px-6 pt-6 pb-4">
@@ -117,7 +128,7 @@ const GoalCard: React.FC<GoalCardProps> = ({
             </div>
           </div>
 
-          {/* Priority badge (dot + label) + delete */}
+          {/* Priority badge (dot + label) */}
           <div className="flex flex-col items-end gap-2 shrink-0 ml-2">
             {!isCompleted ? (
               <span
@@ -132,15 +143,6 @@ const GoalCard: React.FC<GoalCardProps> = ({
                 <span className="material-symbols-outlined text-[12px]">check</span>
                 Done
               </span>
-            )}
-            {onDelete && (
-              <button
-                onClick={onDelete}
-                className="text-on-surface-variant/45 hover:text-error transition-colors opacity-0 group-hover:opacity-100"
-                title="Delete Goal"
-              >
-                <span className="material-symbols-outlined text-[16px]">delete</span>
-              </button>
             )}
           </div>
         </div>
@@ -218,7 +220,10 @@ const GoalCard: React.FC<GoalCardProps> = ({
       {/* Footer button */}
       <div className="px-6 pb-6">
         <button
-          onClick={onContribute}
+          onClick={(event) => {
+            event.stopPropagation();
+            onContribute?.();
+          }}
           disabled={isCompleted}
           className={`w-full py-2.5 rounded-xl font-bold text-[13px] flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer ${
             isCompleted
