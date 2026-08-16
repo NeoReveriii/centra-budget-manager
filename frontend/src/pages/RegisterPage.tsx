@@ -264,8 +264,8 @@ export default function RegisterPage() {
             className="mt-1 h-4 w-4 shrink-0 accent-primary"
           />
           <span>
-            I have read and agree to the <Link to="/terms" target="_blank" className="font-extrabold text-primary underline underline-offset-4">Terms of Use</Link>
-            {" "}and acknowledge the <Link to="/privacy" target="_blank" className="font-extrabold text-primary underline underline-offset-4">Privacy Notice</Link>, including Kwarta AI processing.
+            I have read and agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="font-extrabold text-primary underline underline-offset-4">Terms of Use</a>
+            {" "}and acknowledge the <a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-extrabold text-primary underline underline-offset-4">Privacy Notice</a>, including Kwarta AI processing.
           </span>
         </label>
         <FieldError id="register-terms-error" message={fieldErrors.terms} />
