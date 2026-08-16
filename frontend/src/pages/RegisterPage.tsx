@@ -111,30 +111,6 @@ export default function RegisterPage() {
         </div>
       )}
 
-      <div className="mb-5 rounded-xl border border-slate-300 bg-slate-50 p-4">
-        <label htmlFor="register-terms" className="flex cursor-pointer items-start gap-3 text-sm font-medium leading-6 text-slate-700">
-          <input
-            id="register-terms"
-            type="checkbox"
-            checked={acceptedTerms}
-            onChange={(event) => {
-              setAcceptedTerms(event.target.checked);
-              if (event.target.checked) {
-                setFieldErrors((current) => ({ ...current, terms: "" }));
-              }
-            }}
-            aria-invalid={Boolean(fieldErrors.terms)}
-            aria-describedby={fieldErrors.terms ? "register-terms-error" : undefined}
-            className="mt-1 h-4 w-4 shrink-0 accent-primary"
-          />
-          <span>
-            I have read and agree to the <Link to="/terms" target="_blank" className="font-extrabold text-primary underline underline-offset-4">Terms of Use</Link>
-            {" "}and acknowledge the <Link to="/privacy" target="_blank" className="font-extrabold text-primary underline underline-offset-4">Privacy Notice</Link>, including Kwarta AI processing.
-          </span>
-        </label>
-        <FieldError id="register-terms-error" message={fieldErrors.terms} />
-      </div>
-
       <SocialAuthButtons onSocial={handleSocial} disabled={isLoading || !acceptedTerms} />
 
       <div className="my-6 flex items-center gap-4">
@@ -270,6 +246,30 @@ export default function RegisterPage() {
           {isLoading ? "Creating account..." : "Create account"}
         </Button>
       </form>
+
+      <div className="mt-5 rounded-xl border border-slate-300 bg-slate-50 p-4">
+        <label htmlFor="register-terms" className="flex cursor-pointer items-start gap-3 text-sm font-medium leading-6 text-slate-700">
+          <input
+            id="register-terms"
+            type="checkbox"
+            checked={acceptedTerms}
+            onChange={(event) => {
+              setAcceptedTerms(event.target.checked);
+              if (event.target.checked) {
+                setFieldErrors((current) => ({ ...current, terms: "" }));
+              }
+            }}
+            aria-invalid={Boolean(fieldErrors.terms)}
+            aria-describedby={fieldErrors.terms ? "register-terms-error" : undefined}
+            className="mt-1 h-4 w-4 shrink-0 accent-primary"
+          />
+          <span>
+            I have read and agree to the <Link to="/terms" target="_blank" className="font-extrabold text-primary underline underline-offset-4">Terms of Use</Link>
+            {" "}and acknowledge the <Link to="/privacy" target="_blank" className="font-extrabold text-primary underline underline-offset-4">Privacy Notice</Link>, including Kwarta AI processing.
+          </span>
+        </label>
+        <FieldError id="register-terms-error" message={fieldErrors.terms} />
+      </div>
 
       <p className="mt-5 text-center text-sm font-medium text-slate-600">
         Already have an account?
