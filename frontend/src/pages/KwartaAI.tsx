@@ -443,7 +443,11 @@ const KwartaAI = () => {
         body: JSON.stringify({ message: userMsg }),
       });
 
-      if (!res.ok || !res.body) throw new Error("Stream failed");
+      if (!res.ok) {
+        const payload = (await res.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(payload?.error || "Chat request failed");
+      }
+      if (!res.body) throw new Error("Chat response stream was unavailable");
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -477,10 +481,13 @@ const KwartaAI = () => {
       }
     } catch (error) {
       console.error(error);
+      const errorMessage = error instanceof Error
+        ? error.message
+        : "Error communicating with Kwarta AI. Please try again.";
       setMessages((prev) =>
         prev.map((message) =>
           message.id === newAiMsgId
-            ? { ...message, content: "Error communicating with Kwarta AI. Please try again." }
+            ? { ...message, content: errorMessage }
             : message,
         ),
       );

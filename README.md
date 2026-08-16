@@ -115,9 +115,19 @@ Neon hosts both application data (`public` schema) and auth data (`neon_auth` sc
    NEON_JWKS_URL=https://<your-branch>.neonauth.../neondb/auth/.well-known/jwks.json
    NEON_AUTH_ISSUER=https://<your-branch>.neonauth.../neondb/auth
    DEEPSEEK_API_KEY=your_deepseek_key
+   RATE_LIMIT_HASH_SALT=generate-a-long-random-secret
+   CHAT_RATE_LIMIT_MAX_REQUESTS=20
+   CHAT_RATE_LIMIT_WINDOW_SECONDS=60
+   CHAT_PROVIDER_DAILY_QUOTA=50
+   AUTH_LOGIN_RATE_LIMIT_MAX=10
+   AUTH_LOGIN_RATE_LIMIT_WINDOW_SECONDS=600
+   AUTH_RESET_RATE_LIMIT_MAX=5
+   AUTH_RESET_RATE_LIMIT_WINDOW_SECONDS=3600
    ```
 
    `VITE_PRIVACY_CONTACT` must be a monitored private address belonging to the deployment owner. Do not accept real user data in production until it is configured.
+
+   Rate limits use Postgres-backed counters so they apply across Vercel instances. Login and password-reset guards are keyed by a one-way HMAC of the client IP. Set `RATE_LIMIT_HASH_SALT` to a private random value; `DATABASE_URL` is used only as a fallback. These app-side guards complement any Neon or edge-provider protections because direct requests to the configured Neon Auth URL do not pass through `/api/auth-guard`.
 
 4. **Run locally**
    ```bash

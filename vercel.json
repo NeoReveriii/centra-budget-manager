@@ -2,7 +2,9 @@
   "version": 2,
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/api/(.*)", "destination": "/api/not-found" },
+    { "source": "/assets/(.*)", "destination": "/api/not-found" },
+    { "source": "/(.*\\..*)", "destination": "/api/not-found" },
     { "source": "/(.*)", "destination": "/index" }
   ],
   "headers": [

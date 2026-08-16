@@ -11,6 +11,7 @@ import {
   clearPersistedSession,
   resetAuthSession,
   requestPasswordReset as sendPasswordResetEmail,
+  checkAuthAttemptAllowed,
 } from "../lib/auth-client";
 import { fetchCurrentUser, type UserProfile } from "../lib/api";
 
@@ -86,6 +87,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function login(email: string, password: string): Promise<AuthResult> {
     await resetAuthSession();
+
+    const guard = await checkAuthAttemptAllowed("login");
+    if (!guard.success) {
+      return { success: false, error: guard.error || "Too many login attempts" };
+    }
 
     const { error } = await authClient.signIn.email({ email, password });
     if (error) {

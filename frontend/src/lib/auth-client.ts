@@ -78,9 +78,37 @@ export function clearPersistedSession(): void {
   inMemoryAccessToken = null;
 }
 
+export async function checkAuthAttemptAllowed(
+  action: "login" | "password-reset",
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetch("/api/auth-guard", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action }),
+    });
+
+    if (response.ok) return { success: true };
+
+    const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+    return {
+      success: false,
+      error: payload?.error || "Authentication is temporarily unavailable. Please try again.",
+    };
+  } catch {
+    return {
+      success: false,
+      error: "Authentication is temporarily unavailable. Please try again.",
+    };
+  }
+}
+
 export async function requestPasswordReset(
   email: string,
 ): Promise<{ success: boolean; error?: string }> {
+  const guard = await checkAuthAttemptAllowed("password-reset");
+  if (!guard.success) return guard;
+
   const redirectTo = `${window.location.origin}/reset-password`;
   const result = await authClient.requestPasswordReset({
     email,

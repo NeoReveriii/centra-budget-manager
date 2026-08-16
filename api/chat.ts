@@ -2,6 +2,7 @@ import { neon } from '@neondatabase/serverless';
 import { requireAccount } from './auth-helper.js';
 import { chatMessageSchema } from './schemas.js';
 import { parseBody } from './validate.js';
+import { consumeRateLimit, envPositiveInteger, setRateLimitHeaders } from './rate-limit.js';
 import type { VercelRequest, VercelResponse } from './http-types.js';
 
 interface ChatHistoryRow {
@@ -816,6 +817,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
+    const burstLimit = await consumeRateLimit({
+      key: `chat:burst:${accId}`,
+      limit: envPositiveInteger('CHAT_RATE_LIMIT_MAX_REQUESTS', 20),
+      windowSeconds: envPositiveInteger('CHAT_RATE_LIMIT_WINDOW_SECONDS', 60),
+    });
+    setRateLimitHeaders(res, burstLimit);
+    if (!burstLimit.allowed) {
+      res.setHeader('Retry-After', String(burstLimit.retryAfterSeconds));
+      return res.status(429).json({
+        error: 'Too many chat requests. Please wait before trying again.',
+        retryAfterSeconds: burstLimit.retryAfterSeconds,
+      });
+    }
+
     const payload = parseBody(chatMessageSchema, req.body, res);
     if (!payload) return;
 
@@ -926,6 +941,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const apiKey = process.env.DEEPSEEK_API_KEY?.replace(/^"|"$/g, '') || null;
     if (apiKey) {
+      const providerQuota = await consumeRateLimit({
+        key: `chat:provider:${accId}`,
+        limit: envPositiveInteger('CHAT_PROVIDER_DAILY_QUOTA', 50),
+        windowSeconds: 24 * 60 * 60,
+      });
+      setRateLimitHeaders(res, providerQuota, 'ProviderQuota');
+
+      if (!providerQuota.allowed) {
+        res.setHeader('X-Kwarta-AI-Mode', 'local-quota');
+        await storeChatMessage(accId, 'assistant', localFallback);
+        await streamFinalResponse(res, localFallback);
+        return;
+      }
+
       const systemPrompt = {
         role: 'system' as const,
         content: `You are Kwarta AI, a strict financial assistant bot. You must ONLY answer questions related to finance, budgeting, money management, investments, economics, or the user's transaction data. If the user asks about anything else, politely decline and steer the conversation back to finance. Be helpful, concise, and friendly. Use Markdown formatting. Bold only the most important numbers, labels, warnings, and action items, and keep the rest of the answer readable with normal text.

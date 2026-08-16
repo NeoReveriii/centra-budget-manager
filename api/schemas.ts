@@ -118,3 +118,7 @@ export const chatMessageSchema = z.object({
   message: z.string().trim().min(1, 'Message is required').max(4000, 'Message is too long'),
 });
 
+export const authGuardSchema = z.object({
+  action: z.enum(['login', 'password-reset']),
+});
+
