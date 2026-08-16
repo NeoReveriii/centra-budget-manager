@@ -19,6 +19,7 @@ import { StyledSelect } from "@/components/ui/styled-select";
 import { useUiStore } from "@/stores/ui-store";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { PageSkeleton } from "@/components/PageSkeleton";
+import { CountUpValue } from "@/components/CountUpValue";
 
 interface CategoryStyle {
   icon: string;
@@ -556,7 +557,9 @@ const Dashboard = () => {
             </span>
           </div>
           <div>
-            <div className="font-h2 text-h2 text-primary">{formatCurrency(totalBalance)}</div>
+            <div className="font-h2 text-h2 text-primary">
+              <CountUpValue value={totalBalance} formatValue={formatCurrency} />
+            </div>
             <div className="mt-1 text-[12px] font-medium text-on-surface-variant">
               {selectedWallet
                 ? selectedWallet.name
@@ -577,7 +580,9 @@ const Dashboard = () => {
             </span>
           </div>
           <div>
-            <div className="font-h2 text-h2 text-on-background">{formatCurrency(periodIncome)}</div>
+            <div className="font-h2 text-h2 text-on-background">
+              <CountUpValue value={periodIncome} formatValue={formatCurrency} />
+            </div>
             <div className="mt-1 flex items-center gap-1 text-[12px] font-bold text-emerald-600">
               <span className="material-symbols-outlined text-[14px]">arrow_upward</span>
               Selected period
@@ -593,7 +598,9 @@ const Dashboard = () => {
             <span className="material-symbols-outlined text-error">trending_down</span>
           </div>
           <div>
-            <div className="font-h2 text-h2 text-on-background">{formatCurrency(periodExpenses)}</div>
+            <div className="font-h2 text-h2 text-on-background">
+              <CountUpValue value={periodExpenses} formatValue={formatCurrency} />
+            </div>
             <div className="mt-1 flex items-center gap-1 text-[12px] font-bold text-error">
               <span className="material-symbols-outlined text-[14px]">arrow_downward</span>
               Selected period
@@ -607,7 +614,9 @@ const Dashboard = () => {
               Savings Rate
             </span>
             <div>
-              <div className="font-h2 text-h2 text-on-background">{savingsRate.toFixed(1)}%</div>
+              <div className="font-h2 text-h2 text-on-background">
+                <CountUpValue value={savingsRate} formatValue={(value) => `${value.toFixed(1)}%`} />
+              </div>
               <div className="mt-1 text-[12px] font-medium text-on-surface-variant">
                 Target: {savingsTarget}% | Net: {formatCurrency(netCashFlow)}
               </div>

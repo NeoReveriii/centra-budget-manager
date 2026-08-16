@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
-import { animate, m, useMotionValue, useMotionValueEvent, useReducedMotion } from "framer-motion";
+import { m, useReducedMotion } from "framer-motion";
 import {
   useCreateWallet,
   useDeleteWallet,
@@ -26,6 +26,7 @@ import { StyledSelect } from "@/components/ui/styled-select";
 import FieldError from "@/components/FieldError";
 import { cn } from "@/lib/utils";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { CountUpValue } from "@/components/CountUpValue";
 import {
   getWalletProviderPreset,
   inferWalletProviderKey,
@@ -94,39 +95,6 @@ function transactionAmountLabel(
     return { label: `+${amount}`, tone: "text-emerald-700 dark:text-emerald-300" };
   }
   return { label: `-${amount}`, tone: "text-on-surface" };
-}
-
-function WalletCountUp({
-  value,
-  formatValue,
-}: {
-  value: number;
-  formatValue: (value: number) => string;
-}) {
-  const reduceMotion = useReducedMotion();
-  const textRef = useRef<HTMLSpanElement>(null);
-  const formatterRef = useRef(formatValue);
-  const progress = useMotionValue(0);
-  formatterRef.current = formatValue;
-
-  useMotionValueEvent(progress, "change", (latest) => {
-    if (textRef.current) textRef.current.textContent = formatterRef.current(latest);
-  });
-
-  useEffect(() => {
-    progress.set(0);
-    const controls = animate(progress, value, {
-      duration: reduceMotion ? 0.45 : 0.9,
-      ease: [0.22, 1, 0.36, 1],
-    });
-    return () => controls.stop();
-  }, [progress, reduceMotion, value]);
-
-  return (
-    <span aria-label={formatValue(value)}>
-      <span ref={textRef} aria-hidden="true">{formatValue(0)}</span>
-    </span>
-  );
 }
 
 const Wallets = () => {
@@ -401,10 +369,10 @@ const Wallets = () => {
           <div className="min-w-0">
             <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-primary">Portfolio balance</div>
             <p className="mt-3 text-4xl font-extrabold tracking-[-0.055em] text-primary sm:text-5xl">
-              <WalletCountUp value={totalBalance} formatValue={formatCurrency} />
+              <CountUpValue value={totalBalance} formatValue={formatCurrency} />
             </p>
             <p className="mt-3 text-sm font-medium text-on-surface-variant">
-              Across <WalletCountUp value={wallets.length} formatValue={(value) => String(Math.round(value))} /> {wallets.length === 1 ? "account" : "accounts"}
+              Across <CountUpValue value={wallets.length} formatValue={(value) => String(Math.round(value))} /> {wallets.length === 1 ? "account" : "accounts"}
             </p>
           </div>
           <dl className="grid min-w-0 grid-cols-3 border-t border-outline-variant pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
@@ -416,7 +384,7 @@ const Wallets = () => {
               <div key={stat.label} className={index ? "border-l border-outline-variant pl-5" : ""}>
                 <dt className="text-[10px] font-extrabold uppercase tracking-wider text-on-surface-variant/70">{stat.label}</dt>
                 <dd className="mt-2 truncate text-base font-extrabold text-primary">
-                  <WalletCountUp value={stat.value} formatValue={stat.format} />
+                  <CountUpValue value={stat.value} formatValue={stat.format} />
                 </dd>
               </div>
             ))}
