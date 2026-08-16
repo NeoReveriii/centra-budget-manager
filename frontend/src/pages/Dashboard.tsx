@@ -20,162 +20,13 @@ import { useUiStore } from "@/stores/ui-store";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { PageSkeleton } from "@/components/PageSkeleton";
 import { CountUpValue } from "@/components/CountUpValue";
-
-interface CategoryStyle {
-  icon: string;
-  iconBg: string;
-  iconColor: string;
-}
+import { getTransactionStyle } from "@/lib/transaction-style";
 
 const EMPTY_WALLETS: Wallet[] = [];
 const EMPTY_TRANSACTIONS: Transaction[] = [];
 
-const CATEGORY_STYLES: Record<string, CategoryStyle> = {
-  food: {
-    icon: "restaurant",
-    iconBg: "bg-orange-50",
-    iconColor: "text-orange-600",
-  },
-  dining: {
-    icon: "restaurant",
-    iconBg: "bg-orange-50",
-    iconColor: "text-orange-600",
-  },
-  lunch: {
-    icon: "restaurant",
-    iconBg: "bg-orange-50",
-    iconColor: "text-orange-600",
-  },
-  grocery: {
-    icon: "shopping_cart",
-    iconBg: "bg-orange-50",
-    iconColor: "text-orange-600",
-  },
-  transport: {
-    icon: "commute",
-    iconBg: "bg-emerald-50",
-    iconColor: "text-emerald-600",
-  },
-  commute: {
-    icon: "commute",
-    iconBg: "bg-emerald-50",
-    iconColor: "text-emerald-600",
-  },
-  travel: {
-    icon: "flight_takeoff",
-    iconBg: "bg-sky-50",
-    iconColor: "text-sky-600",
-  },
-  trip: {
-    icon: "flight_takeoff",
-    iconBg: "bg-sky-50",
-    iconColor: "text-sky-600",
-  },
-  savings: {
-    icon: "savings",
-    iconBg: "bg-teal-50",
-    iconColor: "text-teal-700",
-  },
-  money: {
-    icon: "payments",
-    iconBg: "bg-emerald-50",
-    iconColor: "text-emerald-700",
-  },
-  cash: {
-    icon: "payments",
-    iconBg: "bg-emerald-50",
-    iconColor: "text-emerald-700",
-  },
-  salary: {
-    icon: "payments",
-    iconBg: "bg-emerald-50",
-    iconColor: "text-emerald-700",
-  },
-  income: {
-    icon: "payments",
-    iconBg: "bg-emerald-50",
-    iconColor: "text-emerald-700",
-  },
-  freelance: {
-    icon: "work",
-    iconBg: "bg-emerald-50",
-    iconColor: "text-emerald-700",
-  },
-  bill: { icon: "receipt_long", iconBg: "bg-blue-50", iconColor: "text-blue-600" },
-  bills: { icon: "receipt_long", iconBg: "bg-blue-50", iconColor: "text-blue-600" },
-  electric: {
-    icon: "bolt",
-    iconBg: "bg-amber-50",
-    iconColor: "text-amber-700",
-  },
-  internet: { icon: "wifi", iconBg: "bg-blue-50", iconColor: "text-blue-600" },
-  shopping: {
-    icon: "shopping_bag",
-    iconBg: "bg-purple-50",
-    iconColor: "text-purple-600",
-  },
-  subscription: {
-    icon: "subscriptions",
-    iconBg: "bg-rose-50",
-    iconColor: "text-rose-600",
-  },
-  netflix: {
-    icon: "subscriptions",
-    iconBg: "bg-rose-50",
-    iconColor: "text-rose-600",
-  },
-  health: {
-    icon: "fitness_center",
-    iconBg: "bg-red-50",
-    iconColor: "text-red-600",
-  },
-  gym: {
-    icon: "fitness_center",
-    iconBg: "bg-red-50",
-    iconColor: "text-red-600",
-  },
-  gas: {
-    icon: "local_gas_station",
-    iconBg: "bg-blue-50",
-    iconColor: "text-blue-600",
-  },
-  game: {
-    icon: "sports_esports",
-    iconBg: "bg-rose-50",
-    iconColor: "text-rose-600",
-  },
-  transfer: {
-    icon: "sync_alt",
-    iconBg: "bg-surface-container-low",
-    iconColor: "text-on-surface-variant",
-  },
-  other: {
-    icon: "receipt_long",
-    iconBg: "bg-surface-container-low",
-    iconColor: "text-on-surface-variant",
-  },
-};
-
 const DATE_RANGE_OPTIONS = ["Today", "Week", "Month", "Quarter", "Year"] as const;
 type DateRangeOption = (typeof DATE_RANGE_OPTIONS)[number];
-
-function getCategoryStyle(category: string | null | undefined, description: string, type: string): CategoryStyle {
-  const source = `${category || ""} ${description || ""}`.toLowerCase();
-
-  for (const [key, style] of Object.entries(CATEGORY_STYLES)) {
-    if (source.includes(key)) {
-      return style;
-    }
-  }
-
-  if (type === "Income") {
-    return CATEGORY_STYLES.income;
-  }
-  if (type === "Transfer") {
-    return CATEGORY_STYLES.transfer;
-  }
-  return CATEGORY_STYLES.other;
-}
 
 function formatDisplayName(username?: string | null): string {
   if (!username) return "User";
@@ -454,7 +305,7 @@ const Dashboard = () => {
       .sort(([, a], [, b]) => b - a)
       .slice(0, 4)
       .map(([label, amount]) => {
-        const style = getCategoryStyle(label, label, "Expense");
+        const style = getTransactionStyle(label, label, "Expense");
         const percent = periodExpenses > 0 ? Math.round((amount / periodExpenses) * 100) : 0;
         return {
           label,
@@ -836,7 +687,7 @@ const Dashboard = () => {
                 </tr>
               ) : (
                 recentTx.map((tx) => {
-                  const style = getCategoryStyle(tx.category, tx.description, tx.type);
+                  const style = getTransactionStyle(tx.category, tx.description, tx.type);
                   const amount = Number(tx.amount);
 
                   return (

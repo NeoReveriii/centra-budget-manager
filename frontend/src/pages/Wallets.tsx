@@ -270,12 +270,11 @@ const Wallets = () => {
           initial_balance: initialBalance,
         });
       } else {
-        const result = await createWallet.mutateAsync({
+        await createWallet.mutateAsync({
           name: form.name.trim(),
           type: form.type,
           initial_balance: initialBalance,
         });
-        setSelectedWalletId(result.wallet.wallet_id);
       }
       setFormOpen(false);
     } catch (error: unknown) {

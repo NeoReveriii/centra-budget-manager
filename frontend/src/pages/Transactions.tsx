@@ -9,6 +9,7 @@ import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { Button } from "@/components/ui/button";
 import { StyledSelect } from "@/components/ui/styled-select";
 import { PageSkeleton } from "@/components/PageSkeleton";
+import { getTransactionStyle } from "@/lib/transaction-style";
 import {
   Dialog,
   DialogContent,
@@ -31,113 +32,6 @@ function formatTime(dateStr: string): string {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-const ICON_MAP: Record<
-  string,
-  { icon: string; iconBg: string; iconColor: string }
-> = {
-  food: {
-    icon: "restaurant",
-    iconBg: "bg-orange-50",
-    iconColor: "text-orange-600",
-  },
-  dining: {
-    icon: "restaurant",
-    iconBg: "bg-orange-50",
-    iconColor: "text-orange-600",
-  },
-  transport: {
-    icon: "commute",
-    iconBg: "bg-emerald-50",
-    iconColor: "text-emerald-600",
-  },
-  grab: {
-    icon: "commute",
-    iconBg: "bg-emerald-50",
-    iconColor: "text-emerald-600",
-  },
-  bill: { icon: "bolt", iconBg: "bg-amber-50", iconColor: "text-amber-700" },
-  electric: {
-    icon: "bolt",
-    iconBg: "bg-amber-50",
-    iconColor: "text-amber-700",
-  },
-  internet: { icon: "wifi", iconBg: "bg-blue-50", iconColor: "text-blue-600" },
-  shopping: {
-    icon: "shopping_bag",
-    iconBg: "bg-purple-50",
-    iconColor: "text-purple-600",
-  },
-  subscription: {
-    icon: "subscriptions",
-    iconBg: "bg-rose-50",
-    iconColor: "text-rose-600",
-  },
-  salary: {
-    icon: "payments",
-    iconBg: "bg-emerald-50",
-    iconColor: "text-emerald-700",
-  },
-  income: {
-    icon: "payments",
-    iconBg: "bg-emerald-50",
-    iconColor: "text-emerald-700",
-  },
-  freelance: {
-    icon: "work",
-    iconBg: "bg-emerald-50",
-    iconColor: "text-emerald-700",
-  },
-  transfer: {
-    icon: "sync_alt",
-    iconBg: "bg-surface-container-low",
-    iconColor: "text-on-surface-variant",
-  },
-  health: {
-    icon: "fitness_center",
-    iconBg: "bg-red-50",
-    iconColor: "text-red-600",
-  },
-  game: {
-    icon: "sports_esports",
-    iconBg: "bg-rose-50",
-    iconColor: "text-rose-600",
-  },
-  gas: {
-    icon: "local_gas_station",
-    iconBg: "bg-blue-50",
-    iconColor: "text-blue-600",
-  },
-  coffee: {
-    icon: "coffee",
-    iconBg: "bg-orange-50",
-    iconColor: "text-orange-600",
-  },
-};
-
-function getIconStyle(desc: string, type: string) {
-  const lower = desc.toLowerCase();
-  for (const [key, style] of Object.entries(ICON_MAP)) {
-    if (lower.includes(key)) return style;
-  }
-  if (type === "Income")
-    return {
-      icon: "payments",
-      iconBg: "bg-emerald-50",
-      iconColor: "text-emerald-700",
-    };
-  if (type === "Transfer")
-    return {
-      icon: "sync_alt",
-      iconBg: "bg-surface-container-low",
-      iconColor: "text-on-surface-variant",
-    };
-  return {
-    icon: "receipt_long",
-    iconBg: "bg-surface-container-low",
-    iconColor: "text-on-surface-variant",
-  };
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -276,7 +170,7 @@ const Transactions = () => {
                 </tr>
               ) : (
                 paginated.map((tx) => {
-                  const style = getIconStyle(tx.description, tx.type);
+                  const style = getTransactionStyle(tx.category, tx.description, tx.type);
                   const amt = Number(tx.amount);
                   return (
                     <tr
