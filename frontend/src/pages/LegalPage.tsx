@@ -26,7 +26,7 @@ function LegalPage({ eyebrow, title, summary, sections }: LegalPageProps) {
           <CentraBrand variant="text" size="nav" surface="auto" to="/" alt="Centra home" />
           <Link
             to="/"
-            className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-on-surface-variant underline underline-offset-4 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-on-surface-variant transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Back to Centra
