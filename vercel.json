@@ -2,9 +2,9 @@
   "version": 2,
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/not-found" },
-    { "source": "/assets/(.*)", "destination": "/api/not-found" },
-    { "source": "/(.*\\..*)", "destination": "/api/not-found" },
+    { "source": "/api/(.*)", "destination": "/api/auth-guard?notFound=1" },
+    { "source": "/assets/(.*)", "destination": "/api/auth-guard?notFound=1" },
+    { "source": "/(.*\\..*)", "destination": "/api/auth-guard?notFound=1" },
     { "source": "/(.*)", "destination": "/index" }
   ],
   "headers": [

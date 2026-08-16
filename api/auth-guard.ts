@@ -10,6 +10,11 @@ import {
 import type { VercelRequest, VercelResponse } from './http-types.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.query.notFound === '1' || req.query.notFound === 'true') {
+    res.setHeader('Cache-Control', 'private, no-store, max-age=0');
+    return res.status(404).json({ error: 'Not found' });
+  }
+
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method not allowed' });
