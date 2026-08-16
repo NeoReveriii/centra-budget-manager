@@ -248,7 +248,7 @@ export default function RegisterPage() {
       </form>
 
       <div className="mt-5 rounded-xl border border-slate-300 bg-slate-50 p-4">
-        <label htmlFor="register-terms" className="flex cursor-pointer items-start gap-3 text-sm font-medium leading-6 text-slate-700">
+        <label htmlFor="register-terms" className="flex cursor-pointer items-start gap-3 text-xs font-medium leading-5 text-slate-700">
           <input
             id="register-terms"
             type="checkbox"
