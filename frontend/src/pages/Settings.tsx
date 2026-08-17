@@ -265,7 +265,7 @@ const Settings = () => {
             <p className="text-sm font-bold text-on-surface">
               Privacy Policy
             </p>
-            <Link to="/privacy" className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-container group">
+            <Link to="/privacy" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-container group">
               View Policy
               <span
                 className="material-symbols-outlined group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
@@ -279,7 +279,7 @@ const Settings = () => {
             <p className="text-sm font-bold text-on-surface">
               Terms of Use
             </p>
-            <Link to="/terms" className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-container group">
+            <Link to="/terms" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-container group">
               View Terms
               <span
                 className="material-symbols-outlined group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"

@@ -23,8 +23,8 @@ const footerGroups = [
   {
     title: "Legal",
     links: [
-      { label: "Privacy", href: "/privacy" },
-      { label: "Terms", href: "/terms" },
+      { label: "Privacy", href: "/privacy", targetBlank: true },
+      { label: "Terms", href: "/terms", targetBlank: true },
     ],
   },
 ] as const;
@@ -196,7 +196,7 @@ export default function LandingFooter() {
 
 interface FooterLinkGroupProps {
   title: string;
-  links: ReadonlyArray<{ label: string; href: string }>;
+  links: ReadonlyArray<{ label: string; href: string; targetBlank?: boolean }>;
   reduceMotion: boolean;
 }
 
@@ -213,6 +213,8 @@ function FooterLinkGroup({ title, links, reduceMotion }: FooterLinkGroupProps) {
           <m.a
             key={link.label}
             href={link.href}
+            target={link.targetBlank ? "_blank" : undefined}
+            rel={link.targetBlank ? "noopener noreferrer" : undefined}
             initial="rest"
             animate="rest"
             whileHover="active"

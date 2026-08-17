@@ -59,8 +59,8 @@ export default function SiteHeader({ mode, headerRef, shellRef }: SiteHeaderProp
           ) : (
             <>
               <Link to="/" className="transition-colors duration-200 hover:text-primary focus-visible:text-primary focus-visible:outline-none">Home</Link>
-              <Link to="/privacy" className="transition-colors duration-200 hover:text-primary focus-visible:text-primary focus-visible:outline-none">Privacy</Link>
-              <Link to="/terms" className="transition-colors duration-200 hover:text-primary focus-visible:text-primary focus-visible:outline-none">Terms</Link>
+              <Link to="/privacy" target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-primary focus-visible:text-primary focus-visible:outline-none">Privacy</Link>
+              <Link to="/terms" target="_blank" rel="noopener noreferrer" className="transition-colors duration-200 hover:text-primary focus-visible:text-primary focus-visible:outline-none">Terms</Link>
             </>
           )}
         </nav>
