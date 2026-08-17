@@ -40,7 +40,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <Sidebar />
       <div className="min-h-screen flex flex-col bg-background">
         {/* Mobile Header */}
-        <header className="sticky top-0 z-40 flex items-center justify-between border-b border-outline-variant bg-surface-container-lowest p-4 md:hidden">
+        <header className="sticky top-0 z-30 flex items-center justify-between border-b border-outline-variant bg-surface-container-lowest p-4 md:hidden">
           <button 
             onClick={() => setMobileSidebarOpen(true)}
             className="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full flex items-center justify-center cursor-pointer"

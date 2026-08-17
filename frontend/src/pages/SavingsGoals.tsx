@@ -475,40 +475,40 @@ const SavingsGoals: React.FC = () => {
       </header>
 
       {/* ── Summary Banner ─────────────────────────────────────── */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <section className="grid min-w-0 grid-cols-2 gap-4 md:grid-cols-4">
         {/* Total Saved */}
-        <div className="col-span-2 md:col-span-1 bg-primary text-on-primary rounded-2xl p-5 relative overflow-hidden shadow-md dark:bg-[#006b52] dark:text-white">
+        <div className="relative col-span-2 min-w-0 overflow-hidden rounded-2xl bg-primary p-4 text-on-primary shadow-md sm:p-5 md:col-span-1 dark:bg-[#006b52] dark:text-white">
           <div className="pointer-events-none absolute -right-8 -bottom-8 h-32 w-32 rotate-[18deg] rounded-[1.75rem] border border-on-primary/15 bg-on-primary/10" aria-hidden="true" />
           <div className="pointer-events-none absolute right-8 top-5 h-10 w-10 rotate-45 rounded-lg border border-on-primary/15" aria-hidden="true" />
           <p className="text-[11px] font-bold uppercase tracking-widest opacity-80 mb-1">Total Saved</p>
-          <p className="text-2xl font-bold">{formatCurrency(totalSavings)}</p>
+          <p className="break-all text-2xl font-bold leading-tight tabular-nums">{formatCurrency(totalSavings)}</p>
           <p className="text-[11px] opacity-70 mt-1">{momentumPct.toFixed(1)}% of all targets</p>
         </div>
 
         {/* Monthly Needed */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-5">
+        <div className="min-w-0 overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-2">
             <span className="material-symbols-outlined text-amber-500 text-[20px]">calendar_month</span>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/70">Monthly Needed</p>
+            <p className="min-w-0 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/70">Monthly Needed</p>
           </div>
-          <p className="text-xl font-bold text-on-surface">
+          <p className="max-w-full break-all text-[clamp(0.875rem,3.8vw,1.25rem)] font-bold leading-tight tracking-[-0.04em] text-on-surface tabular-nums">
             {totalMonthlyNeeded > 0 ? formatCurrency(totalMonthlyNeeded) : "—"}
           </p>
           <p className="text-[11px] text-on-surface-variant/70 mt-1">Across all deadlines</p>
         </div>
 
         {/* Remaining */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-5">
+        <div className="min-w-0 overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-2">
             <span className="material-symbols-outlined text-rose-500 text-[20px]">savings</span>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/70">Still Needed</p>
+            <p className="min-w-0 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/70">Still Needed</p>
           </div>
-          <p className="text-xl font-bold text-on-surface">{formatCurrency(totalRemaining)}</p>
+          <p className="max-w-full break-all text-[clamp(0.875rem,3.8vw,1.25rem)] font-bold leading-tight tracking-[-0.04em] text-on-surface tabular-nums">{formatCurrency(totalRemaining)}</p>
           <p className="text-[11px] text-on-surface-variant/70 mt-1">Until all goals met</p>
         </div>
 
         {/* Goals count */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-5">
+        <div className="min-w-0 overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-2">
             <span className="material-symbols-outlined text-emerald-500 text-[20px]">task_alt</span>
             <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/70">Goals</p>

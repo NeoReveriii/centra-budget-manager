@@ -97,7 +97,7 @@ const GoalCard: React.FC<GoalCardProps> = ({
 
   return (
     <div
-      className="cursor-pointer bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col overflow-hidden transition-[box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+      className="min-w-0 cursor-pointer bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col overflow-hidden transition-[box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
       onClick={onView}
       onKeyDown={(event) => {
         if ((event.key === "Enter" || event.key === " ") && onView) {
@@ -114,14 +114,14 @@ const GoalCard: React.FC<GoalCardProps> = ({
         <div className="flex justify-between items-start">
 
           {/* Icon + title */}
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center shrink-0">
               <span className="material-symbols-outlined text-on-surface-variant text-[20px]">
                 {isCompleted ? "check_circle" : icon}
               </span>
             </div>
-            <div>
-              <h3 className="font-bold text-on-surface text-[15px] leading-snug">{title}</h3>
+            <div className="min-w-0">
+              <h3 className="truncate font-bold text-on-surface text-[15px] leading-snug">{title}</h3>
               <p className="text-[11px] text-on-surface-variant/70 font-medium mt-0.5">
                 {formatCurrency(targetAmount)} target
               </p>
@@ -150,13 +150,13 @@ const GoalCard: React.FC<GoalCardProps> = ({
         {/* Progress bar */}
         <div className="mt-5">
           <div className="flex justify-between items-center mb-1.5">
-            <div>
+            <div className="min-w-0 max-w-[48%]">
               <p className="text-[11px] text-on-surface-variant/70 uppercase tracking-wider font-bold">Saved</p>
-              <p className="text-lg font-bold text-on-surface">{formatCurrency(currentAmount)}</p>
+              <p className="break-all text-base font-bold leading-tight text-on-surface tabular-nums sm:text-lg">{formatCurrency(currentAmount)}</p>
             </div>
-            <div className="text-right">
+            <div className="min-w-0 max-w-[48%] text-right">
               <p className="text-[11px] text-on-surface-variant/70 uppercase tracking-wider font-bold">Left</p>
-              <p className="text-lg font-bold text-on-surface">{formatCurrency(remaining)}</p>
+              <p className="break-all text-base font-bold leading-tight text-on-surface tabular-nums sm:text-lg">{formatCurrency(remaining)}</p>
             </div>
           </div>
 
@@ -182,12 +182,12 @@ const GoalCard: React.FC<GoalCardProps> = ({
 
       {/* Analytics row */}
       <div className="px-6 py-4 grid grid-cols-2 gap-3">
-        <div>
+        <div className="min-w-0">
           <p className="text-[10px] text-on-surface-variant/70 font-bold uppercase tracking-wider mb-1">
             Monthly Goal
           </p>
           {monthlyNeeded !== null ? (
-            <p className="text-[13px] font-bold text-on-surface">
+            <p className="break-all text-[13px] font-bold leading-tight text-on-surface tabular-nums">
               {formatCurrency(monthlyNeeded)}
               <span className="text-[10px] text-on-surface-variant/70 font-normal">/mo</span>
             </p>

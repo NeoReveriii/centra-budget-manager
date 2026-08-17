@@ -55,7 +55,7 @@ const Sidebar = () => {
       {/* Mobile Backdrop */}
       {mobileSidebarOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40"
+          className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm md:hidden"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
@@ -66,7 +66,7 @@ const Sidebar = () => {
           group/sidebar
           fixed left-0 top-0 h-[100dvh]
           bg-surface-container-low border-r border-outline-variant
-          flex flex-col z-50
+          flex flex-col z-[70]
           overflow-hidden
           transition-[width] duration-300 ease-[cubic-bezier(0.2,0,0,1)]
           ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
